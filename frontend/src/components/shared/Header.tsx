@@ -6,9 +6,9 @@ import Logo from '@/assets/img/logo.png'
 import ConnectButton from '@/components/ui/ConnectButton'
 import Socials from '@/components/ui/Socials'
 import { useConnectWallet } from '@web3-onboard/react'
+import { useState } from 'react'
 
 const Header = () => {
-
   const dispatch = useDispatch()
   const [{ wallet }] = useConnectWallet()
 
@@ -17,9 +17,15 @@ const Header = () => {
     dispatch({ type: 'modal/toggleGameModal' })
   }
 
+  const [isDropdownOpen, setDropdownOpen] = useState(false)
+
+  const toggleMenu = () => {
+    setDropdownOpen(!isDropdownOpen)
+  }
+
   return (
     <div className="mx-auto max-w-screen-2xl">
-      <header className="flex items-center justify-between py-4 md:py-8">
+      <header className="flex items-center justify-between py-4 gap-9 md:py-8">
         <Link
           href="/"
           className="inline-flex items-center gap-2.5 text-2xl font-bold md:text-3xl"
@@ -67,6 +73,7 @@ const Header = () => {
         <button
           type="button"
           className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2.5 py-2 text-sm font-semibold text-gray-500 ring-indigo-300 hover:bg-gray-300 focus-visible:ring active:text-gray-700 md:text-base lg:hidden"
+          onClick={toggleMenu}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -82,6 +89,37 @@ const Header = () => {
           </svg>
           Menu
         </button>
+        {isDropdownOpen && (
+          <div className="lg:hidden gap-11 p-0 absolute grid justify-center shadow-2xl rounded-xl bg-[#dadedf] w-full h-full top-[20%] overflow-hidden transition-all duration-500 ease-in-out">
+            <nav className="grid justify-center text-center items-center">
+              <Link
+                href="/games"
+                className="text-lg font-semibold text-gray-600 transition duration-100 hover:text-indigo-500 active:text-indigo-700"
+              >
+                Games
+              </Link>
+              <Link
+                href="#"
+                className="text-lg font-semibold text-gray-600 transition duration-100 hover:text-indigo-500 active:text-indigo-700"
+              >
+                My Games
+              </Link>
+              <Link
+                onClick={modalHandler}
+                href="#"
+                className="text-lg font-semibold text-gray-600 transition duration-100 hover:text-indigo-500 active:text-indigo-700"
+              >
+                Create Game
+              </Link>
+            </nav>
+            <div className="justify-center">
+              <div className="grid gap-4 items-center ">
+                <Socials />
+                <ConnectButton />
+              </div>
+            </div>
+          </div>
+        )}
       </header>
     </div>
   )
