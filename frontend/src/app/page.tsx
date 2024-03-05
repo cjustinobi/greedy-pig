@@ -15,7 +15,7 @@ export default function Home() {
     <div className="md:px-custom p-custom-sm text-gray-500">
       <Header />
       <Dice />
-      <Test/>
+      <Test />
       <Hero />
       <Stats />
       <Games />
