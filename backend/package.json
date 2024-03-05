@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "JS DApp",
   "dependencies": {
+    "cartesi-router": "^1.0.4",
+    "cartesi-wallet": "^1.0.5",
     "dotenv": "^16.4.4",
     "ethers": "^6.7.1",
     "uuid": "^9.0.1",

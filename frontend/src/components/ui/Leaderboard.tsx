@@ -46,7 +46,7 @@ const LeaderBoard = ({ notices }: any) => {
   return (
     <div className="relative flex flex-col w-full min-w-0 break-words border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border mb-4 draggable">
       <div className="p-6 pb-0 mb-0 rounded-t-2xl">
-        <h1 className="font-bold text-2xl mb-10">Leaderboard</h1>
+        <h1 className="font-bold text-2xl mb-10">{ game?.gameName } Leaderboard</h1>
       </div>
 
       {game && game.participants?.length ? (

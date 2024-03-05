@@ -15,3 +15,23 @@ export const addInput = async (
     }
   }
 }
+
+export const sendEther = async (
+  amount: number,
+  rollups: any) => {
+  const data = ethers.utils.toUtf8Bytes(`Deposited (${amount}) ether.`);
+  const tx = {value: ethers.utils.parseEther(`${amount}`)}
+
+  console.log("Ether to deposit: ", tx);
+
+   try {
+
+    return rollups.etherPortalContract.depositEther(
+         rollups.dappContract.address,
+         data,
+         tx
+       )
+   } catch (error) {
+    console.log('error from sending ehther ', error)
+   }
+}

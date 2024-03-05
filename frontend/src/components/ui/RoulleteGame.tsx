@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import Roulette from '@/components/ui/Roulette'
 import { useRollups } from '@/hooks/useRollups'
 import { dappAddress, getParticipantsForGame } from '@/lib/utils'
-import { addInput } from '@/lib/cartesi'
+import { addInput, sendEther } from '@/lib/cartesi'
 import Button from '../shared/Button'
 import { useConnectWallet } from '@web3-onboard/react'
+import toast from 'react-hot-toast'
 
 export default function RoulleteGame({ notices }: any) {
   const [{ wallet }] = useConnectWallet()
@@ -13,20 +14,28 @@ export default function RoulleteGame({ notices }: any) {
 
   const [gameId, setGameId] = useState<string>('')
   const [players, setPlayers] = useState<string[]>([])
+   const [game, setGame] = useState<any>(null)
 
   const joinGame = async (id: any) => {
-    const addr: string | undefined = wallet?.accounts[0].address
+    const res = await sendEther(1, rollups)
+    const txHash = await res.wait(1)
+    if (txHash) {
+      const addr: string | undefined = wallet?.accounts[0].address
 
-    const jsonPayload = JSON.stringify({
-      method: 'addParticipant',
-      data: { gameId: id, playerAddress: addr },
-    })
+      const jsonPayload = JSON.stringify({
+        method: 'addParticipant',
+        data: { gameId: id, playerAddress: addr },
+      })
 
-    const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+      const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
 
-    console.log('txxx ', tx)
-    const result = await tx.wait(1)
-    console.log(result)
+      const result = await tx.wait(1)
+      console.log(result)
+    } else {
+      toast.error('Ether not sent')
+    }
+
+    
   }
 
   useEffect(() => {
@@ -40,6 +49,10 @@ export default function RoulleteGame({ notices }: any) {
       getParticipantsForGame(gameId, notices).then((fetchedPlayers) => {
         setPlayers(fetchedPlayers)
       })
+      const game = JSON.parse(notices[notices.length - 1].payload).find(
+          (game: any) => game.id === gameId
+        )
+        setGame(game)
     }
   }, [gameId, notices])
 
@@ -54,9 +67,9 @@ export default function RoulleteGame({ notices }: any) {
 
   return (
     <div>
-      <Button onClick={() => joinGame(gameId)} className="mb-10" type="button">
+      {game && game.status === 'New' && <Button onClick={() => joinGame(gameId)} className="mb-10" type="button">
         Join Game
-      </Button>
+      </Button>}
       {/* <Button onClick={playGame} className="mb-10" type="button">
         Play Game
       </Button> */}

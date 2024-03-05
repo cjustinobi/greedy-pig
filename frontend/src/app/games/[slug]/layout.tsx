@@ -20,7 +20,7 @@ export default function GameLayout({
   return (
     <section className={`h-screen game-bg`}>
       <div className="md:px-custom p-custom-sm text-gray-500">
-        <Link
+        {/* <Link
           href="/"
           className="inline-flex items-center gap-2.5 text-2xl font-bold md:text-3xl"
           aria-label="logo"
@@ -35,7 +35,7 @@ export default function GameLayout({
             loading="lazy"
           />
           GreedyPig
-        </Link>
+        </Link> */}
         {/* <AblyProvider client={client}> */}
         {children}
         {/* </AblyProvider> */}

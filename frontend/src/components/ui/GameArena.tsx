@@ -6,6 +6,7 @@ import { dappAddress, parseInputEvent } from '@/lib/utils'
 import { useRollups } from '@/hooks/useRollups'
 import { useNotices } from '@/hooks/useNotices'
 import { useEffect } from 'react'
+import { Balance } from './Balance'
 
 const GameArena = () => {
   const { notices, refetch } = useNotices()
@@ -30,6 +31,7 @@ const GameArena = () => {
     <div className="py-6 sm:py-8 lg:py-12">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8">
         <div className="flex flex-col items-center gap-4  px-8 py-6 md:gap-6">
+          <Balance />
           <RoulleteGame notices={notices} />
         </div>
 

@@ -28,7 +28,7 @@ const CreateGameModal = () => {
     gameName,
     participants: [],
     gameSettings: {
-      numbersOfTurn: 2,
+      numbersOfTurn: 3,
       winningScore: 0,
       mode: 'turn',
       apparatus: 'roulette',
@@ -40,6 +40,8 @@ const CreateGameModal = () => {
     startTime,
     startAngle: 0,
     winner: '',
+    bettingAmount: 1, // in ether
+    bettingFund: 0 // total fund transfered by players
   }
 
   const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
@@ -59,6 +61,8 @@ const CreateGameModal = () => {
   }
 
   const createGameHandler = async () => {
+    game.gameName = gameName
+    game.startTime = startTime
     const jsonPayload = JSON.stringify({
       method: 'createGame',
       data: game,

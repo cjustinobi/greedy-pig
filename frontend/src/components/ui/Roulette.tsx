@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 import Button from '@/components/shared/Button'
 import toast from 'react-hot-toast'
 import { addInput } from '@/lib/cartesi'
@@ -7,6 +7,7 @@ import { useRollups } from '@/hooks/useRollups'
 import { useConnectWallet } from '@web3-onboard/react'
 import ConfirmModal from './ConfirmModal'
 import { useDispatch } from 'react-redux'
+// import gameOverSound from '/sounds/game-over.mp3'
 
 interface RouletteProps {
   gameId: string
@@ -21,8 +22,10 @@ const Roulette: FC<RouletteProps> = ({ gameId, players, notices }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const noticesRef = useRef(notices)
 
+  // const [audio] = useState(new Audio(gameOverSound));
   const [activePlayer, selectActivePlayer] = useState<string>('')
   const [startAngle, setStartAngle] = useState<number>(0)
+  const [spinAngleStart, setSpinAngleStart] = useState<number>(0)
   const [game, setGame] = useState<any>()
 
   const options = [1, 2, 3, 4, 5, 6]
@@ -156,8 +159,6 @@ const Roulette: FC<RouletteProps> = ({ gameId, players, notices }) => {
           dappAddress,
           rollups
         )
-
-        // rotateWheel()
         
         console.log('roulette tx ', tx)
         const result = await tx.wait(1)
@@ -166,8 +167,6 @@ const Roulette: FC<RouletteProps> = ({ gameId, players, notices }) => {
         console.error('Error during game:', error)
       }
 
-      // alert(startAngle)
-      // startAngle = Math.random() * 10 + 10; // 10 to 19.999
       spinTime = 0;
       spinTimeTotal = 20000 // Math.random() * 3 + 4 * 1000;
 
@@ -176,19 +175,30 @@ const Roulette: FC<RouletteProps> = ({ gameId, players, notices }) => {
     }
   }
 
+
+ const spin = useCallback(() => {
+  console.log(game?.startAngle);
+setStartAngle(game?.startAngle);
+    setSpinAngleStart(Math.random() * 10 + 10) // 10 to 19.999
+    spinTime = 0;
+    spinTimeTotal = 20000  // 4000 to 7999
+    rotateWheel();
+  }, [game?.startAngle])
+
   const rotateWheel = () => {
-    spinTime += 4
+    spinTime += 30
 
     if (spinTime >= spinTimeTotal || !ctx) {
       stopRotateWheel()
       return
     }
-    const spinAngle = startAngle - easeOut(spinTime, 0, startAngle, spinTimeTotal)
-    // startAngle += (spinAngle * Math.PI / 180);
-    setStartAngle(startAngle + (spinAngle * Math.PI) / 180)
-    // startAngle += (spinAngle * Math.PI / 180);
+    const spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal)
+
+    const newStartAngle = startAngle + (spinAngle * Math.PI / 180);
+  setStartAngle(newStartAngle);
     drawRouletteWheel()
-    spinTimeout = setTimeout(rotateWheel, 30)
+    // spinTimeout = setTimeout(rotateWheel, 30)
+     window.requestAnimationFrame(rotateWheel);
   }
 
   const stopRotateWheel = () => {
@@ -202,11 +212,12 @@ const Roulette: FC<RouletteProps> = ({ gameId, players, notices }) => {
     ctx.fillStyle = 'blue'
     const text = options[index]
     ctx.fillText(
-      text.toString(),
+      text?.toString(),
       250 - ctx.measureText(text.toString()).width / 2,
       250 + 10
     )
     ctx.restore()
+
     dispatch({ type: 'modal/toggleConfirmModal' });
   }
 
@@ -228,9 +239,7 @@ const Roulette: FC<RouletteProps> = ({ gameId, players, notices }) => {
       'InputAdded',
       (dappAddress, inboxInputIndex, sender, input) => {
         if (parseInputEvent(input).method === 'playGame') {
-          setStartAngle(game.startAngle)
-          rotateWheel()
-          dispatch({ type: 'modal/toggleConfirmModal' })
+          console.log('playgame')
         }
       }
     )
@@ -249,23 +258,28 @@ const Roulette: FC<RouletteProps> = ({ gameId, players, notices }) => {
         if (game) {
           setGame(game)
           console.log(`game angle , ${game.startAngle}`)
+          spin()
           selectActivePlayer(game.activePlayer)
-          // rotateWheel()
-          setStartAngle(game.startAngle)
+  
+          if (game.status === 'Ended') {
+            // audio.play(); // Play the audio when the game is over
+            toast.success('Game has ended');
+          }
+        
         }
       }
     }
-  }, [notices, gameId])
+  }, [notices, gameId, spin])
 
   return (
     <div>
-      <Button
+      {game && game.status !== 'Ended' && <Button
         type="button"
         id="spin"
         onClick={() => dispatch({ type: 'modal/toggleConfirmModal' })}
       >
         Play Game
-      </Button>
+      </Button>}
       <canvas id="canvas" width="500" height="500" ref={canvasRef}></canvas>
       <ConfirmModal onSubmit={handleResponse} activePlayer={activePlayer} />
     </div>
