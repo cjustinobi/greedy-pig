@@ -1,26 +1,26 @@
-import { FormEvent, useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectGameModal } from '@/features/modal/modalSlice'
-import Button from '../shared/Button'
-import toast from 'react-hot-toast'
-import { GameStatus } from '@/interfaces'
-import { addInput } from '@/lib/cartesi'
-import { useRollups } from '@/hooks/useRollups'
-import { dappAddress } from '@/lib/utils'
-import { useConnectWallet } from '@web3-onboard/react'
+import { FormEvent, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectGameModal } from '@/features/modal/modalSlice';
+import Button from '../shared/Button';
+import toast from 'react-hot-toast';
+import { GameStatus } from '@/interfaces';
+import { addInput } from '@/lib/cartesi';
+import { useRollups } from '@/hooks/useRollups';
+import { dappAddress } from '@/lib/utils';
+import { useConnectWallet } from '@web3-onboard/react';
 
 const CreateGameModal = () => {
-  const [{ wallet }] = useConnectWallet()
-  const dispatch = useDispatch()
+  const [{ wallet }] = useConnectWallet();
+  const dispatch = useDispatch();
   const createGameForm = useSelector((state: any) =>
     selectGameModal(state.modal)
-  )
-  const rollups = useRollups(dappAddress)
+  );
+  const rollups = useRollups(dappAddress);
 
-  const [creator, setCreator] = useState<string | undefined>('')
-  const [gameName, setGameName] = useState<string>('')
-  const [startTime, setStartTime] = useState<string>('')
-  const [loading, setLoading] = useState<boolean>(false)
+  const [creator, setCreator] = useState<string | undefined>('');
+  const [gameName, setGameName] = useState<string>('');
+  const [startTime, setStartTime] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
   const game = {
     creator,
@@ -40,63 +40,61 @@ const CreateGameModal = () => {
     startTime,
     startAngle: 0,
     winner: '',
-    bettingAmount: 1, // in ether
-    bettingFund: 0 // total fund transfered by players
-  }
+    bettingAmount: 1, 
+    bettingFund: 0 
+  };
 
   const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    setLoading(true)
+    setLoading(true);
     try {
-      setLoading(true)
-      await createGameHandler()
-      reset()
-      setLoading(false)
-      toast.success('Game created successfully')
+      await createGameHandler();
+      reset();
+      toast.success('Game created successfully');
+      cancelHandler();
     } catch (error) {
-      console.log('send game error: ', error)
-      setLoading(false)
+      console.log('send game error: ', error);
+      setLoading(false);
     }
-  }
+  };
 
   const createGameHandler = async () => {
-    game.gameName = gameName
-    game.startTime = startTime
+    game.gameName = gameName;
+    game.startTime = startTime;
     const jsonPayload = JSON.stringify({
       method: 'createGame',
       data: game,
-    })
+    });
 
-    const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+    const tx = await addInput(jsonPayload, dappAddress, rollups);
 
-    console.log(tx)
-    const result = await tx.wait(1)
-    console.log(result)
-  }
+    console.log(tx);
+    const result = await tx.wait(1);
+    console.log(result);
+  };
 
   const cancelHandler = () => {
-    dispatch({ type: 'modal/toggleGameModal' })
-    reset()
-  }
+    dispatch({ type: 'modal/toggleGameModal' });
+  };
 
   const reset = () => {
-    setGameName('')
-    setStartTime('')
-    dispatch({ type: 'modal/toggleGameModal' })
-  }
+    setGameName('');
+    setStartTime('');
+    dispatch({ type: 'modal/toggleGameModal' });
+  };
 
   useEffect(() => {
     const init = async () => {
-      const { Modal, Ripple, initTE } = await import('tw-elements')
-      initTE({ Modal, Ripple })
-    }
-    init()
-  }, [])
+      const { Modal, Ripple, initTE } = await import('tw-elements');
+      initTE({ Modal, Ripple });
+    };
+    init();
+  }, []);
 
   useEffect(() => {
-    setCreator(wallet?.accounts[0].address)
-  }, [wallet])
+    setCreator(wallet?.accounts[0].address);
+  }, [wallet]);
 
   return (
     <div
