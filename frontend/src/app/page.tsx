@@ -7,6 +7,7 @@ import Features from '@/components/ui/Features'
 import Stats from '@/components/ui/Stats'
 import CreateGameModal from '@/components/ui/CreateGameModal'
 import Games from '@/components/ui/Games'
+import BackgroundGradientDemo from '@/components/ui/background-demo'
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <Header />
       <Hero />
       <Stats />
+      <BackgroundGradientDemo />
       <Games />
       <Features />
       <CreateGameModal />
