@@ -30,9 +30,7 @@ import {
     TableContainer,
     Button,
     Stack,
-    Box,
-    Spacer
-  } from '@chakra-ui/react'
+    Box } from '@chakra-ui/react'
 
 const config: any = configFile;
 interface Report {

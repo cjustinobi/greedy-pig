@@ -22,7 +22,7 @@ const Hero = () => {
         </p>
 
         <h1 className="mb-8 text-4xl font-bold text-gray-500 sm:text-5xl md:mb-12 md:text-6xl">
-          Experience the <br />{' '}
+          Experience the <br />
           <span className="text-gradient bg-gradient-to-r from-purple-600 via-peach-600 to-orange-500">
             Heart Pounding
           </span>{' '}
