@@ -6,6 +6,7 @@ import Logo from '@/assets/img/logo.png'
 import ConnectButton from '@/components/ui/ConnectButton'
 import Socials from '@/components/ui/Socials'
 import { useConnectWallet } from '@web3-onboard/react'
+import { useState } from 'react'
 
 const Header = () => {
   const dispatch = useDispatch()
@@ -79,7 +80,7 @@ const Header = () => {
               clip-rule="evenodd"
             />
           </svg>
-          Menu
+          {/* Menu */}
         </button>
       </header>
     </div>

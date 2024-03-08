@@ -28,17 +28,17 @@ const CreateGameModal = () => {
     gameName,
     participants: [],
     gameSettings: {
-      numbersOfTurn: 2,
-      winningScore: 20,
-      mode: 'score',
-      apparatus: 'dice',
+      numbersOfTurn: 3,
+      winningScore: 0,
+      mode: 'turn',
+      apparatus: 'roulette',
       bet: true,
       maxPlayer: 10,
       limitNumberOfPlayer: true,
     },
     status: GameStatus.New,
     startTime,
-    rollOutcome: 0,
+    startAngle: 0,
     winner: '',
     bettingAmount: 1, // in ether
     bettingFund: 0, // total fund transfered by players
@@ -49,11 +49,13 @@ const CreateGameModal = () => {
 
     setLoading(true)
     try {
-      setLoading(true)
+      // if (new Date(getCurrentDateTime()) <= new Date()) {
+      //   throw new Error('Please select a future start time')
+      // }
       await createGameHandler()
       reset()
-      setLoading(false)
       toast.success('Game created successfully')
+      cancelHandler()
     } catch (error) {
       console.log('send game error: ', error)
       setLoading(false)
@@ -77,7 +79,6 @@ const CreateGameModal = () => {
 
   const cancelHandler = () => {
     dispatch({ type: 'modal/toggleGameModal' })
-    reset()
   }
 
   const reset = () => {
@@ -97,6 +98,10 @@ const CreateGameModal = () => {
   useEffect(() => {
     setCreator(wallet?.accounts[0].address)
   }, [wallet])
+
+  const setStartTimeHandler = (value: string) => {
+    setStartTime(value)
+  }
 
   return (
     <div
@@ -154,7 +159,8 @@ const CreateGameModal = () => {
             Start Time
           </label>
           <input
-            onChange={(e) => setStartTime(e.target.value)}
+            onChange={(e) => setStartTimeHandler(e.target.value)}
+            // min={}
             type="datetime-local"
             className="appearance-none bg-gray-100 border border-gray-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
           />
@@ -190,7 +196,7 @@ const CreateGameModal = () => {
             <input
               type="radio"
               className="form-radio"
-              checked
+              disabled
               name="apparatus"
               value="die"
             />
@@ -200,7 +206,7 @@ const CreateGameModal = () => {
             <input
               type="radio"
               className="form-radio"
-              disabled
+              checked
               name="apparatus"
               value="roulette"
             />
@@ -243,3 +249,6 @@ const CreateGameModal = () => {
 }
 
 export default CreateGameModal
+function setStartTime(value: string) {
+  throw new Error('Function not implemented.')
+}

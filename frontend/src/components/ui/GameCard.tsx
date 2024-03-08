@@ -8,7 +8,7 @@ interface GameCardProps {
   game: IGame
 }
 
-const GameCard = ({ game }: GameCardProps) => {
+const GameCard = ( { game }: GameCardProps) => {
   const [{ wallet }] = useConnectWallet()
   const router = useRouter()
 
@@ -87,7 +87,7 @@ const GameCard = ({ game }: GameCardProps) => {
           <p>{capitalize(game.gameSettings.apparatus)}</p>
         </div>
         <button
-          onClick={() => handleNavigate(game.id, 'join')}
+          onClick={(_playAudio) => handleNavigate(game.id, 'join')}
           className="mt-4 text-xl w-full text-white bg-indigo-600 py-2 rounded-xl shadow-lg"
         >
           Join

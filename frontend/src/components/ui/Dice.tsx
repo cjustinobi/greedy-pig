@@ -115,23 +115,36 @@ const MyDiceApp: FC<RouletteProps> = ({ notices }) => {
   return (
     <div>
       {/* <h2 onClick={rollAll}>Rollll</h2> */}
+      <div className="relative">
+        <ReactDice
+          numDice={1}
+          ref={reactDice}
+          rollDone={rollDone}
+          disableIndividual={true}
+          dieSize={140}
+        />
+      </div>
+
       {game && game.status !== 'Ended' && (
-        <div>
+        <div className="flex justify-start gap-11 top-[100px] relative mb-6">
           <Button type="button" id="spin" onClick={() => handleResponse('yes')}>
             Roll
           </Button>
-          <Button type="button" id="spin" onClick={() => handleResponse('no')}>
-            Pass
-          </Button>
+          <div className="bg-gradient-to-r cursor-pointer text-center from-pink-500 via-red-500 to-yellow-500 p-1 rounded-2xl">
+            <div className="w-[130px] bg-black rounded-2xl">
+              <button
+                type="button"
+                id="spin"
+                onClick={() => handleResponse('no')}
+                className="cursor-pointer text-center font-bold p-2"
+              >
+                Pass
+              </button>
+            </div>
+          </div>
         </div>
       )}
-      <ReactDice
-        numDice={1}
-        ref={reactDice}
-        rollDone={rollDone}
-        disableIndividual={true}
-        dieSize={140}
-      />
+
       {/* <ConfirmModal onSubmit={handleResponse} activePlayer={activePlayer} /> */}
     </div>
   )

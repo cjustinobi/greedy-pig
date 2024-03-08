@@ -18,7 +18,9 @@ export default function GameLayout({
   // const client = new Ably.Realtime.Promise({ key: process.env.NEXT_PUBLIC_ABLY_KEY! as string });
 
   return (
-    <section className={`h-screen game-bg`}>
+    <section
+      className={`md:min-h-[100vh] relative top-0 bottom-0 lg:w-screen md:w-screen min-w-[50rem] gap-8 after:absolute after:-z-[10] after:inset-0 after:content-[''] after:bg-[#ffffff87] after:backdrop-blur-sm after:translate-x-[-8px] after:translate-y-[8px] rounded-lg after:rounded-lg game-bg`}
+    >
       <div className="md:px-custom p-custom-sm text-gray-500">
         {/* <Link
           href="/"

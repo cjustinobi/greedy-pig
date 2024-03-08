@@ -12,7 +12,14 @@ import {
   selectSelectedGame,
 } from '@/features/games/gamesSlice'
 
-export default function Apparatus({ notices }: any) {
+export default function Apparatus({ url, notices }: any) {
+  const playAudio = () => {
+    const audio = new Audio(
+      url || 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+    )
+    audio.play()
+  }
+
   const [{ wallet }] = useConnectWallet()
   const rollups = useRollups(dappAddress)
   const noticesRef = useRef(notices)
@@ -80,7 +87,10 @@ export default function Apparatus({ notices }: any) {
     <div>
       {game && game.status === 'New' && (
         <Button
-          onClick={() => joinGame(gameId)}
+          onClick={() => {
+            playAudio()
+            joinGame(gameId)
+          }}
           className="mb-10"
           type="button"
         >
