@@ -54,28 +54,41 @@ const GameArena = () => {
   }, [notices, dispatchGameData])
 
   useEffect(() => {
-    const gameId = window.location.pathname.split('/').pop()
-    rollups?.inputContract.on(
-      'InputAdded',
-      (dappAddress, inboxInputIndex, sender, input) => {
-        handleEvent().then(() => {
-          if (gameId && notices && notices.length > 0) {
-            const game = JSON.parse(notices[notices.length - 1].payload).find(
-              (game: any) => game.id === gameId
-            )
-            if (game) {
-              dispatchGameData(game)
+    console.log('setting game in useeffect, Gamearena')
+    const gameId = window.location.pathname.split('/').pop();
+    if (!gameId || !notices || notices.length === 0) return;
+  
+    const latestGamePayload = JSON.parse(notices[notices.length - 1].payload);
+    const game = latestGamePayload.find((game: any) => game.id === gameId);
+    if (game) {
+      dispatchGameData(game);
+    }
+  }, [notices, dispatchGameData]);
+  
 
-              // if (game.status === 'Ended') {
-              //   gameOverSound?.play()
-              //   toast.success(`${game.winner} won`)
-              // }
-            }
-          }
-        })
-      }
-    )
-  }, [handleEvent, rollups, dispatch, notices, dispatchGameData, gameOverSound])
+  // useEffect(() => {
+  //   const gameId = window.location.pathname.split('/').pop()
+  //   rollups?.inputContract.on(
+  //     'InputAdded',
+  //     (dappAddress, inboxInputIndex, sender, input) => {
+  //       handleEvent().then(() => {
+  //         if (gameId && notices && notices.length > 0) {
+  //           const game = JSON.parse(notices[notices.length - 1].payload).find(
+  //             (game: any) => game.id === gameId
+  //           )
+  //           if (game) {
+  //             dispatchGameData(game)
+
+  //             // if (game.status === 'Ended') {
+  //             //   gameOverSound?.play()
+  //             //   toast.success(`${game.winner} won`)
+  //             // }
+  //           }
+  //         }
+  //       })
+  //     }
+  //   )
+  // }, [handleEvent, rollups, dispatch, notices, dispatchGameData, gameOverSound])
 
   return (
     <div className="py-6 sm:py-8 lg:py-12">
