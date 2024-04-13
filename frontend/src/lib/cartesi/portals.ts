@@ -20,8 +20,6 @@ export const sendEther = async (address: string, gameId: string, amount: number,
   const data = ethers.utils.toUtf8Bytes(`${address} Deposited ${amount} ether from gameId: ${gameId}.`)
   const tx = { value: ethers.utils.parseEther(`${amount}`) }
 
-  console.log('Ether to deposit: ', tx)
-
   try {
     return rollups.etherPortalContract.depositEther(
       rollups.dappContract.address,

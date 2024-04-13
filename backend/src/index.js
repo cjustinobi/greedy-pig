@@ -196,29 +196,8 @@ async function handle_inspect(data) {
 
     const balance = url[0]
     const address = url[1]
-    const gameId = url[2]
 
     return router.process(balance, address)
-
-
-    // amount = wallet.balance_get(url[1]).ether_get()
-    // const amountString = amount.toString();
-
-    // console.log('retrieved bal ', amount)
-
-    // const res = {
-    //   address,
-    //   gameId,
-    //   amount 
-    // }
-
-    // await fetch(rollup_server + "/report", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ payload: viem.stringToHex(JSON.stringify(res)) }),
-    // });
-    
-    // return new Report(`balance for ${address} for ${gameId} is ${viem.stringToHex(amountString)}`)
 
   } catch (error) {
     const error_msg = `failed to process inspect request ${error}`;

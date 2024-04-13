@@ -42,26 +42,25 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [commitmentStatus, setCommitmentStatus] = useState<boolean>(false)
   const [revealMove, setRevealMove] = useState<boolean>(false)
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
+  const [deposited, setDeposited] = useState<boolean>(false)
 
   const joinGame = async () => {
-
-    
 
     if (wallet?.accounts[0].address) {
 
       const playerAddress = wallet.accounts[0].address
-      console.log(typeof playerAddress)
-      console.log(playerAddress.length)
 
       if (game.gameSettings.bet) {
         const reports = await inspectCall(
-          `balance/${playerAddress}/${game.id}`,
+          `balance/${playerAddress}`,
           connectedChain
         )
    
         const res = hasDeposited(game.bettingAmount, reports)
 
         if (!res) return toast.error(`You need to deposit ${game.bettingAmount} ether to join`)
+        
+        setDeposited(true)
       }
 
       const id = window.location.pathname.split('/').pop()
@@ -75,9 +74,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
     }
-
-    
-
   }
 
   const rollDice = async () => {
@@ -212,7 +208,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const depositHandler = async () => {
     if (!game.gameSettings.bet) return toast.error('Not a betting game')
 
-    await sendEther(dappAddress, game.id, game.bettingAmount, rollups)
+    try {
+      await sendEther(dappAddress, game.id, game.bettingAmount, rollups)
+      setDeposited(true)
+    } catch (error) {
+      console.log(error)
+    }
 
   }
 
@@ -272,6 +273,23 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }, [result])
 
   useEffect(() => {
+    const checkDeposit = async () => {
+      if (wallet?.accounts[0].address && game.gameSettings.bet) {
+        const playerAddress = wallet.accounts[0].address
+        const reports = await inspectCall(
+          `balance/${playerAddress}`,
+          connectedChain
+        )
+
+        const hasUserDeposited = hasDeposited(game.bettingAmount, reports)
+        setDeposited(hasUserDeposited)
+      }
+    }
+
+    checkDeposit()
+  }, [wallet, game?.gameSettings.bet, connectedChain])
+
+  useEffect(() => {
     if (canRollDice) {
       rollDice()
     }
@@ -305,7 +323,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col align-middle  justify-center">
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
@@ -320,56 +338,39 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         )}
       </button>
 
-      <div className="flex justify-center">
+      <div className="flex flex-col justify-center">
         {game &&
           game.status === 'New' &&
           game.gameSettings.bet &&
           wallet &&
-          // game?.participants.some(
-          //   (participant: any) =>
-          //     participant.playerAddress === wallet.accounts[0].address &&
-          //     !participant.deposited
-          // ) &&
+          !deposited &&
           !game.commitPhase &&
           !game.movePhase && (
-            <div>
-              <Button
-                className="mt-6"
-                style={{ background: '' }}
-                onClick={depositHandler}
-              >
-                Deposit
-              </Button>
-            </div>
+            <Button className="my-6" onClick={depositHandler}>
+              Deposit
+            </Button>
           )}
         {game &&
           game.status === 'In Progress' &&
           !game.commitPhase &&
           !game.movePhase && (
-            <div>
-              <Button
-                className="mt-6"
-                style={{ background: '' }}
-                onClick={() => playGame('no')}
-              >
-                Pass
-              </Button>
-            </div>
+            <Button className="mt-6" onClick={() => playGame('no')}>
+              Pass
+            </Button>
           )}
         {game &&
           game.status === 'New' &&
           wallet &&
           !players.includes(wallet.accounts[0].address) && (
-            <div>
-              <Button onClick={joinGame} className="mb-10" type="button">
-                Join Game
-              </Button>
-            </div>
+            <Button onClick={joinGame} className="mb-10" type="button">
+              Join Game
+            </Button>
           )}
         <Button
           onClick={commit}
           className={
             !wallet ||
+            revealMove ||
             !players.includes(wallet.accounts[0].address) ||
             game?.activePlayer === wallet.accounts[0].address ||
             (game &&
@@ -396,7 +397,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         </Button>
       </div>
       {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button> */}
-      <Button onClick={transfer}>Transfer</Button>
+      {/* <Button onClick={transfer}>Transfer</Button> */}
     </div>
   )
 }
