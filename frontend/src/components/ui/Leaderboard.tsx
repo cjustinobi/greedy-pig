@@ -3,10 +3,9 @@ import { EmptyPage } from '@/components/shared/EmptyPage'
 import { dappAddress, shortenAddress } from '@/lib/utils'
 import { useNotices } from '@/hooks/useNotices'
 import { useRollups } from '@/hooks/useRollups'
-import { useSelector } from 'react-redux'
-import { selectSelectedGame } from '@/features/games/gamesSlice'
 import useAudio from '@/hooks/useAudio'
 import toast from 'react-hot-toast'
+import { addInput } from '@/lib/cartesi'
 
 interface LeaderBoardProps {
   game: any
@@ -17,17 +16,29 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
   const gameOverSound = useAudio('/sounds/gameOver.mp3')
   const { refetch } = useNotices()
   const rollups = useRollups(dappAddress)
-  // const game = useSelector((state: any) => selectSelectedGame(state.games))
   const [delayedGame, setDelayedGame] = useState<any>(null)
 
-  // useEffect(() => {
-  //   const timeoutId = setTimeout(() => {
-  //     setDelayedGame(game)
-  //   }, 500)
-  //   return () => clearTimeout(timeoutId)
-  // }, [game])
+    const transfer = async () => {
+      const jsonPayload = JSON.stringify({
+        method: 'transfer',
+        // from: (wallet?.accounts[0].address)?.toLowerCase(),
+        from: '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65',
+        to: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+        ether: '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044',
+        amount: 1000000000000000000,
+      })
 
-  // const currentGame = delayedGame || game
+      await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+    }
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDelayedGame(game)
+    }, 500)
+    return () => clearTimeout(timeoutId)
+  }, [game])
+
+  const currentGame = delayedGame || game
 
   const handleEvent = useCallback(async () => {
     await refetch()
@@ -46,6 +57,7 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
     if (game?.status === 'Ended') {
       gameOverSound?.play()
       toast.success(`${game.winner} won`)
+      // transfer()
     }
   }, [game?.status, gameOverSound])
 
@@ -53,17 +65,17 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
     <div className="relative flex flex-col w-full min-w-0 break-words border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border mb-4 draggable">
       <div className="p-6 pb-0 mb-0 rounded-t-2xl">
         <h1 className="font-bold text-2xl mb-10">
-          {game?.gameName} Leaderboard
+          {currentGame?.gameName} Leaderboard
         </h1>
         <span>
           Winning score:{' '}
           <span className="font-bold">
-            {game?.gameSettings?.winningScore}
+            {currentGame?.gameSettings?.winningScore}
           </span>
         </span>
       </div>
 
-      {game && game.participants?.length ? (
+      {currentGame && currentGame.participants?.length ? (
         <div className="flex-auto px-0 pt-0 pb-2">
           <div className="p-0 overflow-x-auto">
             <table className="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
@@ -84,8 +96,8 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
                 </tr>
               </thead>
               <tbody>
-                {game.participants.length &&
-                  game.participants.map((player: any, i: number) => (
+                {currentGame.participants.length &&
+                  currentGame.participants.map((player: any, i: number) => (
                     <tr key={i}>
                       {/* <tr key={i} className={player.username === activePlayer ? 'bg-gray-100' : ''}> */}
                       <td className="p-2 align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
@@ -106,7 +118,7 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
                       </td>
                       <td className="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                         <p className="mb-0 font-semibold leading-tight text-xs">
-                          {game.revealPhase && player.move ? player.move : 'No move yet'}
+                          {currentGame.revealPhase && player.move ? player.move : 'No move yet'}
                         </p>
                       </td>
                       <td className="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">

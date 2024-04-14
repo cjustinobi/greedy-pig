@@ -175,7 +175,7 @@ export const rollDice = async ({gameId, playerAddress}) => {
       participant.playerInfo.totalScore += participant.playerInfo.turnScore
       participant.playerInfo.turnScore = 0
       endGame(game);
-      // transferToWinner(game);
+      transferToWinner(game);
       return errorResponse(false);
 
     } else {
@@ -320,21 +320,28 @@ const endGame = game => {
 }
 
 const transferToWinner = async (game) => {
-  // Transfer to the winner.
-// ether_transfer: (account: Address, to: Address, amount: bigint) => Notice | Error_out;
+
   if (game.gameSettings.bet && game.status === 'Ended') {
-    console.log('transfering to winner: ', game.winner)
-    const addr = '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044'
-     try {
-        let voucher = wallet.ether_transfer(addr, game.winner, BigInt(1))
-        await fetch(rollup_server + "/voucher", {
-          method: "POST", headers: { "Content-Type": "application/json", },
-          body: JSON.stringify({ payload: voucher.payload, destination: voucher.destination }),
-        });
-      } catch (error) {
-        console.log(error)
-        return errorResponse(true, error)
+    const winnerAddress = game.winner.toLowerCase();
+    try {
+      for (const participant of game.participants) {
+        if (participant.address.toLowerCase() !== winnerAddress) {
+          const res = await wallet.ether_transfer(participant.address, winnerAddress, ethers.parseEther(game.bettingAmount));
+          console.log(`Transferred ${game.bettingAmount} to winner from ${participant.address}`);
+          console.log('Result from transfer ', res);
+        }
       }
+      game.paidOut = true
+    } catch (error) {
+      console.log('Error from transfer ', error);
+    }
+    // try {
+    //   const res = wallet.ether_transfer('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', game.winner, ethers.parseEther(game.bettingAmount));
+  
+    //   console.log('result from transfer ', res)
+    // } catch (error) {
+    //   console.log('error from transfer ', error)
+    // }
   }
 }
 

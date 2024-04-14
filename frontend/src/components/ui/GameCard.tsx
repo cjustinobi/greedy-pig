@@ -1,19 +1,16 @@
 import { capitalize } from '@/lib/utils'
-import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { IGame } from '@/interfaces'
-import { useConnectWallet } from '@web3-onboard/react'
 
 interface GameCardProps {
   game: IGame
 }
 
 const GameCard = ({ game }: GameCardProps) => {
-  const [{ wallet }] = useConnectWallet()
+
   const router = useRouter()
 
   const handleNavigate = (id: string, action: string) => {
-    // if (!wallet?.accounts[0].address) return toast.error('Connect Wallet')
     router.push(`/games/${id}?action=${action}`)
   }
 

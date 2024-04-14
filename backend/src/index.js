@@ -91,7 +91,8 @@ async function handle_advance(data) {
         //   headers: { "Content-Type": "application/json" },
         //   body: JSON.stringify({ payload: notice.payload }),
         // });
-        console.log('result after transfer ', res)
+        console.log('result after transfer from index ', res)
+        return res
       } catch (error) {
         console.log("ERROR transfering");
         console.log(error);

@@ -39,7 +39,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [delayedGame, setDelayedGame] = useState<any>(null)
   const [isRolling, setIsRolling] = useState<boolean>(false)
   const [result, setResult] = useState<number>(1)
-  const [commitmentStatus, setCommitmentStatus] = useState<boolean>(false)
   const [revealMove, setRevealMove] = useState<boolean>(false)
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
@@ -191,19 +190,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     )
   }
 
-  const transfer = async () => {
 
-    const jsonPayload = JSON.stringify({
-      method: 'transfer',
-      // from: (wallet?.accounts[0].address)?.toLowerCase(),
-      from: '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65',
-      to: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-      ether: '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044',
-      amount: 1000000000000000000,
-    })
-
-    await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
-  }
 
   const depositHandler = async () => {
     if (!game.gameSettings.bet) return toast.error('Not a betting game')
@@ -211,6 +198,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     try {
       await sendEther(dappAddress, game.id, game.bettingAmount, rollups)
       setDeposited(true)
+      setTimeout(joinGame, 7000)
+  
     } catch (error) {
       console.log(error)
     }
@@ -323,7 +312,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
 
   return (
-    <div className="flex flex-col align-middle  justify-center">
+    <div className="flex flex-col justify-center">
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
@@ -353,6 +342,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         {game &&
           game.status === 'In Progress' &&
           !game.commitPhase &&
+          game?.activePlayer === wallet?.accounts[0].address &&
           !game.movePhase && (
             <Button className="mt-6" onClick={() => playGame('no')}>
               Pass
@@ -366,6 +356,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               Join Game
             </Button>
           )}
+          <span onClick={joinGame}>ffff</span>
         <Button
           onClick={commit}
           className={
@@ -397,7 +388,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         </Button>
       </div>
       {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button> */}
-      {/* <Button onClick={transfer}>Transfer</Button> */}
     </div>
   )
 }
