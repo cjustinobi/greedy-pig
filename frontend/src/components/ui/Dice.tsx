@@ -40,8 +40,18 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [isRolling, setIsRolling] = useState<boolean>(false)
   const [result, setResult] = useState<number>(1)
   const [revealMove, setRevealMove] = useState<boolean>(false)
+  const [revealed, setRevealed] = useState<boolean>(false)
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
+
+  const test = async () => {
+    const playerAddress = wallet?.accounts[0].address
+    const reports = await inspectCall(
+      `balance/${playerAddress}`,
+      connectedChain
+    )
+    console.log(reports)
+  }
 
   const joinGame = async () => {
 
@@ -57,7 +67,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
    
         const res = hasDeposited(game.bettingAmount, reports)
 
-        if (!res) return toast.error(`You need to deposit ${game.bettingAmount} ether to join`)
+        // if (!res) return toast.error(`You need to deposit ${game.bettingAmount} ether to join`)
         
         setDeposited(true)
       }
@@ -188,9 +198,25 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       dappAddress,
       rollups
     )
+    setRevealed(true)
   }
 
+  const transfer = async () => {
 
+     const jsonPayload = JSON.stringify({
+      method: 'withdraw',
+      args: {
+        amount: ethers.utils.parseEther(String(game.bettingAmount))
+      }
+    })
+
+    // const jsonPayload = JSON.stringify({
+    //   method: 'transfer',
+    //   gameId: game.id
+    // })
+
+    await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+  }
 
   const depositHandler = async () => {
     if (!game.gameSettings.bet) return toast.error('Not a betting game')
@@ -209,7 +235,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const sendRelayAddress = async () => {
     if (rollups) {
       try {
-        await rollups.relayContract.relayDAppAddress(dappRelayAddress)
+        await rollups.relayContract.relayDAppAddress(dappAddress)
         
       } catch (e) {
         console.log(`${e}`)
@@ -334,16 +360,21 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           wallet &&
           !deposited &&
           !game.commitPhase &&
-          !game.movePhase && (
-            <Button className="my-6" onClick={depositHandler}>
-              Deposit
-            </Button>
+          !game.revealPhase && (
+            <div className="flex justify-center">
+              <Button className="my-6" onClick={depositHandler}>
+                Deposit
+              </Button>
+            </div>
           )}
+        {/* <Button className="my-6" onClick={depositHandler}>
+          Deposit
+        </Button> */}
         {game &&
           game.status === 'In Progress' &&
           !game.commitPhase &&
           game?.activePlayer === wallet?.accounts[0].address &&
-          !game.movePhase && (
+          !game.revealPhase && (
             <Button className="mt-6" onClick={() => playGame('no')}>
               Pass
             </Button>
@@ -352,11 +383,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           game.status === 'New' &&
           wallet &&
           !players.includes(wallet.accounts[0].address) && (
-            <Button onClick={joinGame} className="mb-10" type="button">
-              Join Game
-            </Button>
+            <div className="flex justify-center">
+              <Button onClick={joinGame} className="mb-10" type="button">
+                Join Game
+              </Button>
+            </div>
           )}
-          <span onClick={joinGame}>ffff</span>
+        {/* <span onClick={test}>Test</span> */}
         <Button
           onClick={commit}
           className={
@@ -379,15 +412,16 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         >
           Commit
         </Button>
-        <Button
+        {!revealed && <Button
           onClick={reveal}
           className={revealMove ? '' : 'hidden'}
           disabled={!revealMove}
         >
           Reveal
-        </Button>
+        </Button>}
       </div>
-      {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button> */}
+      {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button>
+      <Button onClick={transfer}>Transfer</Button> */}
     </div>
   )
 }

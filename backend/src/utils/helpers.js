@@ -79,7 +79,7 @@ export const generateRollOutcome = (moves) => {
 
 export const resetMoveCommitment = game => {
   game.commitPhase = false
-  game.movePhase = false
+  game.revealPhase = false
   // reset all players move/commitment
   game.participants.forEach(p => {
     p.move = null

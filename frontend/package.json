@@ -8,7 +8,7 @@
         "dev:backend": "convex dev",
         "dev:init": "convex dev --until-success",
         "build": "next build",
-        "start": "next start",
+        "start": "NODE_ENV=production next start",
         "lint": "next lint",
         "codegen": "run-p codegen:typechain codegen:graphql",
         "codegen:graphql": "graphql-codegen",

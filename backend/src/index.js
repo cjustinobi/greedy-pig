@@ -14,7 +14,7 @@ const {
   addGame, 
   playGame,
   rollDice,
-  updateBalance
+  transferToWinner
 } = require('./games')
 
 const wallet = new Wallet(new Map())
@@ -58,7 +58,7 @@ async function handle_advance(data) {
         router.set_rollup_address(rollup_address, "erc721_withdraw");
 
         console.log("Setting DApp address");
-        return new Notice( `DApp address set up successfully to ${rollup_address}` );
+        return new Report( `DApp address set up successfully to ${rollup_address}` );
     }
       else {
 
@@ -74,7 +74,7 @@ async function handle_advance(data) {
     if (JSONpayload.method === 'withdraw') {
       
       try {
-        const res = router.process('ether_withdraw', data)
+        const res = router.process('ether_withdraw', payload)
         console.log('result from withraw ', res)
         return res
       } catch (error) {
@@ -83,22 +83,25 @@ async function handle_advance(data) {
       }
       
     } else if (JSONpayload.method === 'transfer') {
-      
-      try {
-        let res = wallet.ether_transfer(JSONpayload.from, JSONpayload.to, BigInt(JSONpayload.amount));
-        // await fetch(rollup_server + "/notice", {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({ payload: notice.payload }),
-        // });
-        console.log('result after transfer from index ', res)
-        return res
-      } catch (error) {
-        console.log("ERROR transfering");
-        console.log(error);
-        await reportHandler('ERROR transfering')
-        return 'reject'
+
+      const game = games.find(game => game.id === JSONpayload.gameId)
+      const res = transferToWinner(game)
+      if (res.error) {
+        await reportHandler(res.message);
+        return 'reject';
       }
+      
+      // try {
+      //   let res = wallet.ether_transfer(JSONpayload.from, JSONpayload.to, BigInt(JSONpayload.amount));
+
+      //   console.log('result after transfer from index ', res)
+      //   return res
+      // } catch (error) {
+      //   console.log("ERROR transfering");
+      //   console.log(error);
+      //   await reportHandler('ERROR transfering')
+      //   return 'reject'
+      // }
       
       
   

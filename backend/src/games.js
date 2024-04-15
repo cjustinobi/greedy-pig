@@ -175,7 +175,7 @@ export const rollDice = async ({gameId, playerAddress}) => {
       participant.playerInfo.totalScore += participant.playerInfo.turnScore
       participant.playerInfo.turnScore = 0
       endGame(game);
-      transferToWinner(game);
+      // transferToWinner(game);
       return errorResponse(false);
 
     } else {
@@ -185,7 +185,7 @@ export const rollDice = async ({gameId, playerAddress}) => {
       if (allPlayersFinished) {
         console.log('ending game ...')
         endGame(game)
-        transferToWinner(game)
+        // transferToWinner(game)
         return errorResponse(false)
       }
       resetMoveCommitment(game)
@@ -319,22 +319,27 @@ const endGame = game => {
  
 }
 
-const transferToWinner = async (game) => {
+export const transferToWinner = async (game) => {
 
   if (game.gameSettings.bet && game.status === 'Ended') {
     const winnerAddress = game.winner.toLowerCase();
-    try {
+      let res
       for (const participant of game.participants) {
         if (participant.address.toLowerCase() !== winnerAddress) {
-          const res = await wallet.ether_transfer(participant.address, winnerAddress, ethers.parseEther(game.bettingAmount));
-          console.log(`Transferred ${game.bettingAmount} to winner from ${participant.address}`);
-          console.log('Result from transfer ', res);
+          try {
+            res = await wallet.ether_transfer(participant.address.toLowerCase(), winnerAddress.toLowerCase(), ethers.parseEther((game.bettingAmount).toString()));
+            console.log(`Transferred ${game.bettingAmount} to winner from ${participant.address}`);
+            console.log('Result from transfer ', res);
+          } catch (error) {
+            console.log(`Error transferring ${game.bettingAmount} to winner from ${participant.address}`);
+          }
         }
       }
+      if (res.type === 'error') {
+        return errorResponse(true, 'Error transferring funds to winner')
+      }
       game.paidOut = true
-    } catch (error) {
-      console.log('Error from transfer ', error);
-    }
+  
     // try {
     //   const res = wallet.ether_transfer('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', game.winner, ethers.parseEther(game.bettingAmount));
   
