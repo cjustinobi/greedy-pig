@@ -175,7 +175,7 @@ export const rollDice = async ({gameId, playerAddress}) => {
       participant.playerInfo.totalScore += participant.playerInfo.turnScore
       participant.playerInfo.turnScore = 0
       endGame(game);
-      // transferToWinner(game);
+      transferToWinner(game);
       return errorResponse(false);
 
     } else {
@@ -185,7 +185,7 @@ export const rollDice = async ({gameId, playerAddress}) => {
       if (allPlayersFinished) {
         console.log('ending game ...')
         endGame(game)
-        // transferToWinner(game)
+        transferToWinner(game)
         return errorResponse(false)
       }
       resetMoveCommitment(game)
@@ -259,26 +259,6 @@ export const playGame = ({gameId, playerAddress, response, commitment}) => {
   // resetMoveCommitment(game)
 
   return errorResponse(false)
-}
-
-export const updateBalance = async (playerAddress, amount, gameId) => {
-
-  const formattedAmount = parseFloat(ethers.formatEther(amount))
-  console.log('formatted amount ', formattedAmount)
-  const game = games.find(game => game.id === gameId)
-  const participant = game.participants.find(p => p.address === playerAddress)
-
-  // check if the deposited amount equals game bet amount
-
-  if (formattedAmount < game.gameSettings.bettingAmount) {
-    console.log('Amount deposited is less than betting amount')
-    return errorResponse(true, 'Amount deposited is less than betting amount')
-  }
-
-  participant.deposited = true
-  console.log('deposited ', formattedAmount)
-  return errorResponse(false)
-
 }
 
 const getParticipantsForGame = gameId => {

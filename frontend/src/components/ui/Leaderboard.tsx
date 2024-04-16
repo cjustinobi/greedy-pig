@@ -34,7 +34,7 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDelayedGame(game)
-    }, 500)
+    }, 1000)
     return () => clearTimeout(timeoutId)
   }, [game])
 

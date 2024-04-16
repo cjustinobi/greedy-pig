@@ -57,9 +57,12 @@ const GameArena = () => {
         )
 
         if (gameId) {
-          const game = JSON.parse(noticePayload).find(
-            (game: any) => game.id === gameId
-          )
+          const game = JSON.parse(noticePayload)
+            .find((game: any) => game.id === gameId)
+            .sort(
+              (a: { dateCreated: number }, b: { dateCreated: number }) =>
+                b.dateCreated - a.dateCreated
+            )
           if (game) {
             console.log('Game found:', game)
             dispatchGameData(game)
@@ -97,7 +100,6 @@ const GameArena = () => {
         </div>
         <div className="flex flex-col items-center gap-4 md:gap-6">
           <LeaderBoard game={game} />
-          {/* <MemoizedLeaderBoard game={game} /> */}
         </div>
       </div>
       <Settings />

@@ -74,7 +74,7 @@ async function handle_advance(data) {
     if (JSONpayload.method === 'withdraw') {
       
       try {
-        const res = router.process('ether_withdraw', payload)
+        const res = router.process('ether_withdraw', payload  )
         console.log('result from withraw ', res)
         return res
       } catch (error) {
