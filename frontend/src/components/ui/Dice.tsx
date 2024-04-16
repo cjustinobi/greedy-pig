@@ -36,11 +36,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   )
 
   const [rollCount, setRollCount] = useState<number>(0)
-  const [delayedGame, setDelayedGame] = useState<any>(null)
   const [isRolling, setIsRolling] = useState<boolean>(false)
   const [result, setResult] = useState<number>(1)
   const [revealMove, setRevealMove] = useState<boolean>(false)
   const [revealing, setRevealing] = useState<boolean>(false)
+  const [revealed, setRevealed] = useState<boolean>(false)
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
 
@@ -204,6 +204,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
      const res = await tx.wait(1)
      if (res) {
        setRevealing(false)
+       setRevealed(true)
        toast.success('Move revealed successfully!')
      }
    } catch (error) {
@@ -283,16 +284,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
   }, [game?.participants.map((participant: any) => participant.move).join(',')])
 
-
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setDelayedGame(game)
-    }, 500)
-    return () => clearTimeout(timeoutId)
-  }, [game])
-
-  // const currentGame = delayedGame || game
 
   useEffect(() => {
     setRollCount((prevCount) => prevCount + 1)
@@ -425,13 +416,15 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         >
           Commit
         </Button>
-        <Button
-          onClick={reveal}
-          className={revealMove ? '' : 'hidden'}
-          disabled={!revealMove || revealing}
-        >
-          {revealing ? 'Revealing ....' : 'Reveal'}
-        </Button>
+        <div className="flex justify-center">
+          <Button
+            onClick={reveal}
+            className={`w-[200px] ${revealMove ? '' : 'hidden'}`}
+            disabled={!revealMove || revealing || revealing}
+          >
+            {revealing ? 'Revealing ....' : revealed ? 'Revealed' : 'Reveal'}
+          </Button>
+        </div>
       </div>
       {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button>
       <Button onClick={transfer}>Transfer</Button> */}
