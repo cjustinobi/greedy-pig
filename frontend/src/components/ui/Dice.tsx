@@ -40,7 +40,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [isRolling, setIsRolling] = useState<boolean>(false)
   const [result, setResult] = useState<number>(1)
   const [revealMove, setRevealMove] = useState<boolean>(false)
-  const [revealed, setRevealed] = useState<boolean>(false)
+  const [revealing, setRevealing] = useState<boolean>(false)
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
 
@@ -182,6 +182,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const reveal = async () => {
     
+    setRevealing(true)
     const playerAddress = wallet?.accounts[0].address
     const nonce = localStorage.getItem(`nonce${playerAddress}`)
     const move = localStorage.getItem(`move${playerAddress}`)
@@ -193,12 +194,22 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
        nonce
      })
 
-    await addInput(
-      JSON.stringify(jsonPayload),
-      dappAddress,
-      rollups
-    )
-    setRevealed(true)
+   try {
+     const tx = await addInput(
+       JSON.stringify(jsonPayload),
+       dappAddress,
+       rollups
+     )
+ 
+     const res = await tx.wait(1)
+     if (res) {
+       setRevealing(false)
+       toast.success('Move revealed successfully!')
+     }
+   } catch (error) {
+     setRevealing(false)
+   }
+
   }
 
   const transfer = async () => {
@@ -375,9 +386,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           !game.commitPhase &&
           game?.activePlayer === wallet?.accounts[0].address &&
           !game.revealPhase && (
-            <Button className="mt-6" onClick={() => playGame('no')}>
-              Pass
-            </Button>
+            <div className="flex justify-center">
+              <Button className="mt-6" onClick={() => playGame('no')}>
+                Pass
+              </Button>
+            </div>
           )}
         {game &&
           game.status === 'New' &&
@@ -412,13 +425,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         >
           Commit
         </Button>
-        {!revealed && <Button
+        <Button
           onClick={reveal}
           className={revealMove ? '' : 'hidden'}
-          disabled={!revealMove}
+          disabled={!revealMove || revealing}
         >
-          Reveal
-        </Button>}
+          {revealing ? 'Revealing ....' : 'Reveal'}
+        </Button>
       </div>
       {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button>
       <Button onClick={transfer}>Transfer</Button> */}
