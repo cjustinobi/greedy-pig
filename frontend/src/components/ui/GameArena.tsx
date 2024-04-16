@@ -59,10 +59,7 @@ const GameArena = () => {
         if (gameId) {
           const game = JSON.parse(noticePayload)
             .find((game: any) => game.id === gameId)
-            .sort(
-              (a: { dateCreated: number }, b: { dateCreated: number }) =>
-                b.dateCreated - a.dateCreated
-            )
+           
           if (game) {
             console.log('Game found:', game)
             dispatchGameData(game)
