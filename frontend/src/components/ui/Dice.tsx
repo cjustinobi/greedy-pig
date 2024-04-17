@@ -40,6 +40,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [result, setResult] = useState<number>(1)
   const [revealMove, setRevealMove] = useState<boolean>(false)
   const [revealing, setRevealing] = useState<boolean>(false)
+  const [commiting, setCommiting] = useState<boolean>(false)
   const [revealed, setRevealed] = useState<boolean>(false)
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
@@ -172,10 +173,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       commitment: await generateCommitment(playerAddress)
     })
 
+    setCommiting(true)
     const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
     const res = await tx.wait(1)
     if (res) {
-      // setCommitmentStatus(true) // Update commitment status
+      setCommiting(false)
       toast.success('Move committed successfully!')
     }
   }
@@ -394,35 +396,45 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             </div>
           )}
         {/* <span onClick={test}>Test</span> */}
-        <Button
-          onClick={commit}
-          className={
-            !wallet ||
-            revealMove ||
-            !players.includes(wallet.accounts[0].address) ||
-            game?.activePlayer === wallet.accounts[0].address ||
-            (game &&
-              !game?.commitPhase &&
-              game?.participants &&
-              game?.participants.length) ||
-            game?.participants.some(
-              (participant: any) =>
-                participant.playerAddress === wallet.accounts[0].address &&
-                participant.commitment !== null
-            )
+        <div className="flex justify-center">
+          <Button
+            onClick={commit}
+            className={`
+              w-[200px]
+              ${
+              !wallet ||
+              revealMove ||
+              !players.includes(wallet.accounts[0].address) ||
+              game?.activePlayer === wallet.accounts[0].address ||
+              (game &&
+                !game?.commitPhase &&
+                game?.participants &&
+                game?.participants.length) ||
+              game?.participants.some(
+                (participant: any) =>
+                  participant.playerAddress === wallet.accounts[0].address &&
+                  participant.commitment !== null
+              )
               ? 'hidden'
               : ''
-          }
-        >
-          Commit
-        </Button>
+            }
+            `}
+          >
+            {commiting ? 'Commiting ...' : 'Commit'}
+          </Button>
+        </div>
+
         <div className="flex justify-center">
           <Button
             onClick={reveal}
             className={`w-[200px] ${revealMove ? '' : 'hidden'}`}
-            disabled={!revealMove || revealing || revealing}
+            disabled={!revealMove || revealing || revealed}
           >
-            {revealing ? 'Revealing ....' : revealed ? 'Revealed' : 'Reveal'}
+            {revealing
+              ? 'Revealing ....'
+              : revealed && !revealing
+              ? 'Revealed'
+              : 'Reveal'}
           </Button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { FC, memo, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import { EmptyPage } from '@/components/shared/EmptyPage'
 import { dappAddress, shortenAddress } from '@/lib/utils'
 import { useNotices } from '@/hooks/useNotices'
@@ -12,7 +12,6 @@ interface LeaderBoardProps {
 }
 
 const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
-// const LeaderBoard: FC<LeaderBoardProps> = memo(({ game }) => {
   const gameOverSound = useAudio('/sounds/gameOver.mp3')
   const { refetch } = useNotices()
   const rollups = useRollups(dappAddress)
@@ -34,7 +33,7 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       setDelayedGame(game)
-    }, 5000)
+    }, 4000)
     return () => clearTimeout(timeoutId)
   }, [game])
 
@@ -54,12 +53,21 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
   }, [handleEvent, rollups])
 
   useEffect(() => {
-    if (game?.status === 'Ended') {
+    if (delayedGame?.status === 'Ended') {
       gameOverSound?.play()
-      toast.success(`${game.winner} won`)
+      toast.success(`${delayedGame.winner} won`)
       // transfer()
     }
-  }, [game?.status, gameOverSound])
+  }, [delayedGame?.status, delayedGame?.winner, gameOverSound])
+
+
+  // useEffect(() => {
+  //   if (game?.status === 'Ended') {
+  //     gameOverSound?.play()
+  //     toast.success(`${game.winner} won`)
+  //     // transfer()
+  //   }
+  // }, [game?.status, gameOverSound])
 
   return (
     <div className="relative flex flex-col w-full min-w-0 break-words border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border mb-4 draggable">
