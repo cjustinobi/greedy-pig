@@ -183,6 +183,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }
 
   const reveal = async () => {
+
+    if (revealed) return toast.error('Already revealed')
     
     setRevealing(true)
     const playerAddress = wallet?.accounts[0].address
@@ -428,13 +430,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           <Button
             onClick={reveal}
             className={`w-[200px] ${revealMove ? '' : 'hidden'}`}
-            disabled={!revealMove || revealing || revealed}
+            disabled={!revealMove || revealing}
           >
-            {revealing
-              ? 'Revealing ....'
-              : revealed && !revealing
-              ? 'Revealed'
-              : 'Reveal'}
+            {revealing ? 'Revealing ....' : 'Reveal'}
           </Button>
         </div>
       </div>
