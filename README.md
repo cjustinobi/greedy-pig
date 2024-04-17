@@ -21,7 +21,7 @@ The dice rolls immediately once all players have revealed their individual numbe
 - The dApp is Self-hosted using [fly.io](https://fly.io)
 - The Frontend is hosted on [greedypig.vercel.app](https://greedypig.vercel.app)
 
-### Quick steps on how to Create and Play Greedy Pig
+### Quick steps on how to Create Greedy Pig Game
 
 - Ensure you have some Sepolia tokens in your wallet for signing transactions
 
@@ -31,6 +31,17 @@ The dice rolls immediately once all players have revealed their individual numbe
   - Stake mode (default is `free`)
   - Game Apparatue (default is `dice`)
   - Mode (default is `score-based`)
+
+### How to play the game
+
+- Click the Join Game button and sign the transaction on wallet pop up
+- Wait for others to join. Minimum of 2 players is required
+- The first player commits first, followed by the rest players
+- After all player must have committed, they all reveal their individual numbers. This is used in getting the roll outcome of the active user.
+- The dice rolls immediately after reveal phase and the leaderboard is updated as well.
+- The next player in the leaderboard becomes the active player if the roll outcome was 1, else, the current active players rolls again or skip the turn
+- These steps continues till there is a winner(first to reach a certain set winning score if the game was on `score-based mode` or when all have played all their turns if the game was on `turn-based mode`)
+
 
 
 ### What Next?
