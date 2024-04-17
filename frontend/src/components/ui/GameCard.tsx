@@ -26,7 +26,7 @@ const GameCard = ({ game }: GameCardProps) => {
           alt="Colors"
         />
         <p className="absolute top-0 bg-yellow-300 text-gray-500 font-semibold py-1 px-3 rounded-br-lg rounded-tl-lg">
-          {game.gameSettings.bet ? 'BET' : 'FREE'}
+          {game.gameSettings.bet ? 'STAKE' : 'FREE'}
         </p>
       </div>
       <h1 className="mt-4 text-gray-500 text-2xl font-bold cursor-pointer">
