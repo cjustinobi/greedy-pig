@@ -23,7 +23,7 @@ const CreateGameModal = () => {
   const [gameName, setGameName] = useState<string>('')
   const [winningScore, setWinningScore] = useState<number>(20)
   const [bettingAmount, setBettingAmoun] = useState<string>('0.02')
-  const [bet, setBet] = useState<boolean>(true)
+  const [bet, setBet] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
 
   const game = {
