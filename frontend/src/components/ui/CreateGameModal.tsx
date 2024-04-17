@@ -23,7 +23,7 @@ const CreateGameModal = () => {
   const [gameName, setGameName] = useState<string>('')
   const [winningScore, setWinningScore] = useState<number>(20)
   const [bettingAmount, setBettingAmoun] = useState<string>('0.02')
-  const [bet, setBet] = useState<boolean>(false)
+  const [bet, setBet] = useState<boolean>(true)
   const [loading, setLoading] = useState<boolean>(false)
 
   const game = {
@@ -78,7 +78,7 @@ const CreateGameModal = () => {
     })
 
     const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
-debugger
+
     const result = await tx.wait(1)
     if (result) {
       console.log('result: ', result)
@@ -186,13 +186,13 @@ debugger
         </div> */}
 
         <div className="mb-4">
-          <span className="block">Bet Game?</span>
+          <span className="block">Stake Game?</span>
           <label className="inline-flex items-center">
             <input
               type="radio"
               className="form-radio"
               name="accountType"
-              // checked={!bet} // Check if betGame is false
+              disabled
               onChange={() => handleOptionChange(true)}
             />
             <span className="ml-2">Yes</span>
@@ -202,7 +202,7 @@ debugger
               type="radio"
               className="form-radio"
               name="accountType"
-              // checked={bet} // Check if betGame is false
+              checked
               onChange={() => handleOptionChange(false)}
             />
             <span className="ml-2">No</span>
@@ -215,14 +215,14 @@ debugger
               className="block text-gray-400 text-sm font-bold mb-2"
               htmlFor="bettingAmount"
             >
-              Betting Amount
+              Staking Amount
             </label>
             <input
               onChange={(e) => setBettingAmoun(e.target.value)}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="bettingAmount"
               type="number"
-              placeholder="Set Betting Amount"
+              placeholder="Set Staking Amount"
             />
           </div>
         )}
