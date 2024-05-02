@@ -9,7 +9,10 @@ export const addInput = async (
     try {
       let payload = ethers.utils.toUtf8Bytes(data)
 
-      return await rollups.inputContract.addInput(dappAddress, payload)
+      const res = await rollups.inputContract.addInput(dappAddress, payload)
+
+      console.log('res ', res)
+      return res
     } catch (e) {
       console.log(`${e}`)
     }

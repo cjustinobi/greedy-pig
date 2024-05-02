@@ -15,13 +15,13 @@ const wallet = new Wallet(new Map())
 const router = new Router(wallet)
 
 
-export const games = []
+const games = []
 
-export const withdraw = async (data) => {
+const withdraw = async (data) => {
   return router.process('withdraw', data)
 }
 
-export const addGame = (game) => {
+const addGame = (game) => {
   const gameFound = games.length ? games.find(g => g.id === game.id) : null
 
   if (gameFound) {
@@ -33,7 +33,7 @@ export const addGame = (game) => {
   return errorResponse(false)
 }
 
-export const addParticipant = async ({gameId, playerAddress}) => {
+const addParticipant = async ({gameId, playerAddress}) => {
 
   const game = games.find(game => game.id === gameId)
 
@@ -70,7 +70,7 @@ export const addParticipant = async ({gameId, playerAddress}) => {
   return errorResponse(false)
 }
 
-export const commit = (gameId, commitment, playerAddress) => {
+const commit = (gameId, commitment, playerAddress) => {
 
   const game = games.find(game => game.id === gameId)
 
@@ -107,7 +107,7 @@ export const commit = (gameId, commitment, playerAddress) => {
 
 }
 
-export const reveal = (gameId, move, nonce, playerAddress) => {
+const reveal = (gameId, move, nonce, playerAddress) => {
 
   const game = games.find(game => game.id === gameId)
 
@@ -141,7 +141,7 @@ export const reveal = (gameId, move, nonce, playerAddress) => {
   return errorResponse(false)
 }
 
-export const rollDice = async ({gameId, playerAddress}) => {
+const rollDice = async ({gameId, playerAddress}) => {
 
   const game = games.find(game => game.id === gameId)
 
@@ -197,7 +197,7 @@ export const rollDice = async ({gameId, playerAddress}) => {
 
 
 // Define a function to handle player responses
-export const playGame = ({gameId, playerAddress, response, commitment}) => {
+const playGame = ({gameId, playerAddress, response, commitment}) => {
   
   const game = games.find(game => game.id === gameId)
 
@@ -299,7 +299,7 @@ const endGame = game => {
  
 }
 
-export const transferToWinner = async (game) => {
+const transferToWinner = async (game) => {
 
   if (game.gameSettings.bet && game.status === 'Ended') {
     const winnerAddress = game.winner.toLowerCase();
@@ -419,6 +419,14 @@ const gameStructure = () => {
  }
 }
 
-
-
-
+module.exports = {
+  games,
+  withdraw,
+  addGame,
+  addParticipant,
+  commit,
+  reveal,
+  rollDice,
+  playGame,
+  transferToWinner
+}
