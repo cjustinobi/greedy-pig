@@ -114,6 +114,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const playGame = async (response: string) => {
 
     // if (!canRollDice) return toast.error('Wait for all players to move')
+    if (game.status === 'Ended') {
+      return toast.error('Game has ended')
+    }
 
     const playerAddress = wallet?.accounts[0].address
 
@@ -123,9 +126,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       return toast.error('Not your turn to play')
     }
 
-    if (game.status === 'Ended') {
-      return toast.error('Game has ended')
-    }
+    
 
     if (game.activePlayer !== playerAddress) {
       return toast.error('Not your turn')

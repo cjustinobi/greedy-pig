@@ -83,12 +83,12 @@ const GameCard = ({ game }: GameCardProps) => {
           </span>
           <p>{capitalize(game.gameSettings.apparatus)}</p>
         </div>
-        <button
+        {game.status === 'New' && <button
           onClick={() => handleNavigate(game.id, 'join')}
           className="mt-4 text-xl w-full text-white bg-indigo-600 py-2 rounded-xl shadow-lg"
         >
           Join
-        </button>
+        </button>}
       </div>
     </div>
   )
