@@ -6,7 +6,7 @@ import { init } from '@web3-onboard/react'
 import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client'
 import injectedModule from '@web3-onboard/injected-wallets'
 import { Toaster } from 'react-hot-toast'
-
+import CreateGameModal from '@/components/ui/CreateGameModal'
 import configFile from '@/config/cartesi.json'
 import store from '@/store'
 
@@ -36,10 +36,10 @@ init({
 })
 
 //Setup GraphQL Apollo client
-// const serverUrl = process.env.NODE_ENV === 'development'
-//   ? 'http://localhost:8080'
-//   : process.env.NEXT_PUBLIC_SERVER_URL
-const serverUrl = 'https://greedypig.fly.dev'
+const serverUrl = process.env.NODE_ENV === 'development'
+  ? 'http://localhost:8080'
+  : process.env.NEXT_PUBLIC_SERVER_URL
+// const serverUrl = 'https://greedypig.fly.dev'
 // const serverUrl = 'http://localhost:8080'
 const URL_QUERY_GRAPHQL = `${serverUrl}/graphql`
 
@@ -59,6 +59,7 @@ export default function RootLayout({
         <Provider store={store}>
           <ApolloProvider client={client}>
             {children}
+            <CreateGameModal />
             <Toaster />
           </ApolloProvider>
         </Provider>

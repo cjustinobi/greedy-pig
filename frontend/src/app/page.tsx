@@ -5,7 +5,6 @@ import Hero from '@/components/ui/Hero'
 import Header from '@/components/shared/Header'
 import Features from '@/components/ui/Features'
 import Stats from '@/components/ui/Stats'
-import CreateGameModal from '@/components/ui/CreateGameModal'
 import Games from '@/components/ui/Games'
 import { addInput } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
@@ -39,7 +38,6 @@ export default function Home() {
       <Stats />
       <Games />
       <Features />
-      <CreateGameModal />
     </div>
   )
 }
