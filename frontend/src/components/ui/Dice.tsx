@@ -110,7 +110,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         )
 
         const result = await tx.wait(1)
-        reset()
+        // reset()
         console.log('tx for the game roll', result)
       }
     } catch (error) {
@@ -129,18 +129,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     if (!playerAddress) return toast.error('Connect account')
 
-    if (game.activePlayer !== wallet?.accounts[0].address) {
-      return toast.error('Not your turn to play')
-    }
-
-    
-
     if (game.activePlayer !== playerAddress) {
       return toast.error('Not your turn')
     }
 
     if (players.length >= 2) {
-      const playerAddress = wallet?.accounts[0].address
 
       try {
 
@@ -200,7 +193,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         (participant: any) => participant.address === playerAddress
       )
 
-    if (revealed || currentPlayer.move) return toast.error('Already revealed')
+    if (currentPlayer.move) return toast.error('Already revealed')
     
     setRevealing(true)
 
@@ -224,7 +217,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
      const res = await tx.wait(1)
      if (res) {
        setRevealing(false)
-       setRevealed(true)
+      //  setRevealed(true)
        toast.success('Move revealed successfully!')
      }
    } catch (error) {
@@ -233,9 +226,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   }
 
-  const reset = () => {
-    setRevealed(false)
-  }
+  // const reset = () => {
+  //   setRevealed(false)
+  // }
 
   const transfer = async () => {
 
