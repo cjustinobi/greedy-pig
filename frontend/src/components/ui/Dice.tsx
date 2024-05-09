@@ -85,8 +85,10 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         data: { gameId: id, playerAddress },
       })
 
-      await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
-      setJoining(false)
+      const res = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+      if (res) {
+        setJoining(false)
+      }
     }
   }
 
@@ -108,6 +110,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         )
 
         const result = await tx.wait(1)
+        reset()
         console.log('tx for the game roll', result)
       }
     } catch (error) {
@@ -228,6 +231,10 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
      setRevealing(false)
    }
 
+  }
+
+  const reset = () => {
+    setRevealed(false)
   }
 
   const transfer = async () => {
