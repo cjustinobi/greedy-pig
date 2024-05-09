@@ -120,9 +120,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const playGame = async (response: string) => {
 
-    if (gameEnded) return toast.error('Game has ended')
-    if (game.status === 'Ended') {
+    if (gameEnded || game.status === 'Ended') {
       return toast.error('Game has ended')
+    }
+
+    if (game.commitPhase || game.revealPhase) {
+      return toast.error('Can\'t play game now')
     }
 
     const playerAddress = wallet?.accounts[0].address
@@ -167,6 +170,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const commit = async () => {
     const playerAddress = wallet?.accounts[0].address
     if (!playerAddress) return toast.error('Connect account')
+
+      // Ensure user has not commited before
+      const currentPlayer = game?.participants.find(
+        (participant: any) => participant.address === playerAddress)
+
+      if (currentPlayer.commitment) return toast.error('Already commited')
 
     const jsonPayload = JSON.stringify({
       method: 'commit',
