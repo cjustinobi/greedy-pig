@@ -44,6 +44,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [revealed, setRevealed] = useState<boolean>(false)
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
+  const [joining, setJoining] = useState<boolean>(false)
+  const [gameEnded, setGameEnded] = useState<boolean>(false)
 
   const test = async () => {
     const playerAddress = wallet?.accounts[0].address
@@ -76,6 +78,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       const id = window.location.pathname.split('/').pop()
       if (!id) return toast.error('Game not found')
 
+      setJoining(true)
 
       const jsonPayload = JSON.stringify({
         method: 'addParticipant',
@@ -83,6 +86,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       })
 
       await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+      setJoining(false)
     }
   }
 
@@ -113,7 +117,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const playGame = async (response: string) => {
 
-    // if (!canRollDice) return toast.error('Wait for all players to move')
+    if (gameEnded) return toast.error('Game has ended')
     if (game.status === 'Ended') {
       return toast.error('Game has ended')
     }
@@ -185,10 +189,18 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const reveal = async () => {
 
-    if (revealed) return toast.error('Already revealed')
+    const playerAddress = wallet?.accounts[0].address
+
+    if (playerAddress && !players.includes(playerAddress)) return toast.error('You are not a player')
+
+      const currentPlayer = game?.participants.find(
+        (participant: any) => participant.address === playerAddress
+      )
+
+    if (revealed || currentPlayer.move) return toast.error('Already revealed')
     
     setRevealing(true)
-    const playerAddress = wallet?.accounts[0].address
+
     const nonce = localStorage.getItem(`nonce${playerAddress}`)
     const move = localStorage.getItem(`move${playerAddress}`)
 
@@ -282,7 +294,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       })
 
       if (allPlayersMoved) {
-        toast.success('All set to roll!')
+        toast.success('Dice set to roll!')
         setCanRollDice(true)
         setRevealMove(false)
       }
@@ -343,6 +355,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
   }, [game?.rollOutcome, game?.dateCreated, diceRollSound])
 
+   useEffect(() => {
+     if (game?.status === 'Ended') {
+      setGameEnded(true)
+     }
+   }, [game?.status, game?.winner])
+
 
   return (
     <div className="flex flex-col justify-center">
@@ -394,7 +412,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           !players.includes(wallet.accounts[0].address) && (
             <div className="flex justify-center">
               <Button onClick={joinGame} className="mb-10" type="button">
-                Join Game
+                {joining ? 'Joining ...' : 'Join Game'}
               </Button>
             </div>
           )}

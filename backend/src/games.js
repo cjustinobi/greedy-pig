@@ -175,7 +175,7 @@ const rollDice = async ({gameId, playerAddress}) => {
       participant.playerInfo.totalScore += participant.playerInfo.turnScore
       participant.playerInfo.turnScore = 0
       endGame(game);
-      transferToWinner(game);
+      // transferToWinner(game);
       return errorResponse(false);
 
     } else {
@@ -185,7 +185,7 @@ const rollDice = async ({gameId, playerAddress}) => {
       if (allPlayersFinished) {
         console.log('ending game ...')
         endGame(game)
-        transferToWinner(game)
+        // transferToWinner(game)
         return errorResponse(false)
       }
       resetMoveCommitment(game)
@@ -362,62 +362,62 @@ const getGameStatus = status => {
 ///////////////////////
 
 
-const gameStructure = () => {
-  return {
-   creator: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-   activePlayer: '',
-   gameName: 'Justin Obi',
-   commit: false,
-   participants: [
-     {
-      move: '',
-      commitment: '',
-       address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-       playerInfo: {
-        turn: 0,
-        turnScore: 0,
-        totalScore: 0
-       }
-     },
-     {
-      move: '',
-      commitment: '',
-       address: '0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199',
-       playerInfo: {
-        turn: 0,
-        turnScore: 0,
-        totalScore: 0
-       }
-     },
-     {
-      move: '',
-      commitment: '',
-       address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-       playerInfo: {
-        turn: 0,
-        turnScore: 0,
-        totalScore: 0
-       }
-     }
-   ],
-   gameSettings: {
-     numbersOfTurn: 2,
-     winningScore: 0,
-     mode: 'turn', // turn || score
-     apparatus: 'roulette', // roulette || dice
-     bet: true,
-     maxPlayer: 10,
-     limitNumberOfPlayer: true
-   },
-   status: 'New',
-   startTime: '2024-02-20T11:28',
-   id: 'j57c7p49x610z9q2s63xbz7rk56ktg8v',
-   startAngle: 0,
-   bettingAmount: 0,
-   bettingFund: 0,
-   winner: ''
- }
-}
+  const gameStructure = () => {
+    return {
+    creator: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+    activePlayer: '',
+    gameName: 'Justin Obi',
+    commit: false,
+    participants: [
+      {
+        move: null,
+        commitment: '',
+        address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+        playerInfo: {
+          turn: 0,
+          turnScore: 0,
+          totalScore: 0
+        }
+      },
+      {
+        move: null,
+        commitment: '',
+        address: '0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199',
+        playerInfo: {
+          turn: 0,
+          turnScore: 0,
+          totalScore: 0
+        }
+      },
+      {
+        move: null,
+        commitment: '',
+        address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+        playerInfo: {
+          turn: 0,
+          turnScore: 0,
+          totalScore: 0
+        }
+      }
+    ],
+    gameSettings: {
+      numbersOfTurn: 2,
+      winningScore: 0,
+      mode: 'turn', // turn || score
+      apparatus: 'roulette', // roulette || dice
+      bet: true,
+      maxPlayer: 10,
+      limitNumberOfPlayer: true
+    },
+    status: 'New',
+    startTime: '2024-02-20T11:28',
+    id: 'j57c7p49x610z9q2s63xbz7rk56ktg8v',
+    startAngle: 0,
+    bettingAmount: 0,
+    bettingFund: 0,
+    winner: ''
+  }
+  }
 
 module.exports = {
   games,
