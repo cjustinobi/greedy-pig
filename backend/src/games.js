@@ -10,7 +10,6 @@ const { Wallet } = require('cartesi-wallet')
 const { Router } = require('cartesi-router')
 const { ethers } = require('ethers')
 
-const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
 const wallet = new Wallet(new Map())
 const router = new Router(wallet)
 
@@ -84,7 +83,7 @@ const commit = (gameId, commitment, playerAddress) => {
 
   const participant = game.participants.find(p => p.address.toLowerCase() === playerAddress)
 
-   if (!participant) {
+  if (!participant) {
     return errorResponse(true, 'Participant not found')
   }
 

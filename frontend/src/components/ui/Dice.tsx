@@ -139,7 +139,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     if (players.length >= 2) {
 
       try {
-
+        setCommiting(true)
         const jsonPayload = JSON.stringify({
           method: 'playGame',
           data: {
@@ -157,8 +157,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         )
 
         const result = await tx.wait(1)
+        if (result) {
+          setCommiting(false)
+        }
         console.log('tx for the game play ', result)
       } catch (error) {
+        setCommiting(false)
         console.error('Error during game play: ', error)
       }
     } else {
@@ -416,6 +420,17 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             </div>
           )}
         {game &&
+          !game.commitPhase &&
+          !game.revealPhase &&
+          wallet &&
+          game.activePlayer !== wallet?.accounts[0].address && (
+            <div className="flex justify-center">
+              <Button disabled className="mb-10" type="button">
+                Game not Started
+              </Button>
+            </div>
+          )}
+        {game &&
           game.status === 'New' &&
           wallet &&
           !players.includes(wallet.accounts[0].address) && (
@@ -429,25 +444,26 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         <div className="flex justify-center">
           <Button
             onClick={commit}
+            disabled={commiting}
             className={`
               w-[200px]
               ${
-              !wallet ||
-              revealMove ||
-              !players.includes(wallet.accounts[0].address) ||
-              game?.activePlayer === wallet.accounts[0].address ||
-              (game &&
-                !game?.commitPhase &&
-                game?.participants &&
-                game?.participants.length) ||
-              game?.participants.some(
-                (participant: any) =>
-                  participant.playerAddress === wallet.accounts[0].address &&
-                  participant.commitment !== null
-              )
-              ? 'hidden'
-              : ''
-            }
+                !wallet ||
+                revealMove ||
+                !players.includes(wallet.accounts[0].address) ||
+                game?.activePlayer === wallet.accounts[0].address ||
+                (game &&
+                  !game?.commitPhase &&
+                  game?.participants &&
+                  game?.participants.length) ||
+                game?.participants.some(
+                  (participant: any) =>
+                    participant.playerAddress === wallet.accounts[0].address &&
+                    participant.commitment !== null
+                )
+                  ? 'hidden'
+                  : ''
+              }
             `}
           >
             {commiting ? 'Commiting ...' : 'Commit'}
