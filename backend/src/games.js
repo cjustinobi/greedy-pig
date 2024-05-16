@@ -32,11 +32,13 @@ const addGame = (game) => {
   }
 
 
-  games.push({ ...game, id: uuidv4(), dateCreated: Date.now()})
+  // games.push({ ...game, id: uuidv4(), dateCreated: Date.now()})
+  const newGame = { ...game, id: uuidv4(), dateCreated: Date.now() }
+  games.push(newGame)
 
   // add participant
   addParticipant({
-    gameId: game.id,
+    gameId: newGame.id,
     playerAddress: game.playerAddress
   })
   
