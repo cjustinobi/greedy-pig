@@ -27,7 +27,7 @@ interface ApparatusProps {
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
-   const [{ connectedChain }] = useSetChain()
+  const [{ connectedChain }] = useSetChain()
   const rollups = useRollups(dappAddress)
   const [{ wallet }] = useConnectWallet()
   const diceRollSound = useAudio('/sounds/diceRoll.mp3')
@@ -454,7 +454,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               (game && game?.participants && game?.participants.length) ||
               game?.participants.some(
                 (participant: any) =>
-                  participant.playerAddress === wallet.accounts[0].address &&
+                  participant.address === wallet.accounts[0].address &&
                   participant.commitment !== null
               )
             }
@@ -466,7 +466,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               ? 'Committing...'
               : game?.participants.some(
                   (participant: any) =>
-                    participant.playerAddress === wallet?.accounts[0].address &&
+                    participant.address === wallet?.accounts[0].address &&
                     participant.commitment !== null
                 )
               ? 'Committed' // Show "Committed" when disabled
@@ -509,7 +509,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           >
             {revealing ? 'Revealing ....' : revealed || game?.participants.some(
                   (participant: any) =>
-                    participant.playerAddress === wallet?.accounts[0].address &&
+                    participant.address === wallet?.accounts[0].address &&
                     participant.move !== null
                 ) ? 'Revealed' : 'Reveal'}
           </Button>
