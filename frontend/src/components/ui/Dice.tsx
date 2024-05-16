@@ -464,12 +464,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           >
             {commiting
               ? 'Committing...'
-              : !wallet ||
-                !players.includes(wallet.accounts[0].address) ||
-                (game && game?.participants && game?.participants.length) ||
-                game?.participants.some(
+              : game?.participants.some(
                   (participant: any) =>
-                    participant.playerAddress === wallet.accounts[0].address &&
+                    participant.playerAddress === wallet?.accounts[0].address &&
                     participant.commitment !== null
                 )
               ? 'Committed' // Show "Committed" when disabled
