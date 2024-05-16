@@ -175,11 +175,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     const playerAddress = wallet?.accounts[0].address
     if (!playerAddress) return toast.error('Connect account')
 
-      // Ensure user has not commited before
-      const currentPlayer = game?.participants.find(
-        (participant: any) => participant.address === playerAddress)
+    // Ensure user has not commited before
+    const currentPlayer = game?.participants.find(
+      (participant: any) => participant.address === playerAddress)
 
-      if (currentPlayer.commitment) return toast.error('Already commited')
+    if (currentPlayer.commitment) return toast.error('Already commited')
+
+    if (game?.activePlayer === playerAddress) return playGame('yes')
 
     const jsonPayload = JSON.stringify({
       method: 'commit',
@@ -190,6 +192,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     setCommiting(true)
     const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
     const res = await tx.wait(1)
+
     if (res) {
       setCommiting(false)
       toast.success('Move committed successfully!')
@@ -230,7 +233,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
      const res = await tx.wait(1)
      if (res) {
        setRevealing(false)
-      //  setRevealed(true)
+       setRevealed(true)
        toast.success('Move revealed successfully!')
      }
    } catch (error) {
@@ -286,7 +289,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }
 
   useEffect(() => {
-    console.log('inside reveal useeffect')
+
     if (game && game.participants && game.participants.length > 0) {
       const allPlayersCommitted = game?.participants.every((participant: any) => {
         return participant.commitment
@@ -300,7 +303,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }, [game?.participants.map((participant: any) => participant.commitment).join(',')])
 
   useEffect(() => {
-     console.log('inside all moved useeffect')
+
     if (game && game.participants && game.participants.length > 0) {
       const allPlayersMoved = game?.participants.every((participant: any) => {
         return participant.move
@@ -444,6 +447,37 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         <div className="flex justify-center">
           <Button
             onClick={commit}
+            disabled={
+              commiting ||
+              !wallet ||
+              !players.includes(wallet.accounts[0].address) ||
+              (game && game?.participants && game?.participants.length) ||
+              game?.participants.some(
+                (participant: any) =>
+                  participant.playerAddress === wallet.accounts[0].address &&
+                  participant.commitment !== null
+              )
+            }
+            className={`w-[200px] ${
+              !game?.commitPhase || revealMove ? 'hidden' : ''
+            } `}
+          >
+            {commiting
+              ? 'Committing...'
+              : !wallet ||
+                !players.includes(wallet.accounts[0].address) ||
+                (game && game?.participants && game?.participants.length) ||
+                game?.participants.some(
+                  (participant: any) =>
+                    participant.playerAddress === wallet.accounts[0].address &&
+                    participant.commitment !== null
+                )
+              ? 'Committed' // Show "Committed" when disabled
+              : 'Commit'}
+          </Button>
+
+          {/* <Button
+            onClick={commit}
             disabled={commiting}
             className={`
               w-[200px]
@@ -467,16 +501,20 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             `}
           >
             {commiting ? 'Commiting ...' : 'Commit'}
-          </Button>
+          </Button> */}
         </div>
 
         <div className="flex justify-center">
           <Button
             onClick={reveal}
             className={`w-[200px] ${revealMove ? '' : 'hidden'}`}
-            disabled={!revealMove || revealing}
+            disabled={revealing || revealed}
           >
-            {revealing ? 'Revealing ....' : 'Reveal'}
+            {revealing ? 'Revealing ....' : revealed || game?.participants.some(
+                  (participant: any) =>
+                    participant.playerAddress === wallet?.accounts[0].address &&
+                    participant.move !== null
+                ) ? 'Revealed' : 'Reveal'}
           </Button>
         </div>
       </div>
