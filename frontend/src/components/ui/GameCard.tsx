@@ -1,6 +1,8 @@
 import { capitalize } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { IGame } from '@/interfaces'
+import { useEffect } from 'react'
+import { useConnectWallet } from '@web3-onboard/react'
 
 interface GameCardProps {
   game: IGame
@@ -9,10 +11,24 @@ interface GameCardProps {
 const GameCard = ({ game }: GameCardProps) => {
 
   const router = useRouter()
+  const [{ wallet }] = useConnectWallet()
 
   const handleNavigate = (id: string, action: string) => {
     router.push(`/games/${id}?action=${action}`)
   }
+
+  useEffect(() => {
+    if (wallet?.accounts[0].address) {
+      const userAddress = wallet.accounts[0].address
+      const isUserParticipant = game.participants.some(
+        (participant: any) => participant.address === userAddress
+      )
+
+      if (isUserParticipant) {
+        handleNavigate(game.id, 'view')
+      }
+    }
+  }, [wallet, game])
 
   return (
     <div

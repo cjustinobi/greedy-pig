@@ -84,7 +84,7 @@ const HowToPlay = () => {
           <div className="mb-6 ms-6 pb-6">
             <p className="mb-4 mt-2">
               Repeat steps 2-5 until there is a winner. The game ends when a
-              player achieves the target score (in score-based mode) or when all
+              player achieves the target score or above the target score (in score-based mode) or when all
               players have completed their turns (in turn-based mode).
             </p>
           </div>

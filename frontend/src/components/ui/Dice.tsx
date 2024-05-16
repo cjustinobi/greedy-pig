@@ -418,6 +418,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           game.status === 'In Progress' &&
           !game.commitPhase &&
           game?.activePlayer === wallet?.accounts[0].address &&
+          !canRollDice &&
           !game.revealPhase && (
             <div className="flex justify-center">
               <Button className="mt-6" onClick={() => playGame('no')}>
@@ -505,7 +506,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               Reveal phase is active. Waiting for all players to reveal their
               moves.{' '}
               <span>
-                Players committed:{' '}
+                Players revealed:{' '}
                 {game.participants.filter((p: any) => p.move).length}/
                 {game.participants.length}
               </span>

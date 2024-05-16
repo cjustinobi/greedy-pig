@@ -27,8 +27,19 @@ const addGame = (game) => {
     return errorResponse(true, 'Game already exist')
   }
 
+  if (game.gameSettings.winningScore < 6) {
+    return errorResponse(true, 'Game winning score should not be less than 6')
+  }
+
 
   games.push({ ...game, id: uuidv4(), dateCreated: Date.now()})
+
+  // add participant
+  addParticipant({
+    gameId: game.id,
+    playerAddress: game.playerAddress
+  })
+  
   return errorResponse(false)
 }
 
@@ -102,6 +113,14 @@ const commit = (gameId, commitment, playerAddress) => {
 
   console.log(`committed for ${playerAddress}`)
   participant.commitment = commitment
+
+  // Check if all players have committed their moves
+  const allPlayersCommitted = game.participants.every((participant) => participant.commitment !== null)
+
+  if (allPlayersCommitted) {
+    game.commitPhase = false
+  }
+
   return errorResponse(false)
 
 }
@@ -137,6 +156,14 @@ const reveal = (gameId, move, nonce, playerAddress) => {
 
   console.log(`revealed for ${playerAddress}`)
   participant.move = parseInt(move)
+
+  // check if all players have revealed their moves
+  const allPlayersRevealed = game.participants.every((participant) => participant.move !== null)
+
+  if (allPlayersRevealed) {
+    game.revealPhase = false
+  }
+
   return errorResponse(false)
 }
 
