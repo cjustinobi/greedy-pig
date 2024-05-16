@@ -450,13 +450,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             disabled={
               commiting ||
               !wallet ||
-              !players.includes(wallet.accounts[0].address) ||
-              (game && game?.participants && game?.participants.length) ||
-              game?.participants.some(
-                (participant: any) =>
-                  participant.address === wallet.accounts[0].address &&
-                  participant.commitment !== null
-              )
+              !players.includes(wallet.accounts[0].address)
             }
             className={`w-[200px] ${
               !game?.commitPhase || revealMove ? 'hidden' : ''
@@ -469,7 +463,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
                     participant.address === wallet?.accounts[0].address &&
                     participant.commitment !== null
                 )
-              ? 'Committed' // Show "Committed" when disabled
+              ? 'Committed'
               : 'Commit'}
           </Button>
 
