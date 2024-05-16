@@ -461,7 +461,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           >
             {commiting
               ? 'Committing...'
-              : committed || game?.participants.some(
+              : committed ||
+                game?.participants.some(
                   (participant: any) =>
                     participant.address === wallet?.accounts[0].address &&
                     participant.commitment !== null
@@ -469,6 +470,17 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               ? 'Committed'
               : 'Commit'}
           </Button>
+          {game?.commitPhase && (
+            <p className="text-center text-red-600">
+              Commit phase is active. Waiting for all players to commit their
+              moves.{' '}
+              <span>
+                Players committed:{' '}
+                {game.participants.filter((p: any) => p.commitment).length}/
+                {game.participants.length}
+              </span>
+            </p>
+          )}
         </div>
 
         <div className="flex justify-center">
@@ -477,11 +489,16 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             className={`w-[200px] ${revealMove ? '' : 'hidden'}`}
             disabled={revealing || revealed}
           >
-            {revealing ? 'Revealing ....' : revealed || game?.participants.some(
+            {revealing
+              ? 'Revealing ....'
+              : revealed ||
+                game?.participants.some(
                   (participant: any) =>
                     participant.address === wallet?.accounts[0].address &&
                     participant.move !== null
-                ) ? 'Revealed' : 'Reveal'}
+                )
+              ? 'Revealed'
+              : 'Reveal'}
           </Button>
         </div>
       </div>
