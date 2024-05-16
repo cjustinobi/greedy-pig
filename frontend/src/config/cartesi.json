@@ -16,7 +16,7 @@
   "0xaa36a7": {
     "token": "SepETH",
     "label": "Sepolia Test Network",
-    "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/0k-jvs8va1cZdkX9MDGdH-jWqUOwRfGC",
+    "rpcUrl": "https://eth-sepolia.g.alchemy.com/v2/S0QCH1ePWS2pTlRtAsK0JsXQIAaNQB_W",
     "graphqlAPIURL": "http://localhost:8080",
     "inspectAPIURL": "http://localhost:8080",
     "DAppRelayAddress": "0x7D6bCF9b5bB5Bfb0Ae793082c271931eC333e35D",
