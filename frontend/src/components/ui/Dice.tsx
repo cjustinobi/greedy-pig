@@ -426,23 +426,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               </Button>
             </div>
           )}
-        {game &&
-          !game.commitPhase &&
-          !game.revealPhase &&
-          wallet &&
-          game.activePlayer !== wallet?.accounts[0].address && (
-            <div className="flex justify-center">
-              <Button disabled className="mb-10" type="button">
-                Game not Started
-              </Button>
-            </div>
-          )}
+        
         {game &&
           game.status === 'New' &&
           wallet &&
           !players.includes(wallet.accounts[0].address) && (
             <div className="flex justify-center">
-              <Button onClick={joinGame} className="mb-10" type="button">
+              <Button onClick={joinGame} disabled={joining} className="mb-10" type="button">
                 {joining ? 'Joining ...' : 'Join Game'}
               </Button>
             </div>

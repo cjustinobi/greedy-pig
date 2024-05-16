@@ -43,7 +43,7 @@ const addGame = (game) => {
   return errorResponse(false)
 }
 
-const addParticipant = async ({gameId, playerAddress}) => {
+const addParticipant = ({gameId, playerAddress}) => {
 
   const game = games.find(game => game.id === gameId)
 

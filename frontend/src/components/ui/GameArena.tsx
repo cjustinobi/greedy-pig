@@ -8,6 +8,7 @@ import Dice from './Dice'
 import { useQuery, gql } from '@apollo/client'
 import { ethers } from 'ethers'
 import { useDispatch } from 'react-redux'
+import { useConnectWallet } from '@web3-onboard/react'
 // const MemoizedLeaderBoard = memo(LeaderBoard)
 
 const GET_LATEST_NOTICE = gql`
@@ -27,6 +28,7 @@ const GameArena = () => {
   const { loading, error, data, refetch } = useQuery(GET_LATEST_NOTICE, {
     pollInterval: 500,
   })
+  const [{ wallet }] = useConnectWallet()
   const rollups = useRollups(dappAddress)
   const dispatch = useDispatch()
 
@@ -93,6 +95,15 @@ const GameArena = () => {
           {game?.activePlayer && (
             <p>{shortenAddress(game?.activePlayer)}'s turn</p>
           )}
+          {game &&
+            !game.commitPhase &&
+            !game.revealPhase &&
+            wallet &&
+            game.activePlayer !== wallet?.accounts[0].address && (
+              <span className="text-center">
+                Game not Started
+              </span>
+            )}
           <Dice game={game} />
         </div>
         <div className="flex flex-col items-center gap-4 md:gap-6">
