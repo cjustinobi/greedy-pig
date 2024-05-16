@@ -3,6 +3,6 @@ export const dappRelayAddress = '0xF5DE34d6BbC0446E2a45719E718efEbaaE179daE'
 // https://eth-sepolia.g.alchemy.com/v2/S0QCH1ePWS2pTlRtAsK0JsXQIAaNQB_W
 
 
-export const dappAddress = process.env.NODE_ENV === 'development' ? '0x70ac08179605AF2D9e75782b8DEcDD3c22aA4D0C' : '0xc16669545940787eD4B172a88403e4930Afe3624'
+export const dappAddress = process.env.NODE_ENV === 'development' ? '0x70ac08179605AF2D9e75782b8DEcDD3c22aA4D0C' : '0xC520C6a4586Eb076fb5c9C5F52295400B6A67aab'
 // export const dappRelayAddress = process.env.NODE_ENV === 'development' ? '0xF5DE34d6BbC0446E2a45719E718efEbaaE179daE': '0xAB8578B24F413221844f7B5C9BEb52Cad5A6B095'
 // // https://eth-sepolia.g.alchemy.com/v2/S0QCH1ePWS2pTlRtAsK0JsXQIAaNQB_W
