@@ -41,6 +41,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [revealMove, setRevealMove] = useState<boolean>(false)
   const [revealing, setRevealing] = useState<boolean>(false)
   const [commiting, setCommiting] = useState<boolean>(false)
+  const [committed, setCommitted] = useState<boolean>(false)
   const [revealed, setRevealed] = useState<boolean>(false)
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
@@ -158,6 +159,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
         const result = await tx.wait(1)
         if (result) {
+          setCommitted(true)
           setCommiting(false)
         }
         console.log('tx for the game play ', result)
@@ -195,6 +197,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     if (res) {
       setCommiting(false)
+      setCommitted(true)
       toast.success('Move committed successfully!')
     }
   }
@@ -458,7 +461,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           >
             {commiting
               ? 'Committing...'
-              : game?.participants.some(
+              : committed || game?.participants.some(
                   (participant: any) =>
                     participant.address === wallet?.accounts[0].address &&
                     participant.commitment !== null
@@ -466,33 +469,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               ? 'Committed'
               : 'Commit'}
           </Button>
-
-          {/* <Button
-            onClick={commit}
-            disabled={commiting}
-            className={`
-              w-[200px]
-              ${
-                !wallet ||
-                revealMove ||
-                !players.includes(wallet.accounts[0].address) ||
-                game?.activePlayer === wallet.accounts[0].address ||
-                (game &&
-                  !game?.commitPhase &&
-                  game?.participants &&
-                  game?.participants.length) ||
-                game?.participants.some(
-                  (participant: any) =>
-                    participant.playerAddress === wallet.accounts[0].address &&
-                    participant.commitment !== null
-                )
-                  ? 'hidden'
-                  : ''
-              }
-            `}
-          >
-            {commiting ? 'Commiting ...' : 'Commit'}
-          </Button> */}
         </div>
 
         <div className="flex justify-center">
