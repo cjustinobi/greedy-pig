@@ -39,7 +39,7 @@ const addGame = (game) => {
   // add participant
   addParticipant({
     gameId: newGame.id,
-    playerAddress: game.playerAddress
+    playerAddress: game.creator
   })
   
   return errorResponse(false)
