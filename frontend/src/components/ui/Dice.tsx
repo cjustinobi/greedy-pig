@@ -63,6 +63,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       const playerAddress = wallet.accounts[0].address
 
+      // check if player address in players array
+      if (!players.includes(playerAddress)) return toast.error('You need to join the game first')
+
+      // check if player has deposited
+
       if (game.gameSettings.bet) {
         const reports = await inspectCall(
           `balance/${playerAddress}`,
@@ -434,8 +439,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         
         {game &&
           game.status === 'New' &&
-          wallet &&
-          !players.includes(wallet.accounts[0].address) && (
+          (
             <div className="flex justify-center">
               <Button onClick={joinGame} disabled={joining} className="mb-10" type="button">
                 {joining ? 'Joining ...' : 'Join Game'}
