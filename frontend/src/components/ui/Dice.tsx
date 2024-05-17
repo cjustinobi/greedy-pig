@@ -64,7 +64,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       const playerAddress = wallet.accounts[0].address
 
       // check if player address in players array
-      if (!players.includes(playerAddress)) return toast.error('You need to join the game first')
+      if (!playerAddress) return toast.error('You need to join the game first')
 
       // check if player has deposited
 
