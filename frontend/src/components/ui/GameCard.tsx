@@ -30,6 +30,10 @@ const GameCard = ({ game }: GameCardProps) => {
     }
   }, [wallet, game])
 
+  const isJoined = game.participants.some(
+    (participant: any) => participant.address === wallet?.accounts[0].address
+  )
+
   return (
     <div
       key={game.id}
@@ -99,12 +103,15 @@ const GameCard = ({ game }: GameCardProps) => {
           </span>
           <p>{capitalize(game.gameSettings.apparatus)}</p>
         </div>
-        {(game.status === 'New' || game.status === 'In Progress')  && <button
-          onClick={() => handleNavigate(game.id, 'join')}
-          className="mt-4 text-xl w-full text-white bg-indigo-600 py-2 rounded-xl shadow-lg"
-        >
-          Join
-        </button>}
+        {(game.status === 'New' || game.status === 'In Progress') && (
+          <button
+            onClick={() => handleNavigate(game.id, 'join')}
+            disabled={isJoined}
+            className="mt-4 text-xl w-full text-white bg-indigo-600 py-2 rounded-xl shadow-lg"
+          >
+            {isJoined ? 'Joined' : 'Join'}
+          </button>
+        )}
       </div>
     </div>
   )
