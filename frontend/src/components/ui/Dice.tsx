@@ -59,9 +59,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const joinGame = async () => {
 
-    if (!wallet) return toast.error('Connect account')
-      
-    if (wallet?.accounts[0].address) {
+    if (!wallet?.accounts[0].address) return toast.error('Connect account')
+
+    // if (wallet?.accounts[0].address) {
 
       const playerAddress = wallet.accounts[0].address
 
@@ -100,7 +100,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         console.error('Error during game join:', error)
         setJoining(false)
       }
-    }
+    // }
   }
 
   const rollDice = async () => {
