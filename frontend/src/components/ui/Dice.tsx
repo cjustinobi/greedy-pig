@@ -81,13 +81,18 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       setJoining(true)
 
-      const jsonPayload = JSON.stringify({
-        method: 'addParticipant',
-        data: { gameId: id, playerAddress },
-      })
-
-      const res = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
-      if (res) {
+      try {
+        const jsonPayload = JSON.stringify({
+          method: 'addParticipant',
+          data: { gameId: id, playerAddress },
+        })
+  
+        const res = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+        if (res) {
+          setJoining(false)
+        }
+      } catch (error) {
+        console.error('Error during game join:', error)
         setJoining(false)
       }
     }
