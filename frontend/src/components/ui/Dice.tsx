@@ -59,12 +59,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const joinGame = async () => {
 
+    if (!wallet) return toast.error('Connect account')
+      
     if (wallet?.accounts[0].address) {
 
       const playerAddress = wallet.accounts[0].address
 
-      // check if player address in players array
-      if (!wallet) return toast.error('Connect account')
 
       // check if player has deposited
 
