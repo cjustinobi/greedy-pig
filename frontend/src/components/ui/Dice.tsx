@@ -46,6 +46,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
   const [joining, setJoining] = useState<boolean>(false)
+  const [joined, setJoined] = useState<boolean>(false)
   const [gameEnded, setGameEnded] = useState<boolean>(false)
 
   const test = async () => {
@@ -95,6 +96,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         const res = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
         if (res) {
           setJoining(false)
+          setJoined(true)
         }
       } catch (error) {
         console.error('Error during game join:', error)
@@ -442,7 +444,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           (
             <div className="flex justify-center">
               <Button onClick={joinGame} disabled={joining} className="mb-10" type="button">
-                {joining ? 'Joining ...' : 'Join Game'}
+                {joining ? 'Joining ...'  : joined ||
+                game?.participants.some(
+                  (participant: any) =>
+                    participant.address === wallet?.accounts[0].address
+                ) ? 'Joined' : 'Join Game'}
               </Button>
             </div>
           )}
