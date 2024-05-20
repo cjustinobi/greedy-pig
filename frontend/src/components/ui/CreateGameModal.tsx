@@ -278,7 +278,7 @@ const CreateGameModal = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <Button className="w-[200px]" type="submit">
+          <Button disabled={loading} className="w-[200px]" type="submit">
             {loading ? 'Creating ...' : 'Create Game'}
           </Button>
         </div>

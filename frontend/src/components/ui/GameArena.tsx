@@ -95,14 +95,18 @@ const GameArena = () => {
           {game?.activePlayer && (
             <p>{shortenAddress(game?.activePlayer)}'s turn</p>
           )}
+          {game?.commitPhase && (
+            <p className="text-center">
+              Players committed:{' '}
+              {game.participants.filter((p: any) => p.commitment).length}/
+              {game.participants.length}
+            </p>
+          )}
           {game &&
-            !game.commitPhase &&
-            !game.revealPhase &&
+            game.status === 'New' &&
             wallet &&
             game.activePlayer !== wallet?.accounts[0].address && (
-              <span className="text-center">
-                Game not Started
-              </span>
+              <span className="text-center">Game not Started</span>
             )}
           <Dice game={game} />
         </div>

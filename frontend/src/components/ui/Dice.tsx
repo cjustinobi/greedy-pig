@@ -429,10 +429,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         </Button> */}
         {game &&
           game.status === 'In Progress' &&
-          !game.commitPhase &&
           game?.activePlayer === wallet?.accounts[0].address &&
           !canRollDice &&
-          !game.revealPhase && (
+          (!game.revealPhase || !game.revealPhase) && (
             <div className="flex justify-center">
               <Button className="mt-6" onClick={() => playGame('no')}>
                 Pass
@@ -491,17 +490,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               ? 'Committed'
               : 'Commit'}
           </Button>
-          {game?.commitPhase && (
-            <p className="text-center text-red-600">
-              Commit phase is active. Waiting for all players to commit their
-              moves.{' '}
-              <span>
-                Players committed:{' '}
-                {game.participants.filter((p: any) => p.commitment).length}/
-                {game.participants.length}
-              </span>
-            </p>
-          )}
+          
         </div>
 
         <div className="flex justify-center">
