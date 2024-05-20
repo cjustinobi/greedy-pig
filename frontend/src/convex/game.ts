@@ -5,7 +5,7 @@ import { vUpdateGame } from './validators';
 
 export const getUserJoining = query({
   handler: async ({ db }) => {
-    return await db.query('game').first()
+    return (await db.query('game').first())?.userJoining
   },
 })
 
