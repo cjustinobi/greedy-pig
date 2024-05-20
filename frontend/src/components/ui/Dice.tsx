@@ -93,8 +93,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           data: { gameId: id, playerAddress },
         })
   
-        const res = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
-        if (res) {
+        const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+        const result = await tx.wait(1)
+        if (result) {
           setJoining(false)
           setJoined(true)
         }
@@ -180,7 +181,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         console.error('Error during game play: ', error)
       }
     } else {
-      toast.error('Not enough players to play')
+      toast.error('Not enough players to start')
     }
   }
 

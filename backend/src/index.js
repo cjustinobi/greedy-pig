@@ -113,7 +113,7 @@ async function handle_advance(data) {
       }
   
       console.log('creating game...');
-      const res = addGame(JSONpayload.data);
+      const res = await addGame(JSONpayload.data);
       if (res.error) {
         await reportHandler(res.message);
         return 'reject';
@@ -124,7 +124,7 @@ async function handle_advance(data) {
     } else if (JSONpayload.method === 'addParticipant') {
 
       console.log('adding participant ...', JSONpayload.data);
-      const res = addParticipant(JSONpayload.data)
+      const res = await addParticipant(JSONpayload.data)
       if (res.error) {
         await reportHandler(res.message);
         return 'reject';

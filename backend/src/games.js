@@ -20,7 +20,7 @@ const withdraw = async (data) => {
   return router.process('withdraw', data)
 }
 
-const addGame = (game) => {
+const addGame = async (game) => {
   const gameFound = games.length ? games.find(g => g.id === game.id) : null
 
   if (gameFound) {
@@ -37,7 +37,7 @@ const addGame = (game) => {
   games.push(newGame)
 
   // add participant
-  addParticipant({
+  await addParticipant({
     gameId: newGame.id,
     playerAddress: game.creator
   })
@@ -45,7 +45,7 @@ const addGame = (game) => {
   return errorResponse(false)
 }
 
-const addParticipant = ({gameId, playerAddress}) => {
+const addParticipant = async ({gameId, playerAddress}) => {
 
   const game = games.find(game => game.id === gameId)
 
