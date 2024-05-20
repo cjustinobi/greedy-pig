@@ -517,6 +517,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           <Button
             onClick={commit}
             disabled={
+              committed ||
               commiting ||
               !wallet ||
               !players.includes(wallet.accounts[0].address)

@@ -25,7 +25,7 @@ const GET_LATEST_NOTICE = gql`
 const GameArena = () => {
 
   const { loading, error, data, refetch } = useQuery(GET_LATEST_NOTICE, {
-    pollInterval: 500,
+    pollInterval: 300,
   })
   const [{ wallet }] = useConnectWallet()
   const rollups = useRollups(dappAddress)
@@ -90,21 +90,23 @@ const GameArena = () => {
     <div className="py-6 sm:py-8 lg:py-12">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8">
         <div className="flex flex-col items-center gap-4  px-8 py-6 md:gap-6">
-          {game?.activePlayer && (
+          {game?.status === 'Ended' ? (
+            <p>Game Ended </p>
+          ) : (
             <p>{shortenAddress(game?.activePlayer)}'s turn</p>
           )}
           {game?.commitPhase && (
             <p className="text-center">
-              Commiting ... :{' '}
-              {game.participants.filter((p: any) => p.commitment).length}/
-              {game.participants.length}
+              Players Commiting ... :{' '}
+              {/* {game.participants.filter((p: any) => p.commitment).length}/
+              {game.participants.length} */}
             </p>
           )}
           {game?.revealPhase && (
             <p className="text-center">
-              Revealing ... :{' '}
-              {game.participants.filter((p: any) => p.move).length}/
-              {game.participants.length}
+              Players Revealing ... :{' '}
+              {/* {game.participants.filter((p: any) => p.move).length}/
+              {game.participants.length} */}
             </p>
           )}
           {game &&
