@@ -7,7 +7,7 @@ import Die5 from '@/assets/img/dice_5.png'
 import Die6 from '@/assets/img/dice_6.png'
 import Image from 'next/image'
 import useAudio from '@/hooks/useAudio'
-import { generateCommitment } from '@/lib/utils'
+import { generateCommitment, userJoiningId } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
@@ -18,7 +18,8 @@ import { useRollups } from '@/hooks/useRollups'
 import Button from '../shared/Button'
 import { ethers } from 'ethers'
 import { api } from '@/convex/_generated/api'
-import { useQuery } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
+import { Id } from '@/convex/_generated/dataModel'
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
 
@@ -29,8 +30,8 @@ interface ApparatusProps {
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
+  const updateUserJoining = useMutation(api.game.updateGame)
   const userJoining = useQuery(api.game.getUserJoining)
-  console.log('user njoining ', userJoining)
   const [{ connectedChain }] = useSetChain()
   const rollups = useRollups(dappAddress)
   const [{ wallet }] = useConnectWallet()
@@ -90,6 +91,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       if (!id) return toast.error('Game not found')
 
       setJoining(true)
+      updateUserJoining({
+        gameId: userJoiningId as Id<"game">,
+        data: {
+          userJoining: true
+        }
+      })
 
       try {
         const jsonPayload = JSON.stringify({
@@ -407,7 +414,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   return (
     <div className="flex flex-col justify-center">
-      {userJoining && <p className="text-center">Player joining ...</p>}
+      {userJoining && <p className="text-center mb-2">Player joining ...</p>}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
