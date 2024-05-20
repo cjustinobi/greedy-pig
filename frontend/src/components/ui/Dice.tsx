@@ -431,7 +431,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           game.status === 'In Progress' &&
           game?.activePlayer === wallet?.accounts[0].address &&
           !canRollDice &&
-          (!game.revealPhase || !game.revealPhase) && (
+          (!game.commitPhase || !game.revealPhase) && (
             <div className="flex justify-center">
               <Button className="mt-6" onClick={() => playGame('no')}>
                 Pass
@@ -490,7 +490,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               ? 'Committed'
               : 'Commit'}
           </Button>
-          
         </div>
 
         <div className="flex justify-center">
