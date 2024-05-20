@@ -198,20 +198,25 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     if (game?.activePlayer === playerAddress) return playGame('yes')
 
-    const jsonPayload = JSON.stringify({
-      method: 'commit',
-      gameId: game.id,
-      commitment: await generateCommitment(playerAddress)
-    })
-
-    setCommiting(true)
-    const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
-    const res = await tx.wait(1)
-
-    if (res) {
+    try {
+      const jsonPayload = JSON.stringify({
+        method: 'commit',
+        gameId: game.id,
+        commitment: await generateCommitment(playerAddress)
+      })
+  
+      setCommiting(true)
+      const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+      const res = await tx.wait(1)
+  
+      if (res) {
+        setCommiting(false)
+        setCommitted(true)
+        toast.success('Move committed successfully!')
+      }
+    } catch (error) {
+      console.log('error while commiting ', error)
       setCommiting(false)
-      setCommitted(true)
-      toast.success('Move committed successfully!')
     }
   }
 
