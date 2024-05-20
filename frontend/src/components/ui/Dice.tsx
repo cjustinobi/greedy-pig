@@ -109,10 +109,22 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         if (result) {
           setJoining(false)
           setJoined(true)
+          updateUserJoining({
+            gameId: userJoiningId as Id<'game'>,
+            data: {
+              userJoining: false,
+            }
+          })
         }
       } catch (error) {
         console.error('Error during game join:', error)
         setJoining(false)
+        updateUserJoining({
+          gameId: userJoiningId as Id<'game'>,
+          data: {
+            userJoining: false,
+          }
+        })
       }
     // }
   }
