@@ -508,17 +508,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               ? 'Revealed'
               : 'Reveal'}
           </Button>
-          {game?.revealPhase && (
-            <p className="text-center text-red-600">
-              Reveal phase is active. Waiting for all players to reveal their
-              moves.{' '}
-              <span>
-                Players revealed:{' '}
-                {game.participants.filter((p: any) => p.move).length}/
-                {game.participants.length}
-              </span>
-            </p>
-          )}
+          
         </div>
       </div>
       {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button>

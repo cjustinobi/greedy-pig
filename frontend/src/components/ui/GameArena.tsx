@@ -102,6 +102,13 @@ const GameArena = () => {
               {game.participants.length}
             </p>
           )}
+          {game?.revealPhase && (
+            <p className="text-center">
+              Players revealed:{' '}
+              {game.participants.filter((p: any) => p.move).length}/
+              {game.participants.length}
+            </p>
+          )}
           {game &&
             game.status === 'New' &&
             wallet &&
