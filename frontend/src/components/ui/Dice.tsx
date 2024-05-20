@@ -357,6 +357,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   useEffect(() => {
     if (canRollDice) {
+      setCommitted(false)
+      setRevealed(false)
       rollDice()
     }
   }, [canRollDice])
