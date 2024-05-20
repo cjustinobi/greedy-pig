@@ -430,7 +430,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         {game &&
           game.status === 'In Progress' &&
           game?.activePlayer === wallet?.accounts[0].address &&
-          canRollDice && (
+          !canRollDice && (
             <div className="flex justify-center">
               <Button className="mt-6" onClick={() => playGame('no')}>
                 Pass
