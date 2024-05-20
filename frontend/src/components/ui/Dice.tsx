@@ -30,6 +30,7 @@ interface ApparatusProps {
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const userJoining = useQuery(api.game.getUserJoining)
+  console.log('user njoining ', userJoining)
   const [{ connectedChain }] = useSetChain()
   const rollups = useRollups(dappAddress)
   const [{ wallet }] = useConnectWallet()
@@ -406,7 +407,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   return (
     <div className="flex flex-col justify-center">
-      {userJoining && <p>Player joining ...</p>}
+      {userJoining && <p className="text-center">Player joining ...</p>}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
