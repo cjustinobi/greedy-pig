@@ -432,7 +432,23 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           game?.activePlayer === wallet?.accounts[0].address &&
           !canRollDice && (
             <div className="flex justify-center">
-              <Button className="mt-6" onClick={() => playGame('no')}>
+              <Button
+                disabled={
+                  isRolling ||
+                  commiting ||
+                  revealing ||
+                  gameEnded ||
+                  revealMove ||
+                  game?.revealPhase ||
+                  game?.commitPhase
+                }
+                className={`mt-6 ${
+                  game?.commitPhase || game?.revealPhase || revealMove
+                    ? 'hidden'
+                    : ''
+                } `}
+                onClick={() => playGame('no')}
+              >
                 Pass
               </Button>
             </div>
@@ -508,7 +524,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               ? 'Revealed'
               : 'Reveal'}
           </Button>
-          
         </div>
       </div>
       {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button>
