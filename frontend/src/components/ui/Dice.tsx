@@ -17,6 +17,8 @@ import { addInput, sendEther, inspectCall } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
 import Button from '../shared/Button'
 import { ethers } from 'ethers'
+import { api } from '@/convex/_generated/api'
+import { useQuery } from 'convex/react'
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
 
@@ -27,6 +29,7 @@ interface ApparatusProps {
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
+  const userJoining = useQuery(api.game.getUserJoining)
   const [{ connectedChain }] = useSetChain()
   const rollups = useRollups(dappAddress)
   const [{ wallet }] = useConnectWallet()
@@ -403,6 +406,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   return (
     <div className="flex flex-col justify-center">
+      {userJoining && <p>Player joining ...</p>}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}

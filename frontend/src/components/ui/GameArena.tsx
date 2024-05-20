@@ -1,7 +1,6 @@
 import LeaderBoard from './Leaderboard'
 import { dappAddress, shortenAddress } from '@/lib/utils'
 import { useRollups } from '@/hooks/useRollups'
-
 import { memo, useCallback, useEffect, useState } from 'react'
 import Settings from './Settings'
 import Dice from './Dice'
@@ -9,7 +8,7 @@ import { useQuery, gql } from '@apollo/client'
 import { ethers } from 'ethers'
 import { useDispatch } from 'react-redux'
 import { useConnectWallet } from '@web3-onboard/react'
-// const MemoizedLeaderBoard = memo(LeaderBoard)
+
 
 const GET_LATEST_NOTICE = gql`
   query latestNotice {
@@ -31,7 +30,6 @@ const GameArena = () => {
   const [{ wallet }] = useConnectWallet()
   const rollups = useRollups(dappAddress)
   const dispatch = useDispatch()
-
   const [game, setGame] = useState<any>()
 
   const dispatchGameData = useCallback((game: any) => {
