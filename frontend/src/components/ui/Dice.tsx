@@ -334,10 +334,17 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   useEffect(() => {
 
-    if (game && game.participants && game.participants.length > 0) {
-      const allPlayersCommitted = game?.participants.every((participant: any) => {
-        return participant.commitment
-      })
+    if (
+      game &&
+      game.status !== 'Ended' &&
+      game.participants &&
+      game.participants.length > 0
+    ) {
+      const allPlayersCommitted = game?.participants.every(
+        (participant: any) => {
+          return participant.commitment
+        }
+      )
 
       if (allPlayersCommitted) {
         toast.success('All set to reveal!')
@@ -348,7 +355,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   useEffect(() => {
 
-    if (game && game.participants && game.participants.length > 0) {
+    if (game && game.status !== 'Ended' && game.participants && game.participants.length > 0) {
       const allPlayersMoved = game?.participants.every((participant: any) => {
         return participant.move
       })
