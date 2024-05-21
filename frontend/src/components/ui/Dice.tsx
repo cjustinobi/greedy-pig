@@ -115,6 +115,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               userJoining: false,
             }
           })
+        } else {
+          updateUserJoining({
+            gameId: userJoiningId as Id<'game'>,
+            data: {
+              userJoining: false,
+            }
+          })
         }
       } catch (error) {
         console.error('Error during game join:', error)
