@@ -25,7 +25,7 @@ const GET_LATEST_NOTICE = gql`
 const GameArena = () => {
 
   const { loading, error, data, refetch } = useQuery(GET_LATEST_NOTICE, {
-    pollInterval: 300,
+    pollInterval: 500,
   })
   const [{ wallet }] = useConnectWallet()
   const rollups = useRollups(dappAddress)
