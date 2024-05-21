@@ -428,6 +428,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       return () => clearInterval(interval)
     } else {
       setResult(1)
+      setCommitted(false)
+      setRevealed(false)
     }
   }, [game?.rollOutcome, game?.dateCreated, diceRollSound])
 
@@ -440,10 +442,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   return (
     <div className="flex flex-col justify-center">
-      {userJoining &&  game?.participants.some(
-                  (participant: any) =>
-                    participant.address === wallet?.accounts[0].address
-                ) && <p className="text-center mb-2">Player joining ...</p>}
+      {userJoining &&
+        game?.participants.some(
+          (participant: any) =>
+            participant.address === wallet?.accounts[0].address
+        ) && <p className="text-center mb-2">Player joining ...</p>}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
@@ -497,7 +500,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
                 } `}
                 onClick={() => playGame('no')}
               >
-                Pass
+                {commiting ? 'Commiting ...' : 'Pass'}
               </Button>
             </div>
           )}
@@ -517,12 +520,19 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               className="mb-10"
               type="button"
             >
-              {joining
+              {/* {joining
                 ? 'Joining ...'
                 : game?.participants.some(
                     (participant: any) =>
                       participant.address === wallet?.accounts[0].address
                   )
+                ? 'Joined'
+                : 'Join Game'} */}
+              {joining
+                ? 'Joining...'
+                : commiting
+                ? 'Committing...'
+                : joined
                 ? 'Joined'
                 : 'Join Game'}
             </Button>
