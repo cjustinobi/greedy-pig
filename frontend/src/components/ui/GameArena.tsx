@@ -93,7 +93,7 @@ const GameArena = () => {
           {game && game.status === 'Ended' ? (
             <p>Game Ended </p>
           ) : (
-            <p> {shortenAddress(game?.activePlayer)} ? `${shortenAddress(game?.activePlayer)}'s turn : ''` </p>
+            <p> ${game?.activePlayer ? `${shortenAddress(game?.activePlayer)}'s turn` : ''} </p>
           )}
           {game?.commitPhase && (
             <p className="text-center">
