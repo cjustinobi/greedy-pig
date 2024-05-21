@@ -16,6 +16,7 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
   const { refetch } = useNotices()
   const rollups = useRollups(dappAddress)
   const [delayedGame, setDelayedGame] = useState<any>(null)
+  const [gameOverTriggered, setGameOverTriggered] = useState<boolean>(false)
 
     const transfer = async () => {
       const jsonPayload = JSON.stringify({
@@ -53,21 +54,17 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
   }, [handleEvent, rollups])
 
   useEffect(() => {
-    if (delayedGame?.status === 'Ended') {
+    if (delayedGame?.status === 'Ended' && !gameOverTriggered) {
       gameOverSound?.play()
       toast.success(`${delayedGame.winner} won`)
-      // transfer()
+      setGameOverTriggered(true)
     }
-  }, [delayedGame?.status, delayedGame?.winner, gameOverSound])
-
-
-  // useEffect(() => {
-  //   if (game?.status === 'Ended') {
-  //     gameOverSound?.play()
-  //     toast.success(`${game.winner} won`)
-  //     // transfer()
-  //   }
-  // }, [game?.status, gameOverSound])
+  }, [
+    delayedGame?.status,
+    delayedGame?.winner,
+    gameOverSound,
+    gameOverTriggered,
+  ])
 
   return (
     <div className="relative flex flex-col w-full min-w-0 break-words border-0 border-transparent border-solid shadow-soft-xl rounded-2xl bg-clip-border mb-4 draggable">
