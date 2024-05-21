@@ -108,7 +108,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         const result = await tx.wait(1)
         if (result) {
           setJoining(false)
-          setJoined(true)
+          // setJoined(true)
           updateUserJoining({
             gameId: userJoiningId as Id<'game'>,
             data: {
@@ -519,8 +519,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             >
               {joining
                 ? 'Joining ...'
-                : joined ||
-                  game?.participants.some(
+                : game?.participants.some(
                     (participant: any) =>
                       participant.address === wallet?.accounts[0].address
                   )
