@@ -30,16 +30,31 @@ const Games = () => {
     await refetch()
   }, [refetch])
 
-  useEffect(() => {
-    rollups?.inputContract.on(
-      'InputAdded',
-      (dappAddress, inboxInputIndex, sender, input) => {
-        if (parseInputEvent(input).method === 'createGame') {
-          handleEvent()
-        }
+    useEffect(() => {
+      const handleInputAdded = () => {
+        console.log('Input added, refetching notices')
+        refetch()
       }
-    )
-  }, [handleEvent, rollups])
+
+      // Add event listener for inputAdded event
+      rollups?.inputContract.on('InputAdded', handleInputAdded)
+
+      // Cleanup function to remove event listener
+      return () => {
+        rollups?.inputContract.off('InputAdded', handleInputAdded)
+      }
+    }, [rollups, refetch])
+
+  // useEffect(() => {
+  //   rollups?.inputContract.on(
+  //     'InputAdded',
+  //     (dappAddress, inboxInputIndex, sender, input) => {
+  //       if (parseInputEvent(input).method === 'createGame') {
+  //         handleEvent()
+  //       }
+  //     }
+  //   )
+  // }, [handleEvent, rollups])
 
   return (
     <div>
