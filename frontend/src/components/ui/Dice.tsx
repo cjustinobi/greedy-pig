@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import Die1 from '@/assets/img/dice_1.png'
 import Die2 from '@/assets/img/dice_2.png'
 import Die3 from '@/assets/img/dice_3.png'
@@ -53,6 +53,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [joining, setJoining] = useState<boolean>(false)
   const [joined, setJoined] = useState<boolean>(false)
   const [gameEnded, setGameEnded] = useState<boolean>(false)
+  const previousRollOutcome = useRef<number | null>(null)
 
   const test = async () => {
     const playerAddress = wallet?.accounts[0].address
@@ -406,10 +407,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }, [canRollDice])
 
   useEffect(() => {
-    
-    if (game?.rollOutcome && game?.rollOutcome !== 0) {
+    if (
+      game?.rollOutcome &&
+      game?.rollOutcome !== 0 &&
+      previousRollOutcome.current !== game.rollOutcome
+    ) {
       console.log(game?.rollOutcome)
       setIsRolling(true)
+      previousRollOutcome.current = game.rollOutcome
 
       const interval = setInterval(() => {
         diceRollSound?.play()
@@ -419,7 +424,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       // Stop rolling after a certain time and show the final result
       setTimeout(() => {
         clearInterval(interval)
-        
         setResult(game?.rollOutcome)
         setIsRolling(false)
         setCanRollDice(false)
@@ -431,7 +435,35 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       setCommitted(false)
       setRevealed(false)
     }
-  }, [game?.rollOutcome, game?.dateCreated, diceRollSound])
+  }, [game?.rollOutcome, diceRollSound, canRollDice])
+
+  // useEffect(() => {
+    
+  //   if (game?.rollOutcome && game?.rollOutcome !== 0) {
+  //     console.log(game?.rollOutcome)
+  //     setIsRolling(true)
+
+  //     const interval = setInterval(() => {
+  //       diceRollSound?.play()
+  //       setResult(Math.floor(Math.random() * 6) + 1)
+  //     }, 80)
+
+  //     // Stop rolling after a certain time and show the final result
+  //     setTimeout(() => {
+  //       clearInterval(interval)
+        
+  //       setResult(game?.rollOutcome)
+  //       setIsRolling(false)
+  //       setCanRollDice(false)
+  //     }, 4000)
+
+  //     return () => clearInterval(interval)
+  //   } else {
+  //     setResult(1)
+  //     setCommitted(false)
+  //     setRevealed(false)
+  //   }
+  // }, [game?.rollOutcome, diceRollSound])
 
    useEffect(() => {
      if (game?.status === 'Ended') {
