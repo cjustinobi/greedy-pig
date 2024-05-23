@@ -31,8 +31,6 @@ const addGame = async (game) => {
     return errorResponse(true, 'Game winning score should not be less than 6')
   }
 
-
-  // games.push({ ...game, id: uuidv4(), dateCreated: Date.now()})
   const newGame = { ...game, id: uuidv4(), dateCreated: Date.now() }
   games.push(newGame)
 
@@ -116,7 +114,6 @@ const commit = (gameId, commitment, playerAddress) => {
   console.log(`committed for ${playerAddress}`)
   participant.commitment = commitment
 
-  // Check if all players have committed their moves
   const allPlayersCommitted = game.participants.every((participant) => participant.commitment !== null)
 
   if (allPlayersCommitted) {
@@ -159,7 +156,6 @@ const reveal = (gameId, move, nonce, playerAddress) => {
   console.log(`revealed for ${playerAddress}`)
   participant.move = parseInt(move)
 
-  // check if all players have revealed their moves
   const allPlayersRevealed = game.participants.every((participant) => participant.move !== null)
 
   if (allPlayersRevealed) {
@@ -183,8 +179,8 @@ const rollDice = async ({gameId, playerAddress}) => {
   if (rollOutcome === 1) {
 
     participant.playerInfo.turn += 1;
-    // cancel all acumulated point for the turn
-    participant.playerInfo.turnScore = 0; // Reset turn score for the next turn
+  
+    participant.playerInfo.turnScore = 0
     game.activePlayer = game.participants[(game.participants.findIndex(p => p.address === playerAddress) + 1) % game.participants.length].address; // Move to the next player's turn or end the game
     game.rollOutcome = rollOutcome
     resetMoveCommitment(game)
@@ -192,7 +188,7 @@ const rollDice = async ({gameId, playerAddress}) => {
 
   } else {
 
-    game.rollOutcome = rollOutcome; // Update the roll outcome
+    game.rollOutcome = rollOutcome
     participant.playerInfo.turnScore += rollOutcome
 
     const totalScore = participant.playerInfo.turnScore + participant.playerInfo.totalScore
@@ -201,10 +197,10 @@ const rollDice = async ({gameId, playerAddress}) => {
       
       console.log('ending game ...')
       participant.playerInfo.totalScore += participant.playerInfo.turnScore
-      participant.playerInfo.turnScore = 0
+      participant.playerInfo.turnScore = participant.playerInfo.turnScore
       endGame(game);
       // transferToWinner(game);
-      return errorResponse(false);
+      return errorResponse(false)
 
     } else {
 
