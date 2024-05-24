@@ -406,15 +406,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
   }, [canRollDice])
 
+ 
   useEffect(() => {
-    if (
-      game?.rollOutcome &&
-      game?.rollOutcome !== 0 &&
-      previousRollOutcome.current !== game.rollOutcome
-    ) {
+    
+    if (game?.rollOutcome && game?.rollOutcome !== 0) {
       console.log(game?.rollOutcome)
       setIsRolling(true)
-      previousRollOutcome.current = game.rollOutcome
 
       const interval = setInterval(() => {
         diceRollSound?.play()
@@ -424,6 +421,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       // Stop rolling after a certain time and show the final result
       setTimeout(() => {
         clearInterval(interval)
+        
         setResult(game?.rollOutcome)
         setIsRolling(false)
         setCanRollDice(false)
@@ -435,35 +433,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       setCommitted(false)
       setRevealed(false)
     }
-  }, [game?.rollOutcome, diceRollSound, canRollDice])
-
-  // useEffect(() => {
-    
-  //   if (game?.rollOutcome && game?.rollOutcome !== 0) {
-  //     console.log(game?.rollOutcome)
-  //     setIsRolling(true)
-
-  //     const interval = setInterval(() => {
-  //       diceRollSound?.play()
-  //       setResult(Math.floor(Math.random() * 6) + 1)
-  //     }, 80)
-
-  //     // Stop rolling after a certain time and show the final result
-  //     setTimeout(() => {
-  //       clearInterval(interval)
-        
-  //       setResult(game?.rollOutcome)
-  //       setIsRolling(false)
-  //       setCanRollDice(false)
-  //     }, 4000)
-
-  //     return () => clearInterval(interval)
-  //   } else {
-  //     setResult(1)
-  //     setCommitted(false)
-  //     setRevealed(false)
-  //   }
-  // }, [game?.rollOutcome, diceRollSound])
+  }, [game?.rollOutcome, diceRollSound])
 
    useEffect(() => {
      if (game?.status === 'Ended') {
@@ -525,7 +495,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
                   game?.revealPhase ||
                   game?.commitPhase
                 }
-                className={`mt-6 ${
+                className={`mt-6 w-[200px] ${
                   game?.commitPhase || game?.revealPhase || revealMove
                     ? 'hidden'
                     : ''
