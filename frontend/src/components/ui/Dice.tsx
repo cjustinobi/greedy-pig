@@ -564,7 +564,10 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
                 ? 'Joining...'
                 : commiting
                 ? 'Committing...'
-                : joined
+                : game?.participants.some(
+                    (participant: any) =>
+                      participant.address === wallet?.accounts[0].address
+                  )
                 ? 'Joined'
                 : 'Join Game'}
             </Button>
