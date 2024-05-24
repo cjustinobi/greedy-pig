@@ -177,7 +177,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     const playerAddress = wallet?.accounts[0].address
 
     if (!playerAddress) return toast.error('Connect account')
-    if (players.length >= 2) return toast.error('Not enough players to start')
+    if (players.length < 2) return toast.error('Not enough players to start')
 
     if (game.activePlayer !== playerAddress) {
       return toast.error('Not your turn')
