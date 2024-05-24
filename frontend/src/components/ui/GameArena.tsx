@@ -93,7 +93,12 @@ const GameArena = () => {
           {game && game.status === 'Ended' ? (
             <p>Game Ended </p>
           ) : (
-            <p> {game?.activePlayer ? `${shortenAddress(game?.activePlayer)}'s turn` : ''} </p>
+            <p>
+              {' '}
+              {game?.activePlayer
+                ? `${shortenAddress(game?.activePlayer)}'s turn`
+                : ''}{' '}
+            </p>
           )}
           {game?.commitPhase && (
             <p className="text-center">
@@ -110,11 +115,13 @@ const GameArena = () => {
             </p>
           )}
           {game &&
-            game.status === 'New' &&
-            wallet &&
-            game.activePlayer !== wallet?.accounts[0].address && (
-              <span className="text-center">Game not Started</span>
-            )}
+          game.status === 'New' &&
+          wallet &&
+          game.activePlayer !== wallet?.accounts[0].address ? (
+            <span className="text-center">Game not Started</span>
+          ) : (
+            <span className="text-center">Start game</span>
+          )}
           <Dice game={game} />
         </div>
         <div className="flex flex-col items-center gap-4 md:gap-6">

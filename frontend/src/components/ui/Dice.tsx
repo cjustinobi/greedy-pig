@@ -537,42 +537,36 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             </div>
           )}
 
-        {game && game.status === 'New' && (
-          <div className="flex justify-center">
-            <Button
-              onClick={joinGame}
-              disabled={
-                joining ||
-                joined ||
-                game?.participants.some(
-                  (participant: any) =>
-                    participant.address === wallet?.accounts[0].address
-                )
-              }
-              className="mb-10"
-              type="button"
-            >
-              {/* {joining
-                ? 'Joining ...'
-                : game?.participants.some(
+        {game &&
+          game.status === 'New' &&
+          game.creator !== wallet?.accounts[0].address && (
+            <div className="flex justify-center">
+              <Button
+                onClick={joinGame}
+                disabled={
+                  joining ||
+                  joined ||
+                  game?.participants.some(
                     (participant: any) =>
                       participant.address === wallet?.accounts[0].address
                   )
-                ? 'Joined'
-                : 'Join Game'} */}
-              {joining
-                ? 'Joining...'
-                : commiting
-                ? 'Committing...'
-                : game?.participants.some(
-                    (participant: any) =>
-                      participant.address === wallet?.accounts[0].address
-                  )
-                ? 'Joined'
-                : 'Join Game'}
-            </Button>
-          </div>
-        )}
+                }
+                className="mb-10"
+                type="button"
+              >
+                {joining
+                  ? 'Joining...'
+                  : commiting
+                  ? 'Committing...'
+                  : game?.participants.some(
+                      (participant: any) =>
+                        participant.address === wallet?.accounts[0].address
+                    )
+                  ? 'Joined'
+                  : 'Join Game'}
+              </Button>
+            </div>
+          )}
         {/* <span onClick={test}>Test</span> */}
         <div className="flex justify-center">
           <Button
