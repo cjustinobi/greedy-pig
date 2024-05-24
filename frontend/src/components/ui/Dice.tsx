@@ -11,8 +11,7 @@ import { generateCommitment, userJoiningId } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
-import { dappRelayAddress, hasDeposited } from '@/lib/utils'
-// import { dappAddress, dappRelayAddress, hasDeposited } from '@/lib/utils'
+import { dappAddress, dappRelayAddress, hasDeposited } from '@/lib/utils'
 import { useConnectWallet, useSetChain } from '@web3-onboard/react'
 import { addInput, sendEther, inspectCall } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
@@ -30,8 +29,6 @@ interface ApparatusProps {
 
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
-
-  const dappAddress = '0x70ac08179605AF2D9e75782b8DEcDD3c22aA4D0C'
 
   const updateUserJoining = useMutation(api.game.updateGame)
   const userJoining = useQuery(api.game.getUserJoining)

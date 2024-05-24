@@ -1,7 +1,7 @@
 import LeaderBoard from './Leaderboard'
 import { dappAddress, shortenAddress } from '@/lib/utils'
 import { useRollups } from '@/hooks/useRollups'
-import { memo, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Settings from './Settings'
 import Dice from './Dice'
 import { useQuery, gql } from '@apollo/client'

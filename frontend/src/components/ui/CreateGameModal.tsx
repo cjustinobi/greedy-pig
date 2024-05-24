@@ -71,7 +71,7 @@ const CreateGameModal = () => {
     game.gameSettings.winningScore = winningScore
     game.gameSettings.bet = bet
     game.bettingAmount = bettingAmount
-debugger
+
     const jsonPayload = JSON.stringify({
       method: 'createGame',
       data: game,
