@@ -9,6 +9,12 @@ export const getUserJoining = query({
   }
 })
 
+export const getUserPlaying = query({
+  handler: async ({ db }) => {
+    return (await db.query('game').first())?.userPlaying
+  }
+})
+
 export const updateGame = mutation({
   args: { 
     gameId: v.id('game'),

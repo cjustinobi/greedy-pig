@@ -2,7 +2,8 @@ import { v } from 'convex/values'
 // import { GameStatus } from '../interfaces'
 
 export const vUpdateGame = v.object({
-  userJoining: v.boolean()
+  userJoining: v.optional(v.boolean()),
+  userPlaying: v.optional(v.boolean())
 })
 
 // export const vCreateGame = v.object({

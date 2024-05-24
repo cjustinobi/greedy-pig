@@ -30,8 +30,9 @@ interface ApparatusProps {
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
-  const updateUserJoining = useMutation(api.game.updateGame)
+  const updateUserAction = useMutation(api.game.updateGame)
   const userJoining = useQuery(api.game.getUserJoining)
+  const userPlaying = useQuery(api.game.getUserPlaying)
   const [{ connectedChain }] = useSetChain()
   const rollups = useRollups(dappAddress)
   const [{ wallet }] = useConnectWallet()
@@ -51,7 +52,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
   const [joining, setJoining] = useState<boolean>(false)
-  const [joined, setJoined] = useState<boolean>(false)
+  const [pass, setPass] = useState<boolean>(false)
   const [gameEnded, setGameEnded] = useState<boolean>(false)
   const previousRollOutcome = useRef<number | null>(null)
 
@@ -92,11 +93,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       if (!id) return toast.error('Game not found')
 
       setJoining(true)
-      updateUserJoining({
-        gameId: userJoiningId as Id<"game">,
+      updateUserAction({
+        gameId: userJoiningId as Id<'game'>,
         data: {
-          userJoining: true
-        }
+          userJoining: true,
+        },
       })
 
       try {
@@ -110,28 +111,28 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         if (result) {
           setJoining(false)
           // setJoined(true)
-          updateUserJoining({
+          updateUserAction({
             gameId: userJoiningId as Id<'game'>,
             data: {
               userJoining: false,
-            }
+            },
           })
         } else {
-          updateUserJoining({
+          updateUserAction({
             gameId: userJoiningId as Id<'game'>,
             data: {
               userJoining: false,
-            }
+            },
           })
         }
       } catch (error) {
         console.error('Error during game join:', error)
         setJoining(false)
-        updateUserJoining({
+        updateUserAction({
           gameId: userJoiningId as Id<'game'>,
           data: {
             userJoining: false,
-          }
+          },
         })
       }
     // }
@@ -176,12 +177,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     const playerAddress = wallet?.accounts[0].address
 
     if (!playerAddress) return toast.error('Connect account')
+    if (players.length >= 2) return toast.error('Not enough players to start')
 
     if (game.activePlayer !== playerAddress) {
       return toast.error('Not your turn')
     }
 
-    if (players.length >= 2) {
+    if (response === 'yes') {
 
       try {
         setCommiting(true)
@@ -212,7 +214,53 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         console.error('Error during game play: ', error)
       }
     } else {
-      toast.error('Not enough players to start')
+      try {
+
+        setPass(true)
+
+        updateUserAction({
+          gameId: userJoiningId as Id<'game'>,
+          data: {
+            userPlaying: true,
+          },
+        })
+
+        const jsonPayload = JSON.stringify({
+          method: 'playGame',
+          data: {
+            gameId: game.id,
+            playerAddress,
+            response
+          },
+        })
+
+        const tx = await addInput(
+          JSON.stringify(jsonPayload),
+          dappAddress,
+          rollups
+        )
+
+        const result = await tx.wait(1)
+        if (result) {
+          updateUserAction({
+            gameId: userJoiningId as Id<'game'>,
+            data: {
+              userPlaying: false,
+            }
+          })
+          setPass(false)
+        }
+        console.log('tx for the game play ', result)
+      } catch (error) {
+        setPass(false)
+        updateUserAction({
+          gameId: userJoiningId as Id<'game'>,
+          data: {
+            userPlaying: false,
+          }
+        })
+        console.error('Error during game play: ', error)
+      }
     }
   }
 
@@ -449,6 +497,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           (participant: any) =>
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
+      {userPlaying &&
+        game?.activePlayer !== wallet?.accounts[0].address && 
+        <p className="text-center mb-2">Player initiating game ...</p>}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
@@ -502,7 +553,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
                 } `}
                 onClick={() => playGame('no')}
               >
-                {commiting ? 'Commiting ...' : 'Pass'}
+                {commiting ? 'Commiting ...' : pass ? 'Passing ...' : 'Pass'}
               </Button>
             </div>
           )}
@@ -515,7 +566,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
                 onClick={joinGame}
                 disabled={
                   joining ||
-                  joined ||
                   game?.participants.some(
                     (participant: any) =>
                       participant.address === wallet?.accounts[0].address
