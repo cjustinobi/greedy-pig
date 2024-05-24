@@ -121,8 +121,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           updateUserAction({
             gameId: userJoiningId as Id<'game'>,
             data: {
-              userJoining: false,
-            },
+              userJoining: false
+            }
           })
         }
       } catch (error) {
@@ -278,6 +278,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     if (game?.activePlayer === playerAddress) return playGame('yes')
 
     try {
+
+      updateUserAction({
+        gameId: userJoiningId as Id<'game'>,
+        data: {
+          userPlaying: true
+        }
+      })
+
       const jsonPayload = JSON.stringify({
         method: 'commit',
         gameId: game.id,
@@ -289,6 +297,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       const res = await tx.wait(1)
   
       if (res) {
+
+        updateUserAction({
+          gameId: userJoiningId as Id<'game'>,
+          data: {
+            userPlaying: false
+          }
+        })
+
         setCommiting(false)
         setCommitted(true)
         toast.success('Move committed successfully!')
@@ -296,6 +312,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     } catch (error) {
       console.log('error while commiting ', error)
       setCommiting(false)
+      updateUserAction({
+        gameId: userJoiningId as Id<'game'>,
+        data: {
+          userPlaying: false
+        }
+      })
     }
   }
 
@@ -310,6 +332,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       )
 
     if (currentPlayer.move) return toast.error('Already revealed')
+
+    updateUserAction({
+      gameId: userJoiningId as Id<'game'>,
+      data: {
+        userPlaying: true
+      }
+    })
     
     setRevealing(true)
 
@@ -332,19 +361,31 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
  
      const res = await tx.wait(1)
      if (res) {
+
+      updateUserAction({
+        gameId: userJoiningId as Id<'game'>,
+        data: {
+          userPlaying: false
+        }
+      })
+
        setRevealing(false)
        setRevealed(true)
        toast.success('Move revealed successfully!')
      }
    } catch (error) {
      setRevealing(false)
+
+     updateUserAction({
+       gameId: userJoiningId as Id<'game'>,
+       data: {
+         userPlaying: false
+       }
+     })
    }
 
   }
 
-  // const reset = () => {
-  //   setRevealed(false)
-  // }
 
   const transfer = async () => {
 
