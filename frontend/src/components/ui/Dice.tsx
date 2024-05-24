@@ -69,8 +69,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     if (!wallet?.accounts[0].address) return toast.error('Connect account')
 
-    // if (wallet?.accounts[0].address) {
-
       const playerAddress = wallet.accounts[0].address
 
 
@@ -108,14 +106,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   
         const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
         const result = await tx.wait(1)
+
         if (result) {
           setJoining(false)
-          // setJoined(true)
           updateUserAction({
             gameId: userJoiningId as Id<'game'>,
             data: {
-              userJoining: false,
-            },
+              userJoining: false
+            }
           })
         } else {
           updateUserAction({
@@ -135,7 +133,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           },
         })
       }
-    // }
+
   }
 
   const rollDice = async () => {
@@ -539,8 +537,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying &&
-        game?.activePlayer !== wallet?.accounts[0].address && 
-        <p className="text-center mb-2">Player initiating game ...</p>}
+        <p className="text-center mb-2">Initiating game ...</p>}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}

@@ -102,14 +102,14 @@ const GameArena = () => {
           )}
           {game?.commitPhase && (
             <p className="text-center">
-              Players Commiting ... :{' '}
+              Players Commiting ...
               {/* {game.participants.filter((p: any) => p.commitment).length}/
               {game.participants.length} */}
             </p>
           )}
           {game?.revealPhase && (
             <p className="text-center">
-              Players Revealing ... :{' '}
+              Players Revealing ...
               {/* {game.participants.filter((p: any) => p.move).length}/
               {game.participants.length} */}
             </p>
