@@ -4,6 +4,7 @@ import { v } from 'convex/values'
 
 export default defineSchema({
   game: defineTable({
-    userJoining: v.boolean()
+    userJoining: v.boolean(),
+    userPlaying: v.boolean()
   })
 })
