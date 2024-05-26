@@ -183,6 +183,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     if (response === 'yes') {
 
+      updateUserAction({
+        gameId: userJoiningId as Id<'game'>,
+        data: {
+          userPlaying: true
+        }
+      })
+
       try {
         setCommiting(true)
         const jsonPayload = JSON.stringify({
@@ -205,10 +212,22 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         if (result) {
           setCommitted(true)
           setCommiting(false)
+          updateUserAction({
+            gameId: userJoiningId as Id<'game'>,
+            data: {
+              userPlaying: false
+            }
+          })
         }
         console.log('tx for the game play ', result)
       } catch (error) {
         setCommiting(false)
+        updateUserAction({
+          gameId: userJoiningId as Id<'game'>,
+          data: {
+            userPlaying: false
+          }
+        })
         console.error('Error during game play: ', error)
       }
     } else {

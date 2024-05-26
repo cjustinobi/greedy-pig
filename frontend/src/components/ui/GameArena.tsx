@@ -100,20 +100,20 @@ const GameArena = () => {
                 : ''}{' '}
             </p>
           )}
-          {game?.commitPhase && (
+          {/*game?.commitPhase && (
             <p className="text-center">
               Players Commiting ...
-              {/* {game.participants.filter((p: any) => p.commitment).length}/
-              {game.participants.length} */}
+              {game.participants.filter((p: any) => p.commitment).length}/
+              {game.participants.length}
             </p>
-          )}
-          {game?.revealPhase && (
+          )*/}
+          {/*game?.revealPhase && (
             <p className="text-center">
               Players Revealing ...
-              {/* {game.participants.filter((p: any) => p.move).length}/
-              {game.participants.length} */}
+              {game.participants.filter((p: any) => p.move).length}/
+              {game.participants.length}
             </p>
-          )}
+          )*/}
           {game &&
             game.status === 'New' &&
             wallet &&
