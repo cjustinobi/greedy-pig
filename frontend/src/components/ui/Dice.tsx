@@ -493,12 +493,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
   }, [canRollDice])
 
- 
   useEffect(() => {
-    
-    if (game?.rollOutcome && game?.rollOutcome !== 0) {
+    if (
+      game?.rollOutcome &&
+      game?.rollOutcome !== previousRollOutcome.current
+    ) {
       console.log(game?.rollOutcome)
       setIsRolling(true)
+      previousRollOutcome.current = game?.rollOutcome
 
       const interval = setInterval(() => {
         diceRollSound?.play()
@@ -508,7 +510,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       // Stop rolling after a certain time and show the final result
       setTimeout(() => {
         clearInterval(interval)
-        
         setResult(game?.rollOutcome)
         setIsRolling(false)
         setCanRollDice(false)
@@ -521,6 +522,35 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       setRevealed(false)
     }
   }, [game?.rollOutcome, diceRollSound])
+
+ 
+  // useEffect(() => {
+    
+  //   if (game?.rollOutcome && game?.rollOutcome !== 0) {
+  //     console.log(game?.rollOutcome)
+  //     setIsRolling(true)
+
+  //     const interval = setInterval(() => {
+  //       diceRollSound?.play()
+  //       setResult(Math.floor(Math.random() * 6) + 1)
+  //     }, 80)
+
+  //     // Stop rolling after a certain time and show the final result
+  //     setTimeout(() => {
+  //       clearInterval(interval)
+        
+  //       setResult(game?.rollOutcome)
+  //       setIsRolling(false)
+  //       setCanRollDice(false)
+  //     }, 4000)
+
+  //     return () => clearInterval(interval)
+  //   } else {
+  //     setResult(1)
+  //     setCommitted(false)
+  //     setRevealed(false)
+  //   }
+  // }, [game?.rollOutcome, diceRollSound])
 
    useEffect(() => {
      if (game?.status === 'Ended') {
