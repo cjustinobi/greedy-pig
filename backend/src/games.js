@@ -178,17 +178,19 @@ const rollDice = async ({gameId, playerAddress}) => {
 
   if (rollOutcome === 1) {
 
-    participant.playerInfo.turn += 1;
+    participant.playerInfo.turn += 1
   
     participant.playerInfo.turnScore = 0
     game.activePlayer = game.participants[(game.participants.findIndex(p => p.address === playerAddress) + 1) % game.participants.length].address; // Move to the next player's turn or end the game
     game.rollOutcome = rollOutcome
+    game.rollCount += 1
     resetMoveCommitment(game)
     return;
 
   } else {
 
     game.rollOutcome = rollOutcome
+    game.rollCount += 1
     participant.playerInfo.turnScore += rollOutcome
 
     const totalScore = participant.playerInfo.turnScore + participant.playerInfo.totalScore
