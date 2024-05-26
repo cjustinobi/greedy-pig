@@ -54,6 +54,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [joining, setJoining] = useState<boolean>(false)
   const [pass, setPass] = useState<boolean>(false)
   const [gameEnded, setGameEnded] = useState<boolean>(false)
+  const [forceTrigger, setForceTrigger] = useState<boolean>(false)
   const previousRollOutcome = useRef<number | null>(null)
 
   const test = async () => {
@@ -476,6 +477,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       if (allPlayersMoved) {
         toast.success('Dice set to roll!')
+        setForceTrigger(true)
         setCanRollDice(true)
         setRevealMove(false)
       }
@@ -512,14 +514,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
   }, [canRollDice])
 
+ 
   useEffect(() => {
-    if (
-      game?.rollOutcome &&
-      game?.rollOutcome !== previousRollOutcome.current
-    ) {
+    
+    if (game?.rollOutcome && game?.rollOutcome !== 0 && forceTrigger) {
       console.log(game?.rollOutcome)
       setIsRolling(true)
-      previousRollOutcome.current = game?.rollOutcome
 
       const interval = setInterval(() => {
         diceRollSound?.play()
@@ -529,9 +529,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       // Stop rolling after a certain time and show the final result
       setTimeout(() => {
         clearInterval(interval)
+        
         setResult(game?.rollOutcome)
         setIsRolling(false)
         setCanRollDice(false)
+        setForceTrigger(false)
       }, 4000)
 
       return () => clearInterval(interval)
@@ -540,36 +542,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       setCommitted(false)
       setRevealed(false)
     }
-  }, [game?.rollOutcome, diceRollSound])
-
- 
-  // useEffect(() => {
-    
-  //   if (game?.rollOutcome && game?.rollOutcome !== 0) {
-  //     console.log(game?.rollOutcome)
-  //     setIsRolling(true)
-
-  //     const interval = setInterval(() => {
-  //       diceRollSound?.play()
-  //       setResult(Math.floor(Math.random() * 6) + 1)
-  //     }, 80)
-
-  //     // Stop rolling after a certain time and show the final result
-  //     setTimeout(() => {
-  //       clearInterval(interval)
-        
-  //       setResult(game?.rollOutcome)
-  //       setIsRolling(false)
-  //       setCanRollDice(false)
-  //     }, 4000)
-
-  //     return () => clearInterval(interval)
-  //   } else {
-  //     setResult(1)
-  //     setCommitted(false)
-  //     setRevealed(false)
-  //   }
-  // }, [game?.rollOutcome, diceRollSound])
+  }, [game?.rollOutcome, diceRollSound, forceTrigger])
 
    useEffect(() => {
      if (game?.status === 'Ended') {
