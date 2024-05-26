@@ -56,6 +56,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [gameEnded, setGameEnded] = useState<boolean>(false)
   const [forceTrigger, setForceTrigger] = useState<boolean>(false)
   const previousRollOutcome = useRef<number | null>(null)
+  const previousDateCreated = useRef<string | null>(null)
 
   const test = async () => {
     const playerAddress = wallet?.accounts[0].address
@@ -517,25 +518,28 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
  
   useEffect(() => {
     if (game?.rollOutcome && game?.rollOutcome !== 0 && game?.dateCreated) {
-      console.log(game?.rollOutcome)
-      setIsRolling(true)
+      if (game.dateCreated !== previousDateCreated.current) {
+        console.log(game?.rollOutcome)
+        previousDateCreated.current = game.dateCreated
+        setIsRolling(true)
 
-      const interval = setInterval(() => {
-        diceRollSound?.play()
-        setResult(Math.floor(Math.random() * 6) + 1)
-      }, 80)
+        const interval = setInterval(() => {
+          diceRollSound?.play()
+          setResult(Math.floor(Math.random() * 6) + 1)
+        }, 80)
 
-      // Stop rolling after a certain time and show the final result
-      setTimeout(() => {
-        clearInterval(interval)
+        // Stop rolling after a certain time and show the final result
+        setTimeout(() => {
+          clearInterval(interval)
 
-        setResult(game?.rollOutcome)
-        setIsRolling(false)
-        setCanRollDice(false)
-        // setForceTrigger(false)
-      }, 4000)
+          setResult(game?.rollOutcome)
+          setIsRolling(false)
+          setCanRollDice(false)
+          // setForceTrigger(false)
+        }, 4000)
 
-      return () => clearInterval(interval)
+        return () => clearInterval(interval)
+      }
     } else {
       setResult(1)
       setCommitted(false)
