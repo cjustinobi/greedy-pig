@@ -477,7 +477,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       if (allPlayersMoved) {
         toast.success('Dice set to roll!')
-        setForceTrigger(true)
+        // setForceTrigger(true)
         setCanRollDice(true)
         setRevealMove(false)
       }
@@ -516,8 +516,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
  
   useEffect(() => {
-    
-    if (game?.rollOutcome && game?.rollOutcome !== 0 && forceTrigger) {
+    if (game?.rollOutcome && game?.rollOutcome !== 0 && game?.dateCreated) {
       console.log(game?.rollOutcome)
       setIsRolling(true)
 
@@ -529,11 +528,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       // Stop rolling after a certain time and show the final result
       setTimeout(() => {
         clearInterval(interval)
-        
+
         setResult(game?.rollOutcome)
         setIsRolling(false)
         setCanRollDice(false)
-        setForceTrigger(false)
+        // setForceTrigger(false)
       }, 4000)
 
       return () => clearInterval(interval)
@@ -542,7 +541,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       setCommitted(false)
       setRevealed(false)
     }
-  }, [game?.rollOutcome, diceRollSound, forceTrigger])
+  }, [game?.rollOutcome, diceRollSound, game?.dateCreated])
 
    useEffect(() => {
      if (game?.status === 'Ended') {
