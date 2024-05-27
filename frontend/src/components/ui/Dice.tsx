@@ -7,7 +7,7 @@ import Die5 from '@/assets/img/dice_5.png'
 import Die6 from '@/assets/img/dice_6.png'
 import Image from 'next/image'
 import useAudio from '@/hooks/useAudio'
-import { generateCommitment, userJoiningId } from '@/lib/utils'
+import { generateCommitment } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
@@ -92,10 +92,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       setJoining(true)
       updateUserAction({
-        // gameId: userJoiningId as Id<'game'>,
-        data: {
-          userJoining: true,
-        },
+        data: { userJoining: true }
       })
 
       try {
@@ -110,27 +107,18 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         if (result) {
           setJoining(false)
           updateUserAction({
-            // gameId: userJoiningId as Id<'game'>,
-            data: {
-              userJoining: false
-            }
+            data: { userJoining: false }
           })
         } else {
           updateUserAction({
-            // gameId: userJoiningId as Id<'game'>,
-            data: {
-              userJoining: false
-            }
+            data: { userJoining: false }
           })
         }
       } catch (error) {
         console.error('Error during game join:', error)
         setJoining(false)
         updateUserAction({
-          // gameId: userJoiningId as Id<'game'>,
-          data: {
-            userJoining: false,
-          },
+          data: { userJoining: false }
         })
       }
 
@@ -184,10 +172,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     if (response === 'yes') {
 
       updateUserAction({
-        // gameId: userJoiningId as Id<'game'>,
-        data: {
-          userPlaying: true
-        }
+        data: { userPlaying: true }
       })
 
       try {
@@ -213,20 +198,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           setCommitted(true)
           setCommiting(false)
           updateUserAction({
-            // gameId: userJoiningId as Id<'game'>,
-            data: {
-              userPlaying: false
-            }
+            data: { userPlaying: false }
           })
         }
         console.log('tx for the game play ', result)
       } catch (error) {
         setCommiting(false)
         updateUserAction({
-          // gameId: userJoiningId as Id<'game'>,
-          data: {
-            userPlaying: false
-          }
+          data: { userPlaying: false }
         })
         console.error('Error during game play: ', error)
       }
@@ -236,10 +215,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         setPass(true)
 
         updateUserAction({
-          // gameId: userJoiningId as Id<'game'>,
-          data: {
-            userPlaying: true,
-          },
+          data: { userPlaying: true }
         })
 
         const jsonPayload = JSON.stringify({
@@ -260,10 +236,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         const result = await tx.wait(1)
         if (result) {
           updateUserAction({
-            // gameId: userJoiningId as Id<'game'>,
-            data: {
-              userPlaying: false,
-            }
+            data: { userPlaying: false }
           })
           setPass(false)
         }
@@ -271,10 +244,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       } catch (error) {
         setPass(false)
         updateUserAction({
-          // gameId: userJoiningId as Id<'game'>,
-          data: {
-            userPlaying: false,
-          }
+          data: { userPlaying: false }
         })
         console.error('Error during game play: ', error)
       }
@@ -297,10 +267,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     try {
 
       updateUserAction({
-        // gameId: userJoiningId as Id<'game'>,
-        data: {
-          userPlaying: true
-        }
+        data: { userPlaying: true }
       })
 
       const jsonPayload = JSON.stringify({
@@ -316,10 +283,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       if (res) {
 
         updateUserAction({
-          // gameId: userJoiningId as Id<'game'>,
-          data: {
-            userPlaying: false
-          }
+          data: { userPlaying: false }
         })
 
         setCommiting(false)
@@ -330,10 +294,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       console.log('error while commiting ', error)
       setCommiting(false)
       updateUserAction({
-        // gameId: userJoiningId as Id<'game'>,
-        data: {
-          userPlaying: false
-        }
+        data: { userPlaying: false }
       })
     }
   }
@@ -351,10 +312,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     if (currentPlayer.move) return toast.error('Already revealed')
 
     updateUserAction({
-      // gameId: userJoiningId as Id<'game'>,
-      data: {
-        userPlaying: true
-      }
+      data: { userPlaying: true }
     })
     
     setRevealing(true)
@@ -380,10 +338,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
      if (res) {
 
       updateUserAction({
-        // gameId: userJoiningId as Id<'game'>,
-        data: {
-          userPlaying: false
-        }
+        data: { userPlaying: false }
       })
 
        setRevealing(false)
@@ -394,10 +349,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
      setRevealing(false)
 
      updateUserAction({
-      //  gameId: userJoiningId as Id<'game'>,
-       data: {
-         userPlaying: false
-       }
+       data: { userPlaying: false }
      })
    }
 
@@ -564,7 +516,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
-        disabled={isRolling}
+        disabled={isRolling || commiting}
       >
         {result !== null && (
           <Image
