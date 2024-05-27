@@ -54,7 +54,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [joining, setJoining] = useState<boolean>(false)
   const [pass, setPass] = useState<boolean>(false)
   const [gameEnded, setGameEnded] = useState<boolean>(false)
-  const [forceTrigger, setForceTrigger] = useState<boolean>(false)
   const previousRollCount = useRef<string | null>(null)
 
   const test = async () => {
