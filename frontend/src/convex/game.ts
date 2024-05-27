@@ -27,6 +27,8 @@ export const updateGame = mutation({
       throw new Error("Game not found")
     }
 
+    console.log('game convex ', game)
+
     // get the first game ID
 
 
