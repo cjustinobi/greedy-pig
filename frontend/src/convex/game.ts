@@ -17,27 +17,29 @@ export const getUserPlaying = query({
 
 export const updateGame = mutation({
   args: { 
-    gameId: v.id('game'),
+    // gameId: v.id('game'),
     data: vUpdateGame,
   },
-  handler: async (ctx, args) => {
-    const game = await ctx.db.get(args.gameId)
+  handler: async ({db}, args) => {
+    // const game = await ctx.db.get(args.gameId)
+    const game = await db.query('game').first()
     if (!game) {
       throw new Error("Game not found")
     }
+
+    // get the first game ID
+
 
     const updatedGame = {
       ...game,
       ...args.data
     };
 
-    await ctx.db.replace(args.gameId, updatedGame)
+    await db.replace(game._id, updatedGame)
     return updatedGame
   }
 })
-// export const updateGame = mutation({
-//   args: {data: vUpdateGame},
-//   handler: async () => {
-    
+        
 //   }
+// })//   }
 // })

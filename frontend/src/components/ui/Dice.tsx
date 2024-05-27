@@ -93,7 +93,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       setJoining(true)
       updateUserAction({
-        gameId: userJoiningId as Id<'game'>,
+        // gameId: userJoiningId as Id<'game'>,
         data: {
           userJoining: true,
         },
@@ -111,14 +111,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         if (result) {
           setJoining(false)
           updateUserAction({
-            gameId: userJoiningId as Id<'game'>,
+            // gameId: userJoiningId as Id<'game'>,
             data: {
               userJoining: false
             }
           })
         } else {
           updateUserAction({
-            gameId: userJoiningId as Id<'game'>,
+            // gameId: userJoiningId as Id<'game'>,
             data: {
               userJoining: false
             }
@@ -128,7 +128,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         console.error('Error during game join:', error)
         setJoining(false)
         updateUserAction({
-          gameId: userJoiningId as Id<'game'>,
+          // gameId: userJoiningId as Id<'game'>,
           data: {
             userJoining: false,
           },
@@ -185,7 +185,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     if (response === 'yes') {
 
       updateUserAction({
-        gameId: userJoiningId as Id<'game'>,
+        // gameId: userJoiningId as Id<'game'>,
         data: {
           userPlaying: true
         }
@@ -214,7 +214,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           setCommitted(true)
           setCommiting(false)
           updateUserAction({
-            gameId: userJoiningId as Id<'game'>,
+            // gameId: userJoiningId as Id<'game'>,
             data: {
               userPlaying: false
             }
@@ -224,7 +224,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       } catch (error) {
         setCommiting(false)
         updateUserAction({
-          gameId: userJoiningId as Id<'game'>,
+          // gameId: userJoiningId as Id<'game'>,
           data: {
             userPlaying: false
           }
@@ -237,7 +237,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         setPass(true)
 
         updateUserAction({
-          gameId: userJoiningId as Id<'game'>,
+          // gameId: userJoiningId as Id<'game'>,
           data: {
             userPlaying: true,
           },
@@ -261,7 +261,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         const result = await tx.wait(1)
         if (result) {
           updateUserAction({
-            gameId: userJoiningId as Id<'game'>,
+            // gameId: userJoiningId as Id<'game'>,
             data: {
               userPlaying: false,
             }
@@ -272,7 +272,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       } catch (error) {
         setPass(false)
         updateUserAction({
-          gameId: userJoiningId as Id<'game'>,
+          // gameId: userJoiningId as Id<'game'>,
           data: {
             userPlaying: false,
           }
@@ -298,7 +298,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     try {
 
       updateUserAction({
-        gameId: userJoiningId as Id<'game'>,
+        // gameId: userJoiningId as Id<'game'>,
         data: {
           userPlaying: true
         }
@@ -317,7 +317,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       if (res) {
 
         updateUserAction({
-          gameId: userJoiningId as Id<'game'>,
+          // gameId: userJoiningId as Id<'game'>,
           data: {
             userPlaying: false
           }
@@ -331,7 +331,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       console.log('error while commiting ', error)
       setCommiting(false)
       updateUserAction({
-        gameId: userJoiningId as Id<'game'>,
+        // gameId: userJoiningId as Id<'game'>,
         data: {
           userPlaying: false
         }
@@ -352,7 +352,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     if (currentPlayer.move) return toast.error('Already revealed')
 
     updateUserAction({
-      gameId: userJoiningId as Id<'game'>,
+      // gameId: userJoiningId as Id<'game'>,
       data: {
         userPlaying: true
       }
@@ -381,7 +381,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
      if (res) {
 
       updateUserAction({
-        gameId: userJoiningId as Id<'game'>,
+        // gameId: userJoiningId as Id<'game'>,
         data: {
           userPlaying: false
         }
@@ -395,7 +395,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
      setRevealing(false)
 
      updateUserAction({
-       gameId: userJoiningId as Id<'game'>,
+      //  gameId: userJoiningId as Id<'game'>,
        data: {
          userPlaying: false
        }
