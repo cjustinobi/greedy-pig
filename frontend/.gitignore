@@ -106,4 +106,4 @@ dist
 # Other
 #src/generated
 
-.env.local
+# .env.local
