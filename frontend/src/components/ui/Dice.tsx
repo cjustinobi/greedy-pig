@@ -19,7 +19,6 @@ import Button from '../shared/Button'
 import { ethers } from 'ethers'
 import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
-import { Id } from '@/convex/_generated/dataModel'
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
 
@@ -31,6 +30,7 @@ interface ApparatusProps {
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const updateUserAction = useMutation(api.game.updateGame)
+  const creatUserAction = useMutation(api.game.createGame)
   const userJoining = useQuery(api.game.getUserJoining)
   const userPlaying = useQuery(api.game.getUserPlaying)
   const [{ connectedChain }] = useSetChain()
@@ -504,6 +504,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
      }
    }, [game?.status, game?.winner])
 
+   
+useEffect(() => {
+  if (userJoining === null || userPlaying === null) {
+    creatUserAction()
+  }
+}, [userJoining, userPlaying])
 
   return (
     <div className="flex flex-col justify-center">
@@ -654,4 +660,3 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 }
 
 export default Dice
-// screen fence prize absurd acoustic sure view parade moment car bitter sick

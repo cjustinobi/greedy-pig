@@ -14,6 +14,18 @@ export const getUserPlaying = query({
   }
 })
 
+export const createGame = mutation({
+  args: {},
+  handler: async ({ db }) => {
+    const game = {
+      userJoining: false,
+      userPlaying: false,
+    }
+    await db.insert('test', game)
+    return game
+  }
+})
+
 export const updateGame = mutation({
   args: { 
     // gameId: v.id('test'),

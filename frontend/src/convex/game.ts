@@ -1,7 +1,18 @@
 
 import { mutation, query } from './_generated/server'
-import { v } from 'convex/values'
 import { vUpdateGame } from './validators'
+
+export const createGame = mutation({
+  args: {},
+  handler: async ({ db }) => {
+    const game = {
+      userJoining: false,
+      userPlaying: false,
+    }
+    await db.insert('game', game)
+    return game
+  }
+})
 
 export const getUserJoining = query({
   handler: async ({ db }) => {
@@ -17,20 +28,14 @@ export const getUserPlaying = query({
 
 export const updateGame = mutation({
   args: { 
-    // gameId: v.id('game'),
     data: vUpdateGame,
   },
   handler: async ({db}, args) => {
-    // const game = await ctx.db.get(args.gameId)
+
     const game = await db.query('game').first()
     if (!game) {
       throw new Error("Game not found")
     }
-
-    console.log('game convex ', game)
-
-    // get the first game ID
-
 
     const updatedGame = {
       ...game,
@@ -41,7 +46,3 @@ export const updateGame = mutation({
     return updatedGame
   }
 })
-        
-//   }
-// })//   }
-// })
