@@ -70,7 +70,7 @@ const addParticipant = async ({gameId, playerAddress}) => {
     deposited: false
   })
 
-  if (game.gameSettings.bet) {
+  if (game?.gameSettings.bet) {
     game.bettingFund += game.bettingAmount
   }
 
@@ -327,7 +327,7 @@ const endGame = game => {
 
 const transferToWinner = async (game) => {
 
-  if (game.gameSettings.bet && game.status === 'Ended') {
+  if (game?.gameSettings.bet && game.status === 'Ended') {
     const winnerAddress = game.winner.toLowerCase();
       let res
       for (const participant of game.participants) {

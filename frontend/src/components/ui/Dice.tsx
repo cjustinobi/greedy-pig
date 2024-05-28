@@ -74,7 +74,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       // check if player has deposited
 
-      if (game.gameSettings.bet) {
+      if (game?.gameSettings.bet) {
         const reports = await inspectCall(
           `balance/${playerAddress}`,
           connectedChain
@@ -309,7 +309,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         (participant: any) => participant.address === playerAddress
       )
 
-    if (currentPlayer.move) return toast.error('Already revealed')
+    if (currentPlayer?.move) return toast.error('Already revealed')
 
     updateUserAction({
       data: { userPlaying: true }
@@ -374,7 +374,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }
 
   const depositHandler = async () => {
-    if (!game.gameSettings.bet) return toast.error('Not a betting game')
+    if (!game?.gameSettings.bet) return toast.error('Not a betting game')
 
     try {
       await sendEther(dappAddress, game.id, game.bettingAmount, rollups)
@@ -442,7 +442,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   useEffect(() => {
     const checkDeposit = async () => {
-      if (wallet?.accounts[0].address && game.gameSettings.bet) {
+      if (wallet?.accounts[0].address && game?.gameSettings.bet) {
         const playerAddress = wallet.accounts[0].address
         const reports = await inspectCall(
           `balance/${playerAddress}`,
@@ -485,7 +485,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           setResult(game?.rollOutcome)
           setIsRolling(false)
           setCanRollDice(false)
-          // setForceTrigger(false)
+          setCommitted(false)
+          setRevealed(false)
         }, 4000)
 
         return () => clearInterval(interval)
