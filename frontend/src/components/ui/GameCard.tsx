@@ -17,18 +17,18 @@ const GameCard = ({ game }: GameCardProps) => {
     router.push(`/games/${id}?action=${action}`)
   }
 
-  useEffect(() => {
-    if (wallet?.accounts[0].address) {
-      const userAddress = wallet.accounts[0].address
-      const isUserParticipant = game.participants.some(
-        (participant: any) => participant.address === userAddress
-      )
+  // useEffect(() => {
+  //   if (wallet?.accounts[0].address) {
+  //     const userAddress = wallet.accounts[0].address
+  //     const isUserParticipant = game.participants.some(
+  //       (participant: any) => participant.address === userAddress
+  //     )
 
-      if (isUserParticipant) {
-        handleNavigate(game.id, 'view')
-      }
-    }
-  }, [wallet, game])
+  //     if (isUserParticipant) {
+  //       handleNavigate(game.id, 'view')
+  //     }
+  //   }
+  // }, [wallet, game])
 
   const isJoined = game.participants.some(
     (participant: any) => participant.address === wallet?.accounts[0].address
@@ -106,7 +106,6 @@ const GameCard = ({ game }: GameCardProps) => {
         {(game.status === 'New' || game.status === 'In Progress') && (
           <button
             onClick={() => handleNavigate(game.id, 'join')}
-            disabled={isJoined}
             className="mt-4 text-xl w-full text-white bg-indigo-600 py-2 rounded-xl shadow-lg"
           >
             {isJoined ? 'Joined' : 'Join'}

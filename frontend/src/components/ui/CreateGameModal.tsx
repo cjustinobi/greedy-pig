@@ -169,7 +169,7 @@ const CreateGameModal = () => {
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="winningScore"
             type="number"
-            min={6}
+            min={3}
             placeholder="Set Winning Score"
           />
         </div>
@@ -195,7 +195,6 @@ const CreateGameModal = () => {
               type="radio"
               className="form-radio"
               name="accountType"
-              disabled
               onChange={() => handleOptionChange(true)}
             />
             <span className="ml-2">Yes</span>
@@ -205,7 +204,6 @@ const CreateGameModal = () => {
               type="radio"
               className="form-radio"
               name="accountType"
-              checked
               onChange={() => handleOptionChange(false)}
             />
             <span className="ml-2">No</span>
@@ -225,6 +223,7 @@ const CreateGameModal = () => {
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="bettingAmount"
               type="number"
+              min={0}
               placeholder="Set Staking Amount"
             />
           </div>

@@ -8,7 +8,7 @@ import { useQuery, gql } from '@apollo/client'
 import { ethers } from 'ethers'
 import { useDispatch } from 'react-redux'
 import { useConnectWallet } from '@web3-onboard/react'
-
+import { Vouchers } from '../Vouchers'
 
 const GET_LATEST_NOTICE = gql`
   query latestNotice {
@@ -25,7 +25,7 @@ const GET_LATEST_NOTICE = gql`
 const GameArena = () => {
 
   const { loading, error, data, refetch } = useQuery(GET_LATEST_NOTICE, {
-    pollInterval: 10,
+    pollInterval: 1000,
   })
   const [{ wallet }] = useConnectWallet()
   const rollups = useRollups(dappAddress)
@@ -90,6 +90,7 @@ const GameArena = () => {
     <div className="py-6 sm:py-8 lg:py-12">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8">
         <div className="flex flex-col items-center gap-4  px-8 py-6 md:gap-6">
+          {/* <Vouchers dappAddress={dappAddress} /> */}
           {game && game.status === 'Ended' ? (
             <p>Game Ended </p>
           ) : (

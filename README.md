@@ -19,11 +19,21 @@ The dice rolls immediately once all players have revealed their individual numbe
 
 You will need the Cartesi CLI installed on your machine. Follow [this guide](https://docs.cartesi.io/cartesi-rollups/1.3/development/installation/) for the installation.
 
-- Clone this Project
-- Navigate to the backend directory `cd backend`
+**Clone this Project**
+
+#### Backend setup
+
+- Navigate to the backend directory. From the root folder: `cd backend`
 - Install the packages `npm install`
 - Build the application `cartesi build`
-- Finally, start the node, `cartesi run`
+- Start the node, `cartesi run`
+
+#### Frontend setup
+
+- Navigate to the frontend directory. From the root folder:  `cd frontend`
+- Install the packages `npm install`
+- Start the frontend, `npm run dev` 
+- Follow the instructions on the command line. (You will need to create a new Convex project)
 
 ### Deployment
 

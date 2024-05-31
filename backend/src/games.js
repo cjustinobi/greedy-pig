@@ -10,6 +10,8 @@ const { Wallet } = require('cartesi-wallet')
 const { Router } = require('cartesi-router')
 const { ethers } = require('ethers')
 
+const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
+
 const wallet = new Wallet(new Map())
 const router = new Router(wallet)
 
@@ -27,9 +29,9 @@ const addGame = async (game) => {
     return errorResponse(true, 'Game already exist')
   }
 
-  if (game.gameSettings.winningScore < 6) {
-    return errorResponse(true, 'Game winning score should not be less than 6')
-  }
+  // if (game.gameSettings.winningScore < 6) {
+  //   return errorResponse(true, 'Game winning score should not be less than 6')
+  // }
 
   const newGame = { ...game, id: uuidv4(), dateCreated: Date.now() }
   games.push(newGame)
@@ -71,7 +73,7 @@ const addParticipant = async ({gameId, playerAddress}) => {
   })
 
   if (game?.gameSettings.bet) {
-    game.bettingFund += game.bettingAmount
+    game.bettingFund = +game.bettingAmount + +game.bettingFund
   }
 
   if (!game.activePlayer) {
@@ -325,34 +327,69 @@ const endGame = game => {
  
 }
 
-const transferToWinner = async (game) => {
+const transferToWinner = async (game, rollupAddress) => {
 
   if (game?.gameSettings.bet && game.status === 'Ended') {
+
     const winnerAddress = game.winner.toLowerCase();
-      let res
-      for (const participant of game.participants) {
-        if (participant.address.toLowerCase() !== winnerAddress) {
-          try {
-            res = await wallet.ether_transfer(participant.address.toLowerCase(), winnerAddress.toLowerCase(), ethers.parseEther((game.bettingAmount).toString()));
-            console.log(`Transferred ${game.bettingAmount} to winner from ${participant.address}`);
-            console.log('Result from transfer ', res);
+
+    // ether_withdraw: (rollup_address: Address, account: Address, amount: bigint) => Voucher | Error_out;
+// ether_transfer: (account: Address, to: Address, amount: bigint) => Notice | Error_out;
+    let error = false
+
+    for (const participant of game.participants) {
+      if (participant.address.toLowerCase() !== winnerAddress) {
+
+        console.log('inside the payment loop')
+
+        try {
+            let notice = wallet.ether_transfer(
+              participant.address.toLowerCase(),
+              game.winner,
+              ethers.parseEther((game.bettingAmount).toString())
+          );
+          
+          await fetch(rollup_server + "/notice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ payload: notice.payload }),
+          });
+          console.log('transfered ...', notice)
           } catch (error) {
-            console.log(`Error transferring ${game.bettingAmount} to winner from ${participant.address}`);
+            console.log("transfer ERROR");
+            console.log(error);
           }
+
+        // try {
+          // let voucher = wallet.ether_withdraw(
+          //   rollupAddress,
+          //   game.winner,
+          //   ethers.parseEther((game.bettingAmount).toString())
+          // );
+
+        //   console.log('voucher', voucher)
+
+        //   const res = await fetch(rollup_server + "/voucher", {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify({ payload: voucher.payload, destination: voucher.destination }),
+        //   });
+
+        //   console.log('voucher res from game', res)
+
+        //   } catch (error) {
+        //     console.log("voucher ERROR");
+        //     console.log(error);
+        //     error = true
+        //   }
         }
       }
-      if (res.type === 'error') {
+      if (error) {
         return errorResponse(true, 'Error transferring funds to winner')
+      } else {
+         game.paidOut = true
       }
-      game.paidOut = true
-  
-    // try {
-    //   const res = wallet.ether_transfer('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', game.winner, ethers.parseEther(game.bettingAmount));
-  
-    //   console.log('result from transfer ', res)
-    // } catch (error) {
-    //   console.log('error from transfer ', error)
-    // }
+     
   }
 }
 

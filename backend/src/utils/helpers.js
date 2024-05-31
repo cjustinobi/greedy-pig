@@ -18,8 +18,7 @@ const verifyCommitment = async (commitment, move, nonce) => {
         .map((byte) => byte.toString(16).padStart(2, "0"))
         .join("");
 
-        console.log('calculated commitment ', calculatedCommitment)
-        console.log('actual commitment ', commitment)
+    
 
     // Compare calculated commitment with the commitment received from the frontend
     return calculatedCommitment === commitment;

@@ -1,5 +1,6 @@
 
 const viem = require('viem')
+
 const { Router } = require('cartesi-router')
 const { Wallet, Error_out, Notice, Report } = require('cartesi-wallet')
 const { 
@@ -16,6 +17,7 @@ const {
   rollDice,
   transferToWinner
 } = require('./games')
+const { ethers } = require('ethers')
 
 const wallet = new Wallet(new Map())
 const router = new Router(wallet)
@@ -72,38 +74,51 @@ async function handle_advance(data) {
   try {
 
     if (JSONpayload.method === 'withdraw') {
-      
+// ether_withdraw: (rollup_address: Address, account: Address, amount: bigint) => Voucher | Error_out;
       try {
-        const res = router.process('ether_withdraw', payload  )
-        console.log('result from withraw ', res)
-        return res
-      } catch (error) {
-       console.log(`Error occured trying to withdraw ${error}`)
-       return new Error_out(`Error occured trying to withdraw ${error}`)
-      }
+    let voucher = wallet.ether_withdraw(
+      JSONpayload.rollupAddress,
+      JSONpayload.to,
+      viem.parseEther((JSONpayload.amount).toString())
+    );
+    const res = await fetch(rollup_server + "/voucher", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payload: voucher.payload, destination: voucher.destination }),
+    });
+    console.log('voucher ', res)
+  } catch (error) {
+    console.log("voucher ERROR");
+    console.log(error);
+  }
       
-    } else if (JSONpayload.method === 'transfer') {
+      // try {
+      //   const res = router.process('ether_withdraw', payload  )
+      //   console.log('result from withraw ', res)
+      //   return res
+      // } catch (error) {
+      //  console.log(`Error occured trying to withdraw ${error}`)
+      //  return new Error_out(`Error occured trying to withdraw ${error}`)
+      // }
+      
+    } else if (JSONpayload.method === 'ether_transfer') {
+
+      
+      // console.log("transfering");
+      // return router.process(JSONpayload.method, data);
 
       const game = games.find(game => game.id === JSONpayload.gameId)
-      const res = transferToWinner(game)
+      const res = transferToWinner(game, JSONpayload.rollupAddress)
       if (res.error) {
         await reportHandler(res.message);
         return 'reject';
       }
-      
-      // try {
-      //   let res = wallet.ether_transfer(JSONpayload.from, JSONpayload.to, BigInt(JSONpayload.amount));
+  
+    } else if (JSONpayload.method === 'ether_withdraw') {
 
-      //   console.log('result after transfer from index ', res)
-      //   return res
-      // } catch (error) {
-      //   console.log("ERROR transfering");
-      //   console.log(error);
-      //   await reportHandler('ERROR transfering')
-      //   return 'reject'
-      // }
       
-      
+      console.log("ether_withdraw");
+      return router.process(JSONpayload.method, data);
   
     } else if (JSONpayload.method === 'createGame') {
       if (JSONpayload.data == '' || null) {
