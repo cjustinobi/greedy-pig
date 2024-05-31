@@ -376,36 +376,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     const jsonPayload = JSON.stringify({
       method: 'ether_transfer',
-      //  args: {
       gameId: game.id,
       rollupAddress: dappAddress,
       account: game.winner,
       amount: game.bettingAmount
-      //  }
     })
-    
-    // {
-    // "method": "ether_transfer",
-    // "args": {
-    //     "to": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
-    //     "amount": 1000000000000000000000000000
-
-    // }
-// }
-
-    // const jsonPayload = JSON.stringify({
-    //   method: 'ether_transfer',
-    //   args: {
-    //     account: '0x14dc79964da2c08b23698b3d3cc7ca32193d9955',
-    //     to: game.winner,
-    //     amount: 1000000000000000000
-    //     // amount: ethers.utils.parseEther(String(game.bettingAmount))
-    //   }
-    // })
-    // const jsonPayload = JSON.stringify({
-    //   method: 'transfer',
-    //   gameId: game.id
-    // })
 
     const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
     const res = await tx.wait(1)
@@ -563,9 +538,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
    useEffect(() => {
      if (game?.status === 'Ended' && !gameEnded) {
       setGameEnded(true)
-      if (game.winner === wallet?.accounts[0].address){
-        sendRelayAddress()
-      } 
+      // if (game.winner === wallet?.accounts[0].address){
+      //   sendRelayAddress()
+      // } 
      }
    }, [game?.status, game?.winner, gameEnded])
 
@@ -584,6 +559,11 @@ useEffect(() => {
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
+      {game.ended && game.winner === wallet?.accounts[0].address && (
+        <Button onClick={sendRelayAddress}>
+          Claim Fund
+        </Button>
+      )}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
@@ -607,14 +587,20 @@ useEffect(() => {
           !game.commitPhase &&
           !game.revealPhase && (
             <div className="flex justify-center">
-              <Button disabled={depositing} className="my-6" onClick={depositHandler}>
+              <Button
+                disabled={depositing}
+                className="my-6"
+                onClick={depositHandler}
+              >
                 {depositing ? 'Depositing ...' : 'Deposit'}
               </Button>
             </div>
           )}
-       {gameEnded && <Button className="my-6" onClick={transfer}>
-          Transfer
-        </Button>}
+        {gameEnded && (
+          <Button className="my-6" onClick={transfer}>
+            Transfer
+          </Button>
+        )}
         {game &&
           game.status === 'In Progress' &&
           game?.activePlayer === wallet?.accounts[0].address &&
@@ -717,7 +703,6 @@ useEffect(() => {
           </Button>
         </div>
       </div>
-
     </div>
   )
 }
