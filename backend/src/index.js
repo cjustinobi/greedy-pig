@@ -17,7 +17,6 @@ const {
   rollDice,
   transferToWinner
 } = require('./games')
-const { ethers } = require('ethers')
 
 const wallet = new Wallet(new Map())
 const router = new Router(wallet)
@@ -45,8 +44,7 @@ async function handle_advance(data) {
           console.log('payment payload ', payload)
           const res = await router.process("ether_deposit", payload);
           console.log ('after payment payload ', res.payload)
-          // const res = updateBalance(address, amount, gameId)
-          // TODO: update the payment record
+
           return res
 
         } catch (e) {
