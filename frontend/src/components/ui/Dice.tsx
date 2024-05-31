@@ -596,11 +596,11 @@ useEffect(() => {
               </Button>
             </div>
           )}
-        {gameEnded && (
+        {/* {gameEnded && (
           <Button className="my-6" onClick={transfer}>
             Transfer
           </Button>
-        )}
+        )} */}
         {game &&
           game.status === 'In Progress' &&
           game?.activePlayer === wallet?.accounts[0].address &&
