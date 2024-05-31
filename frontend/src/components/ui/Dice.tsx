@@ -445,10 +445,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const sendRelayAddress = async () => {
     if (rollups) {
       try {
+      toast.success('Set Dapp address')
        const tx = await rollups.relayContract.relayDAppAddress(dappAddress) 
        if (tx) {
         const res = await tx.wait(1)
         if (res) {
+          toast.success('Transfering to winner')
           transfer()
         }
        }
@@ -561,8 +563,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
    useEffect(() => {
      if (game?.status === 'Ended' && !gameEnded) {
       setGameEnded(true)
-      sendRelayAddress()
-    
+      if (game.winner === wallet?.accounts[0].address){
+        sendRelayAddress()
+      } 
      }
    }, [game?.status, game?.winner, gameEnded])
 
