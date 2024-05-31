@@ -559,7 +559,7 @@ useEffect(() => {
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
-      {game?.ended && game?.winner === wallet?.accounts[0].address && (
+      {game?.status === 'ended' && game?.winner == wallet?.accounts[0].address && (
         <Button onClick={sendRelayAddress}>
           Claim Fund
         </Button>
