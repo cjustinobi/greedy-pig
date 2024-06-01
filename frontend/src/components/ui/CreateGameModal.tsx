@@ -44,6 +44,7 @@ const CreateGameModal = () => {
     },
     status: GameStatus.New,
     rollOutcome: 0,
+    rollCount: 0,
     winner: '',
     bettingAmount, // in ether
     bettingFund: 0, // total fund transfered by players
@@ -71,7 +72,7 @@ const CreateGameModal = () => {
     game.gameSettings.winningScore = winningScore
     game.gameSettings.bet = bet
     game.bettingAmount = bettingAmount
-debugger
+
     const jsonPayload = JSON.stringify({
       method: 'createGame',
       data: game,
@@ -168,7 +169,7 @@ debugger
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="winningScore"
             type="number"
-            min={6}
+            min={3}
             placeholder="Set Winning Score"
           />
         </div>
@@ -194,7 +195,6 @@ debugger
               type="radio"
               className="form-radio"
               name="accountType"
-              disabled
               onChange={() => handleOptionChange(true)}
             />
             <span className="ml-2">Yes</span>
@@ -204,7 +204,6 @@ debugger
               type="radio"
               className="form-radio"
               name="accountType"
-              checked
               onChange={() => handleOptionChange(false)}
             />
             <span className="ml-2">No</span>
@@ -224,6 +223,7 @@ debugger
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="bettingAmount"
               type="number"
+              min={0}
               placeholder="Set Staking Amount"
             />
           </div>

@@ -89,9 +89,9 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
                   <th className="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
                     Player
                   </th>
-                  <th className="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                  {/* <th className="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
                     Move
-                  </th>
+                  </th> */}
                   <th className="px-6 py-3 font-bold text-left uppercase align-middle bg-transparent border-b border-gray-200 shadow-none text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
                     Turn Score
                   </th>
@@ -121,11 +121,11 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
                           </div>
                         </div>
                       </td>
-                      <td className="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
+                      {/* <td className="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                         <p className="mb-0 font-semibold leading-tight text-xs">
                           {currentGame.revealPhase && player.move ? player.move : 'No move yet'}
                         </p>
-                      </td>
+                      </td> */}
                       <td className="p-2 text-center align-middle bg-transparent border-b whitespace-nowrap shadow-transparent">
                         <span className="font-semibold leading-tight text-xs text-slate-400">
                           {player.playerInfo?.turnScore}

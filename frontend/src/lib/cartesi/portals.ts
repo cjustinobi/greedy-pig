@@ -14,7 +14,7 @@ export const addInput = async (
       console.log('res ', res)
       return res
     } catch (e) {
-      console.log(`${e}`)
+      console.log(`${JSON.stringify(e)}`)
     }
   }
 }

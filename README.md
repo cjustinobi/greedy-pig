@@ -15,6 +15,26 @@ Greedy Pig is an engaging and interactive dice game, it is tailored for events a
 The dice rolls immediately once all players have revealed their individual numbers.
 5. **Game Conclusion & Rewards:** The game ends either when the agreed-upon number of turns is reached or when a player achieves the target score. The winner, determined by the highest score, receives the accumulated prize pool.
 
+### Running the game locally
+
+You will need the Cartesi CLI installed on your machine. Follow [this guide](https://docs.cartesi.io/cartesi-rollups/1.3/development/installation/) for the installation.
+
+**Clone this Project**
+
+#### Backend setup
+
+- Navigate to the backend directory. From the root folder: `cd backend`
+- Install the packages `npm install`
+- Build the application `cartesi build`
+- Start the node, `cartesi run`
+
+#### Frontend setup
+
+- Navigate to the frontend directory. From the root folder:  `cd frontend`
+- Install the packages `npm install`
+- Start the frontend, `npm run dev` 
+- Follow the instructions on the command line. (You will need to create a new Convex project)
+
 ### Deployment
 
 - Deployed to Sepolia testnet

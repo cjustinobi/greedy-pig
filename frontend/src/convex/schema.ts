@@ -4,6 +4,11 @@ import { v } from 'convex/values'
 
 export default defineSchema({
   game: defineTable({
-    userJoining: v.boolean()
+    userJoining: v.optional(v.boolean()),
+    userPlaying: v.optional(v.boolean())
+  }),
+  test: defineTable({
+    userJoining: v.optional(v.boolean()),
+    userPlaying: v.optional(v.boolean())
   })
 })

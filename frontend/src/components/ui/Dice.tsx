@@ -7,12 +7,11 @@ import Die5 from '@/assets/img/dice_5.png'
 import Die6 from '@/assets/img/dice_6.png'
 import Image from 'next/image'
 import useAudio from '@/hooks/useAudio'
-import { generateCommitment, userJoiningId } from '@/lib/utils'
+import { generateCommitment } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
-import { dappRelayAddress, hasDeposited } from '@/lib/utils'
-// import { dappAddress, dappRelayAddress, hasDeposited } from '@/lib/utils'
+import { dappAddress, dappRelayAddress, hasDeposited } from '@/lib/utils'
 import { useConnectWallet, useSetChain } from '@web3-onboard/react'
 import { addInput, sendEther, inspectCall } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
@@ -20,7 +19,7 @@ import Button from '../shared/Button'
 import { ethers } from 'ethers'
 import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
-import { Id } from '@/convex/_generated/dataModel'
+
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
 
@@ -31,10 +30,11 @@ interface ApparatusProps {
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
-  const dappAddress = '0x70ac08179605AF2D9e75782b8DEcDD3c22aA4D0C'
-
-  const updateUserJoining = useMutation(api.game.updateGame)
+  // const [result, reexecuteQuery] = useVouchersQuery()
+  const updateUserAction = useMutation(api.game.updateGame)
+  const creatUserAction = useMutation(api.game.createGame)
   const userJoining = useQuery(api.game.getUserJoining)
+  const userPlaying = useQuery(api.game.getUserPlaying)
   const [{ connectedChain }] = useSetChain()
   const rollups = useRollups(dappAddress)
   const [{ wallet }] = useConnectWallet()
@@ -53,32 +53,40 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [revealed, setRevealed] = useState<boolean>(false)
   const [canRollDice, setCanRollDice] = useState<boolean>(false)
   const [deposited, setDeposited] = useState<boolean>(false)
+  const [depositing, setDepositing] = useState<boolean>(false)
   const [joining, setJoining] = useState<boolean>(false)
-  const [joined, setJoined] = useState<boolean>(false)
+  const [pass, setPass] = useState<boolean>(false)
   const [gameEnded, setGameEnded] = useState<boolean>(false)
-  const previousRollOutcome = useRef<number | null>(null)
+  const previousRollCount = useRef<string | null>(null)
 
-  const test = async () => {
+  const checkBalance = async () => {
     const playerAddress = wallet?.accounts[0].address
     const reports = await inspectCall(
       `balance/${playerAddress}`,
       connectedChain
     )
-    console.log(reports)
+    const res = hasDeposited(game.bettingAmount, reports)
+    if (res) {
+      toast('Successfully deposited. You can join game!')
+      return true
+    } else {
+      toast(`Deposit ${game.bettingAmount} to join game`)
+      return false
+    }
+      // ? toast('Successfully deposited. You can join game!')
+      // : toast(`Deposit ${game.bettingAmount} to join game`)
   }
 
   const joinGame = async () => {
 
     if (!wallet?.accounts[0].address) return toast.error('Connect account')
 
-    // if (wallet?.accounts[0].address) {
-
       const playerAddress = wallet.accounts[0].address
 
 
       // check if player has deposited
 
-      if (game.gameSettings.bet) {
+      if (game?.gameSettings.bet) {
         const reports = await inspectCall(
           `balance/${playerAddress}`,
           connectedChain
@@ -86,7 +94,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
    
         const res = hasDeposited(game.bettingAmount, reports)
 
-        // if (!res) return toast.error(`You need to deposit ${game.bettingAmount} ether to join`)
+        if (!res) return toast.error(`You need to deposit ${game.bettingAmount} ether to join`)
         
         setDeposited(true)
       }
@@ -95,11 +103,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       if (!id) return toast.error('Game not found')
 
       setJoining(true)
-      updateUserJoining({
-        gameId: userJoiningId as Id<"game">,
-        data: {
-          userJoining: true
-        }
+      updateUserAction({
+        data: { userJoining: true }
       })
 
       try {
@@ -110,34 +115,25 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   
         const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
         const result = await tx.wait(1)
+
         if (result) {
           setJoining(false)
-          // setJoined(true)
-          updateUserJoining({
-            gameId: userJoiningId as Id<'game'>,
-            data: {
-              userJoining: false,
-            }
+          updateUserAction({
+            data: { userJoining: false }
           })
         } else {
-          updateUserJoining({
-            gameId: userJoiningId as Id<'game'>,
-            data: {
-              userJoining: false,
-            }
+          updateUserAction({
+            data: { userJoining: false }
           })
         }
       } catch (error) {
         console.error('Error during game join:', error)
         setJoining(false)
-        updateUserJoining({
-          gameId: userJoiningId as Id<'game'>,
-          data: {
-            userJoining: false,
-          }
+        updateUserAction({
+          data: { userJoining: false }
         })
       }
-    // }
+
   }
 
   const rollDice = async () => {
@@ -179,12 +175,21 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     const playerAddress = wallet?.accounts[0].address
 
     if (!playerAddress) return toast.error('Connect account')
+    if (players.length < 2) return toast.error('Not enough players to start')
 
     if (game.activePlayer !== playerAddress) {
       return toast.error('Not your turn')
     }
 
-    if (players.length >= 2) {
+    if (game.gameSettings.bet && !deposited) {
+      return toast.error(`Deposit ${game.bettingAmount} to continue`)
+    }
+
+    if (response === 'yes') {
+
+      updateUserAction({
+        data: { userPlaying: true }
+      })
 
       try {
         setCommiting(true)
@@ -208,14 +213,57 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         if (result) {
           setCommitted(true)
           setCommiting(false)
+          updateUserAction({
+            data: { userPlaying: false }
+          })
         }
         console.log('tx for the game play ', result)
       } catch (error) {
         setCommiting(false)
+        updateUserAction({
+          data: { userPlaying: false }
+        })
         console.error('Error during game play: ', error)
       }
     } else {
-      toast.error('Not enough players to start')
+      try {
+
+        setPass(true)
+
+        updateUserAction({
+          data: { userPlaying: true }
+        })
+
+        const jsonPayload = JSON.stringify({
+          method: 'playGame',
+          data: {
+            gameId: game.id,
+            playerAddress,
+            response
+          },
+        })
+
+        const tx = await addInput(
+          JSON.stringify(jsonPayload),
+          dappAddress,
+          rollups
+        )
+
+        const result = await tx.wait(1)
+        if (result) {
+          updateUserAction({
+            data: { userPlaying: false }
+          })
+          setPass(false)
+        }
+        console.log('tx for the game play ', result)
+      } catch (error) {
+        setPass(false)
+        updateUserAction({
+          data: { userPlaying: false }
+        })
+        console.error('Error during game play: ', error)
+      }
     }
   }
 
@@ -233,6 +281,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     if (game?.activePlayer === playerAddress) return playGame('yes')
 
     try {
+
+      updateUserAction({
+        data: { userPlaying: true }
+      })
+
       const jsonPayload = JSON.stringify({
         method: 'commit',
         gameId: game.id,
@@ -244,6 +297,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       const res = await tx.wait(1)
   
       if (res) {
+
+        updateUserAction({
+          data: { userPlaying: false }
+        })
+
         setCommiting(false)
         setCommitted(true)
         toast.success('Move committed successfully!')
@@ -251,6 +309,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     } catch (error) {
       console.log('error while commiting ', error)
       setCommiting(false)
+      updateUserAction({
+        data: { userPlaying: false }
+      })
     }
   }
 
@@ -264,7 +325,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         (participant: any) => participant.address === playerAddress
       )
 
-    if (currentPlayer.move) return toast.error('Already revealed')
+    if (currentPlayer?.move) return toast.error('Already revealed')
+
+    updateUserAction({
+      data: { userPlaying: true }
+    })
     
     setRevealing(true)
 
@@ -287,47 +352,67 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
  
      const res = await tx.wait(1)
      if (res) {
+
+      updateUserAction({
+        data: { userPlaying: false }
+      })
+
        setRevealing(false)
        setRevealed(true)
        toast.success('Move revealed successfully!')
      }
    } catch (error) {
      setRevealing(false)
+
+     updateUserAction({
+       data: { userPlaying: false }
+     })
    }
 
   }
 
-  // const reset = () => {
-  //   setRevealed(false)
-  // }
 
   const transfer = async () => {
 
-     const jsonPayload = JSON.stringify({
-      method: 'withdraw',
-      args: {
-        amount: ethers.utils.parseEther(String(game.bettingAmount))
-      }
+    const jsonPayload = JSON.stringify({
+      method: 'ether_transfer',
+      gameId: game.id,
+      rollupAddress: dappAddress,
+      account: game.winner,
+      amount: game.bettingAmount
     })
 
-    // const jsonPayload = JSON.stringify({
-    //   method: 'transfer',
-    //   gameId: game.id
-    // })
-
-    await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+    const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+    const res = await tx.wait(1)
+    console.log('transfer ', res)
   }
 
   const depositHandler = async () => {
-    if (!game.gameSettings.bet) return toast.error('Not a betting game')
+    if (!game?.gameSettings.bet) return toast.error('Not a betting game')
 
+    setDepositing(true)
     try {
-      await sendEther(dappAddress, game.id, game.bettingAmount, rollups)
-      setDeposited(true)
-      setTimeout(joinGame, 7000)
+      const tx = await sendEther(dappAddress, game.id, game.bettingAmount, rollups)
+  
+      const res = await tx.wait(1)
+      if (res) {
+        const result = await checkBalance()
+        if (result) {
+          setDepositing(false)
+          setDeposited(true)
+          toast.success('Deposit successful')
+        }
+      } else {
+        setDepositing(false)
+        toast.error('Deposit not successful')
+      }
+      // setDeposited(true)
+      // checkBalance()
+      // setTimeout(joinGame, 7000)
   
     } catch (error) {
       console.log(error)
+      setDepositing(false)
     }
 
   }
@@ -335,8 +420,15 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const sendRelayAddress = async () => {
     if (rollups) {
       try {
-        await rollups.relayContract.relayDAppAddress(dappAddress)
-        
+      toast.success('Set Dapp address')
+       const tx = await rollups.relayContract.relayDAppAddress(dappAddress) 
+       if (tx) {
+        const res = await tx.wait(1)
+        if (res) {
+          toast.success('Transfering to winner')
+          transfer()
+        }
+       }
       } catch (e) {
         console.log(`${e}`)
       }
@@ -373,6 +465,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       if (allPlayersMoved) {
         toast.success('Dice set to roll!')
+        // setForceTrigger(true)
         setCanRollDice(true)
         setRevealMove(false)
       }
@@ -386,7 +479,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   useEffect(() => {
     const checkDeposit = async () => {
-      if (wallet?.accounts[0].address && game.gameSettings.bet) {
+      if (wallet?.accounts[0].address && game?.gameSettings.bet) {
         const playerAddress = wallet.accounts[0].address
         const reports = await inspectCall(
           `balance/${playerAddress}`,
@@ -409,71 +502,54 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
   }, [canRollDice])
 
+ 
   useEffect(() => {
-    if (
-      game?.rollOutcome &&
-      game?.rollOutcome !== 0 &&
-      previousRollOutcome.current !== game.rollOutcome
-    ) {
-      console.log(game?.rollOutcome)
-      setIsRolling(true)
-      previousRollOutcome.current = game.rollOutcome
+    if (game?.rollOutcome && game?.rollOutcome !== 0 && game?.rollCount) {
+      if (game.rollCount !== previousRollCount.current) {
+        console.log(game?.rollOutcome)
+        previousRollCount.current = game.rollCount
+        setIsRolling(true)
 
-      const interval = setInterval(() => {
-        diceRollSound?.play()
-        setResult(Math.floor(Math.random() * 6) + 1)
-      }, 80)
+        const interval = setInterval(() => {
+          diceRollSound?.play()
+          setResult(Math.floor(Math.random() * 6) + 1)
+        }, 80)
 
-      // Stop rolling after a certain time and show the final result
-      setTimeout(() => {
-        clearInterval(interval)
-        setResult(game?.rollOutcome)
-        setIsRolling(false)
-        setCanRollDice(false)
-      }, 4000)
+        // Stop rolling after a certain time and show the final result
+        setTimeout(() => {
+          clearInterval(interval)
 
-      return () => clearInterval(interval)
+          setResult(game?.rollOutcome)
+          setIsRolling(false)
+          setCanRollDice(false)
+          setCommitted(false)
+          setRevealed(false)
+        }, 4000)
+
+        return () => clearInterval(interval)
+      }
     } else {
       setResult(1)
       setCommitted(false)
       setRevealed(false)
     }
-  }, [game?.rollOutcome, diceRollSound, canRollDice])
-
-  // useEffect(() => {
-    
-  //   if (game?.rollOutcome && game?.rollOutcome !== 0) {
-  //     console.log(game?.rollOutcome)
-  //     setIsRolling(true)
-
-  //     const interval = setInterval(() => {
-  //       diceRollSound?.play()
-  //       setResult(Math.floor(Math.random() * 6) + 1)
-  //     }, 80)
-
-  //     // Stop rolling after a certain time and show the final result
-  //     setTimeout(() => {
-  //       clearInterval(interval)
-        
-  //       setResult(game?.rollOutcome)
-  //       setIsRolling(false)
-  //       setCanRollDice(false)
-  //     }, 4000)
-
-  //     return () => clearInterval(interval)
-  //   } else {
-  //     setResult(1)
-  //     setCommitted(false)
-  //     setRevealed(false)
-  //   }
-  // }, [game?.rollOutcome, diceRollSound])
+  }, [game?.rollOutcome, diceRollSound, game?.rollCount])
 
    useEffect(() => {
-     if (game?.status === 'Ended') {
+     if (game?.status === 'Ended' && !gameEnded) {
       setGameEnded(true)
+      // if (game.winner === wallet?.accounts[0].address){
+      //   sendRelayAddress()
+      // } 
      }
-   }, [game?.status, game?.winner])
+   }, [game?.status, game?.winner, gameEnded])
 
+   
+useEffect(() => {
+  if (userJoining === null || userPlaying === null) {
+    creatUserAction()
+  }
+}, [userJoining, userPlaying])
 
   return (
     <div className="flex flex-col justify-center">
@@ -482,10 +558,16 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           (participant: any) =>
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
+      {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
+      {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
+        <Button onClick={sendRelayAddress}>
+          Claim Fund
+        </Button>
+      )}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
-        disabled={isRolling}
+        disabled={isRolling || commiting}
       >
         {result !== null && (
           <Image
@@ -505,14 +587,20 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           !game.commitPhase &&
           !game.revealPhase && (
             <div className="flex justify-center">
-              <Button className="my-6" onClick={depositHandler}>
-                Deposit
+              <Button
+                disabled={depositing}
+                className="my-6"
+                onClick={depositHandler}
+              >
+                {depositing ? 'Depositing ...' : 'Deposit'}
               </Button>
             </div>
           )}
-        {/* <Button className="my-6" onClick={depositHandler}>
-          Deposit
-        </Button> */}
+        {/* {gameEnded && (
+          <Button className="my-6" onClick={transfer}>
+            Transfer
+          </Button>
+        )} */}
         {game &&
           game.status === 'In Progress' &&
           game?.activePlayer === wallet?.accounts[0].address &&
@@ -528,52 +616,48 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
                   game?.revealPhase ||
                   game?.commitPhase
                 }
-                className={`mt-6 ${
+                className={`mt-6 w-[200px] ${
                   game?.commitPhase || game?.revealPhase || revealMove
                     ? 'hidden'
                     : ''
                 } `}
                 onClick={() => playGame('no')}
               >
-                {commiting ? 'Commiting ...' : 'Pass'}
+                {commiting ? 'Commiting ...' : pass ? 'Passing ...' : 'Pass'}
               </Button>
             </div>
           )}
 
-        {game && game.status === 'New' && (
-          <div className="flex justify-center">
-            <Button
-              onClick={joinGame}
-              disabled={
-                joining ||
-                joined ||
-                game?.participants.some(
-                  (participant: any) =>
-                    participant.address === wallet?.accounts[0].address
-                )
-              }
-              className="mb-10"
-              type="button"
-            >
-              {/* {joining
-                ? 'Joining ...'
-                : game?.participants.some(
+        {game &&
+          game.status === 'New' &&
+          game.creator !== wallet?.accounts[0].address && (
+            <div className="flex justify-center">
+              <Button
+                onClick={joinGame}
+                disabled={
+                  joining ||
+                  game?.participants.some(
                     (participant: any) =>
                       participant.address === wallet?.accounts[0].address
                   )
-                ? 'Joined'
-                : 'Join Game'} */}
-              {joining
-                ? 'Joining...'
-                : commiting
-                ? 'Committing...'
-                : joined
-                ? 'Joined'
-                : 'Join Game'}
-            </Button>
-          </div>
-        )}
-        {/* <span onClick={test}>Test</span> */}
+                }
+                className="mb-10"
+                type="button"
+              >
+                {joining
+                  ? 'Joining...'
+                  : commiting
+                  ? 'Committing...'
+                  : game?.participants.some(
+                      (participant: any) =>
+                        participant.address === wallet?.accounts[0].address
+                    )
+                  ? 'Joined'
+                  : 'Join Game'}
+              </Button>
+            </div>
+          )}
+
         <div className="flex justify-center">
           <Button
             onClick={commit}
@@ -619,11 +703,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           </Button>
         </div>
       </div>
-      {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button>
-      <Button onClick={transfer}>Transfer</Button> */}
     </div>
   )
 }
 
 export default Dice
-// screen fence prize absurd acoustic sure view parade moment car bitter sick
