@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useEffect, useRef, useState } from 'react'
 import Die1 from '@/assets/img/dice_1.png'
 import Die2 from '@/assets/img/dice_2.png'
 import Die3 from '@/assets/img/dice_3.png'
@@ -7,120 +7,195 @@ import Die5 from '@/assets/img/dice_5.png'
 import Die6 from '@/assets/img/dice_6.png'
 import Image from 'next/image'
 import useAudio from '@/hooks/useAudio'
-import { parseInputEvent, playGame } from '@/lib/utils'
+import { generateCommitment, userJoiningId } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
-import {
-  selectParticipantAddresses,
-  selectSelectedGame,
-} from '@/features/games/gamesSlice'
-import { dappAddress } from '@/lib/utils'
-import { useConnectWallet } from '@web3-onboard/react'
-import { addInput } from '@/lib/cartesi'
+import { selectParticipantAddresses } from '@/features/games/gamesSlice'
+import { dappRelayAddress, hasDeposited } from '@/lib/utils'
+// import { dappAddress, dappRelayAddress, hasDeposited } from '@/lib/utils'
+import { useConnectWallet, useSetChain } from '@web3-onboard/react'
+import { addInput, sendEther, inspectCall } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
-import { useNotices } from '@/hooks/useNotices'
 import Button from '../shared/Button'
+import { ethers } from 'ethers'
+import { api } from '@/convex/_generated/api'
+import { useMutation, useQuery } from 'convex/react'
+import { Id } from '@/convex/_generated/dataModel'
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
 
 interface ApparatusProps {
-  // handleDiceClick: () => void
-  // setIsRolling: (value: boolean) => void
-  // isRolling: boolean
-  // value: number
   game: any
 }
 
-const fetchGame = async (gameId: any, notices: any) => {
-  try {
-    if (gameId && notices && notices.length > 0) {
-      const game = JSON.parse(notices[notices.length - 1].payload).find(
-        (game: any) => game.id === gameId
-      )
-      if (game) {
-        return game
-      }
-    }
-    return null
-  } catch (error) {
-    console.error('Error fetching game state:', error)
-    return null
-  }
-}
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
-  // const Dice: FC<ApparatusProps> = ({handleDiceClick, setIsRolling, isRolling, value}) => {
 
-  const { notices, refetch } = useNotices()
+  const dappAddress = '0x70ac08179605AF2D9e75782b8DEcDD3c22aA4D0C'
+
+  const updateUserJoining = useMutation(api.game.updateGame)
+  const userJoining = useQuery(api.game.getUserJoining)
+  const [{ connectedChain }] = useSetChain()
   const rollups = useRollups(dappAddress)
   const [{ wallet }] = useConnectWallet()
   const diceRollSound = useAudio('/sounds/diceRoll.mp3')
-  // const [game, setGame] = useState<any>()
-  // const game = useSelector((state: any) => selectSelectedGame(state.games))
   const players = useSelector((state: any) =>
     selectParticipantAddresses(state.games)
   )
 
-  const [currentDice, setCurrentDice] = useState(0)
-  const [delayedGame, setDelayedGame] = useState<any>(null)
+  const [rollCount, setRollCount] = useState<number>(0)
   const [isRolling, setIsRolling] = useState<boolean>(false)
+  const [result, setResult] = useState<number>(1)
+  const [revealMove, setRevealMove] = useState<boolean>(false)
+  const [revealing, setRevealing] = useState<boolean>(false)
+  const [commiting, setCommiting] = useState<boolean>(false)
+  const [committed, setCommitted] = useState<boolean>(false)
+  const [revealed, setRevealed] = useState<boolean>(false)
+  const [canRollDice, setCanRollDice] = useState<boolean>(false)
+  const [deposited, setDeposited] = useState<boolean>(false)
+  const [joining, setJoining] = useState<boolean>(false)
+  const [joined, setJoined] = useState<boolean>(false)
+  const [gameEnded, setGameEnded] = useState<boolean>(false)
+  const previousRollOutcome = useRef<number | null>(null)
 
-  const fetchGameMemoized = useCallback(fetchGame, []) // Memoize the fetchGame function
-
-  // const fetchGame = async (gameId: string | undefined, notices: any) => {
-  //   try {
-  //     if (gameId && notices && notices.length > 0) {
-  //       const game = JSON.parse(notices[notices.length - 1].payload).find(
-  //         (game: any) => game.id === gameId
-  //       )
-  //       if (game) {
-  //         return game
-  //       }
-  //     }
-  //     return null // Return null if game is not found or conditions are not met
-  //   } catch (error) {
-  //     console.error('Error fetching game state:', error)
-  //     return null // Handle error by returning null or implement error handling logic
-  //   }
-  // }
+  const test = async () => {
+    const playerAddress = wallet?.accounts[0].address
+    const reports = await inspectCall(
+      `balance/${playerAddress}`,
+      connectedChain
+    )
+    console.log(reports)
+  }
 
   const joinGame = async () => {
-    const id = window.location.pathname.split('/').pop()
-    if (!id) return toast.error('Game not found')
 
-    const addr: string | undefined = wallet?.accounts[0].address
+    if (!wallet?.accounts[0].address) return toast.error('Connect account')
 
-    const jsonPayload = JSON.stringify({
-      method: 'addParticipant',
-      data: { gameId: id, playerAddress: addr },
-    })
+    // if (wallet?.accounts[0].address) {
 
-    const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+      const playerAddress = wallet.accounts[0].address
 
-    const result = await tx.wait(1)
-    console.log(result)
+
+      // check if player has deposited
+
+      if (game.gameSettings.bet) {
+        const reports = await inspectCall(
+          `balance/${playerAddress}`,
+          connectedChain
+        )
+   
+        const res = hasDeposited(game.bettingAmount, reports)
+
+        // if (!res) return toast.error(`You need to deposit ${game.bettingAmount} ether to join`)
+        
+        setDeposited(true)
+      }
+
+      const id = window.location.pathname.split('/').pop()
+      if (!id) return toast.error('Game not found')
+
+      setJoining(true)
+      updateUserJoining({
+        gameId: userJoiningId as Id<"game">,
+        data: {
+          userJoining: true
+        }
+      })
+
+      try {
+        const jsonPayload = JSON.stringify({
+          method: 'addParticipant',
+          data: { gameId: id, playerAddress },
+        })
+  
+        const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+        const result = await tx.wait(1)
+        if (result) {
+          setJoining(false)
+          // setJoined(true)
+          updateUserJoining({
+            gameId: userJoiningId as Id<'game'>,
+            data: {
+              userJoining: false,
+            }
+          })
+        } else {
+          updateUserJoining({
+            gameId: userJoiningId as Id<'game'>,
+            data: {
+              userJoining: false,
+            }
+          })
+        }
+      } catch (error) {
+        console.error('Error during game join:', error)
+        setJoining(false)
+        updateUserJoining({
+          gameId: userJoiningId as Id<'game'>,
+          data: {
+            userJoining: false,
+          }
+        })
+      }
+    // }
+  }
+
+  const rollDice = async () => {
+    try {
+      const jsonPayload = JSON.stringify({
+        method: 'rollDice',
+        data: {
+          gameId: game.id,
+          playerAddress: game.activePlayer,
+        },
+      })
+
+      if (game.activePlayer === wallet?.accounts[0].address) {
+        const tx = await addInput(
+          JSON.stringify(jsonPayload),
+          dappAddress,
+          rollups
+        )
+
+        const result = await tx.wait(1)
+        // reset()
+        console.log('tx for the game roll', result)
+      }
+    } catch (error) {
+      console.error('Error during game roll:', error)
+    }
   }
 
   const playGame = async (response: string) => {
+
+    if (gameEnded || game.status === 'Ended') {
+      return toast.error('Game has ended')
+    }
+
+    if (game.commitPhase || game.revealPhase) {
+      return toast.error('Can\'t play game now')
+    }
+
     const playerAddress = wallet?.accounts[0].address
 
     if (!playerAddress) return toast.error('Connect account')
-
-    if (game.status === 'Ended') {
-      return toast.error('Game has ended')
-    }
 
     if (game.activePlayer !== playerAddress) {
       return toast.error('Not your turn')
     }
 
     if (players.length >= 2) {
-      const playerAddress = wallet?.accounts[0].address
 
       try {
+        setCommiting(true)
         const jsonPayload = JSON.stringify({
           method: 'playGame',
-          data: { gameId: game.id, playerAddress, response },
+          data: {
+            gameId: game.id,
+            playerAddress,
+            response,
+            commitment: await generateCommitment(playerAddress)
+          },
         })
 
         const tx = await addInput(
@@ -130,135 +205,425 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         )
 
         const result = await tx.wait(1)
-        console.log('tx for the game ', result)
+        if (result) {
+          setCommitted(true)
+          setCommiting(false)
+        }
+        console.log('tx for the game play ', result)
       } catch (error) {
-        console.error('Error during game:', error)
+        setCommiting(false)
+        console.error('Error during game play: ', error)
       }
     } else {
-      toast.error('Not enough players to play')
+      toast.error('Not enough players to start')
+    }
+  }
+
+
+  const commit = async () => {
+    const playerAddress = wallet?.accounts[0].address
+    if (!playerAddress) return toast.error('Connect account')
+
+    // Ensure user has not commited before
+    const currentPlayer = game?.participants.find(
+      (participant: any) => participant.address === playerAddress)
+
+    if (currentPlayer.commitment) return toast.error('Already commited')
+
+    if (game?.activePlayer === playerAddress) return playGame('yes')
+
+    try {
+      const jsonPayload = JSON.stringify({
+        method: 'commit',
+        gameId: game.id,
+        commitment: await generateCommitment(playerAddress)
+      })
+  
+      setCommiting(true)
+      const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+      const res = await tx.wait(1)
+  
+      if (res) {
+        setCommiting(false)
+        setCommitted(true)
+        toast.success('Move committed successfully!')
+      }
+    } catch (error) {
+      console.log('error while commiting ', error)
+      setCommiting(false)
+    }
+  }
+
+  const reveal = async () => {
+
+    const playerAddress = wallet?.accounts[0].address
+
+    if (playerAddress && !players.includes(playerAddress)) return toast.error('You are not a player')
+
+      const currentPlayer = game?.participants.find(
+        (participant: any) => participant.address === playerAddress
+      )
+
+    if (currentPlayer.move) return toast.error('Already revealed')
+    
+    setRevealing(true)
+
+    const nonce = localStorage.getItem(`nonce${playerAddress}`)
+    const move = localStorage.getItem(`move${playerAddress}`)
+
+     const jsonPayload = JSON.stringify({
+       method: 'reveal',
+       gameId: game.id,
+       move,
+       nonce
+     })
+
+   try {
+     const tx = await addInput(
+       JSON.stringify(jsonPayload),
+       dappAddress,
+       rollups
+     )
+ 
+     const res = await tx.wait(1)
+     if (res) {
+       setRevealing(false)
+       setRevealed(true)
+       toast.success('Move revealed successfully!')
+     }
+   } catch (error) {
+     setRevealing(false)
+   }
+
+  }
+
+  // const reset = () => {
+  //   setRevealed(false)
+  // }
+
+  const transfer = async () => {
+
+     const jsonPayload = JSON.stringify({
+      method: 'withdraw',
+      args: {
+        amount: ethers.utils.parseEther(String(game.bettingAmount))
+      }
+    })
+
+    // const jsonPayload = JSON.stringify({
+    //   method: 'transfer',
+    //   gameId: game.id
+    // })
+
+    await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+  }
+
+  const depositHandler = async () => {
+    if (!game.gameSettings.bet) return toast.error('Not a betting game')
+
+    try {
+      await sendEther(dappAddress, game.id, game.bettingAmount, rollups)
+      setDeposited(true)
+      setTimeout(joinGame, 7000)
+  
+    } catch (error) {
+      console.log(error)
+    }
+
+  }
+
+  const sendRelayAddress = async () => {
+    if (rollups) {
+      try {
+        await rollups.relayContract.relayDAppAddress(dappAddress)
+        
+      } catch (e) {
+        console.log(`${e}`)
+      }
     }
   }
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setDelayedGame(game)
-    }, 500)
-    return () => clearTimeout(timeoutId)
-  }, [game])
 
-  // const currentGame = delayedGame || game
-
-  const handleEvent = useCallback(async () => {
-    await refetch()
-  }, [refetch])
-
-  useEffect(() => {
-    console.log('Setting up event listener')
-    const handleInputAdded = (
-      dappAddress,
-      inboxInputIndex,
-      sender,
-      input: any
-    ) => {
-      const inputEvent = parseInputEvent(input)
-      console.log('inside event input added')
-      if (inputEvent.method === 'playGame' && game.rollOutcome !== 0) {
-        console.log('inside conditional event input added')
-        setIsRolling(true)
-      }
-    }
-
-    rollups?.inputContract.on('InputAdded', handleInputAdded)
-
-    return () => {
-      // Clean up by removing the event listener when the component unmounts
-      rollups?.inputContract.removeListener('InputAdded', handleInputAdded)
-    }
-  }, [rollups]) // Empty dependency array ensures this effect runs only once on mount
-
-  // useEffect(() => { // rerendering happening here
-  //   rollups?.inputContract.on(
-  //     'InputAdded',
-  //     (dappAddress, inboxInputIndex, sender, input) => {
-  //       const inputEvent = parseInputEvent(input)
-  //       console.log('inside event input added')
-  //       if (inputEvent.method === 'playGame' && game.rollOutcome !== 0) {
-  //         console.log('inside conditional event input added')
-  //         setIsRolling(true)
-  //       }
-  //     }
-  //   )
-  // }, [rollups, game])
-
-  useEffect(() => {
-    console.log('inside rolig usefect')
-    if (isRolling) {
-      console.log('inside roling', game.rollOutcome)
-      let endRoll = 0
-      let interval: any
-      let diceValue
-      interval = setInterval(() => {
-        if (endRoll < 30) {
-          diceRollSound?.play()
-          diceValue = Math.floor(Math.random() * 6)
-          setCurrentDice(diceValue)
-          endRoll++
-        } else {
-          if (game.rollOutcome !== 0) {
-            setCurrentDice(game.rollOutcome - 1)
-          } else {
-            setCurrentDice(0)
-          }
-          console.log('setting isRolling to false')
-          setIsRolling(false)
-          clearInterval(interval)
+    if (
+      game &&
+      game.status !== 'Ended' &&
+      game.participants &&
+      game.participants.length > 0
+    ) {
+      const allPlayersCommitted = game?.participants.every(
+        (participant: any) => {
+          return participant.commitment
         }
-      }, 100)
-      return () => {
-        if (interval) clearInterval(interval)
+      )
+
+      if (allPlayersCommitted) {
+        toast.success('All set to reveal!')
+        setRevealMove(true)
       }
     }
-  }, [game?.rollOutcome, diceRollSound, isRolling])
+  }, [game?.participants.map((participant: any) => participant.commitment).join(',')])
+
+  useEffect(() => {
+
+    if (game && game.status !== 'Ended' && game.participants && game.participants.length > 0) {
+      const allPlayersMoved = game?.participants.every((participant: any) => {
+        return participant.move
+      })
+
+      if (allPlayersMoved) {
+        toast.success('Dice set to roll!')
+        setCanRollDice(true)
+        setRevealMove(false)
+      }
+    }
+  }, [game?.participants.map((participant: any) => participant.move).join(',')])
+
+
+  useEffect(() => {
+    setRollCount((prevCount) => prevCount + 1)
+  }, [result])
+
+  useEffect(() => {
+    const checkDeposit = async () => {
+      if (wallet?.accounts[0].address && game.gameSettings.bet) {
+        const playerAddress = wallet.accounts[0].address
+        const reports = await inspectCall(
+          `balance/${playerAddress}`,
+          connectedChain
+        )
+
+        const hasUserDeposited = hasDeposited(game.bettingAmount, reports)
+        setDeposited(hasUserDeposited)
+      }
+    }
+
+    checkDeposit()
+  }, [wallet, game?.gameSettings.bet, connectedChain])
+
+  useEffect(() => {
+    if (canRollDice) {
+      setCommitted(false)
+      setRevealed(false)
+      rollDice()
+    }
+  }, [canRollDice])
+
+  useEffect(() => {
+    if (
+      game?.rollOutcome &&
+      game?.rollOutcome !== 0 &&
+      previousRollOutcome.current !== game.rollOutcome
+    ) {
+      console.log(game?.rollOutcome)
+      setIsRolling(true)
+      previousRollOutcome.current = game.rollOutcome
+
+      const interval = setInterval(() => {
+        diceRollSound?.play()
+        setResult(Math.floor(Math.random() * 6) + 1)
+      }, 80)
+
+      // Stop rolling after a certain time and show the final result
+      setTimeout(() => {
+        clearInterval(interval)
+        setResult(game?.rollOutcome)
+        setIsRolling(false)
+        setCanRollDice(false)
+      }, 4000)
+
+      return () => clearInterval(interval)
+    } else {
+      setResult(1)
+      setCommitted(false)
+      setRevealed(false)
+    }
+  }, [game?.rollOutcome, diceRollSound, canRollDice])
+
+  // useEffect(() => {
+    
+  //   if (game?.rollOutcome && game?.rollOutcome !== 0) {
+  //     console.log(game?.rollOutcome)
+  //     setIsRolling(true)
+
+  //     const interval = setInterval(() => {
+  //       diceRollSound?.play()
+  //       setResult(Math.floor(Math.random() * 6) + 1)
+  //     }, 80)
+
+  //     // Stop rolling after a certain time and show the final result
+  //     setTimeout(() => {
+  //       clearInterval(interval)
+        
+  //       setResult(game?.rollOutcome)
+  //       setIsRolling(false)
+  //       setCanRollDice(false)
+  //     }, 4000)
+
+  //     return () => clearInterval(interval)
+  //   } else {
+  //     setResult(1)
+  //     setCommitted(false)
+  //     setRevealed(false)
+  //   }
+  // }, [game?.rollOutcome, diceRollSound])
+
+   useEffect(() => {
+     if (game?.status === 'Ended') {
+      setGameEnded(true)
+     }
+   }, [game?.status, game?.winner])
+
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col justify-center">
+      {userJoining &&
+        game?.participants.some(
+          (participant: any) =>
+            participant.address === wallet?.accounts[0].address
+        ) && <p className="text-center mb-2">Player joining ...</p>}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
         disabled={isRolling}
       >
-        {die.map((dice, index) => (
+        {result !== null && (
           <Image
-            key={index}
-            src={dice}
-            alt="Dice"
-            className={`${currentDice === index ? '' : 'hidden'}`}
+            src={die[result - 1]}
+            alt={`Die ${result}`}
+            className={`die ${rollCount}`}
           />
-        ))}
+        )}
       </button>
-      {game && game.status === 'In Progress' && (
-        <Button
-          className="mt-6"
-          style={{ background: '' }}
-          onClick={() => playGame('no')}
-        >
-          Pass
-        </Button>
-      )}
-      <div className="flex justify-center">
+
+      <div className="flex flex-col justify-center">
         {game &&
           game.status === 'New' &&
+          game.gameSettings.bet &&
           wallet &&
-          !players.includes(wallet.accounts[0].address) && (
-            <div>
-              <Button onClick={joinGame} className="mb-10" type="button">
-                Join Game
+          !deposited &&
+          !game.commitPhase &&
+          !game.revealPhase && (
+            <div className="flex justify-center">
+              <Button className="my-6" onClick={depositHandler}>
+                Deposit
               </Button>
             </div>
           )}
+        {/* <Button className="my-6" onClick={depositHandler}>
+          Deposit
+        </Button> */}
+        {game &&
+          game.status === 'In Progress' &&
+          game?.activePlayer === wallet?.accounts[0].address &&
+          !canRollDice && (
+            <div className="flex justify-center">
+              <Button
+                disabled={
+                  isRolling ||
+                  commiting ||
+                  revealing ||
+                  gameEnded ||
+                  revealMove ||
+                  game?.revealPhase ||
+                  game?.commitPhase
+                }
+                className={`mt-6 ${
+                  game?.commitPhase || game?.revealPhase || revealMove
+                    ? 'hidden'
+                    : ''
+                } `}
+                onClick={() => playGame('no')}
+              >
+                {commiting ? 'Commiting ...' : 'Pass'}
+              </Button>
+            </div>
+          )}
+
+        {game && game.status === 'New' && (
+          <div className="flex justify-center">
+            <Button
+              onClick={joinGame}
+              disabled={
+                joining ||
+                joined ||
+                game?.participants.some(
+                  (participant: any) =>
+                    participant.address === wallet?.accounts[0].address
+                )
+              }
+              className="mb-10"
+              type="button"
+            >
+              {/* {joining
+                ? 'Joining ...'
+                : game?.participants.some(
+                    (participant: any) =>
+                      participant.address === wallet?.accounts[0].address
+                  )
+                ? 'Joined'
+                : 'Join Game'} */}
+              {joining
+                ? 'Joining...'
+                : commiting
+                ? 'Committing...'
+                : joined
+                ? 'Joined'
+                : 'Join Game'}
+            </Button>
+          </div>
+        )}
+        {/* <span onClick={test}>Test</span> */}
+        <div className="flex justify-center">
+          <Button
+            onClick={commit}
+            disabled={
+              committed ||
+              commiting ||
+              !wallet ||
+              !players.includes(wallet.accounts[0].address)
+            }
+            className={`w-[200px] ${
+              !game?.commitPhase || revealMove ? 'hidden' : ''
+            } `}
+          >
+            {commiting
+              ? 'Committing...'
+              : committed ||
+                game?.participants.some(
+                  (participant: any) =>
+                    participant.address === wallet?.accounts[0].address &&
+                    participant.commitment !== null
+                )
+              ? 'Committed'
+              : 'Commit'}
+          </Button>
+        </div>
+
+        <div className="flex justify-center">
+          <Button
+            onClick={reveal}
+            className={`w-[200px] ${revealMove ? '' : 'hidden'}`}
+            disabled={revealing || revealed}
+          >
+            {revealing
+              ? 'Revealing ....'
+              : revealed ||
+                game?.participants.some(
+                  (participant: any) =>
+                    participant.address === wallet?.accounts[0].address &&
+                    participant.move !== null
+                )
+              ? 'Revealed'
+              : 'Reveal'}
+          </Button>
+        </div>
       </div>
+      {/* <Button onClick={sendRelayAddress}>Set Relay Address</Button>
+      <Button onClick={transfer}>Transfer</Button> */}
     </div>
   )
 }
 
 export default Dice
+// screen fence prize absurd acoustic sure view parade moment car bitter sick

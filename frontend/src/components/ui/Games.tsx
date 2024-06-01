@@ -30,16 +30,31 @@ const Games = () => {
     await refetch()
   }, [refetch])
 
-  useEffect(() => {
-    rollups?.inputContract.on(
-      'InputAdded',
-      (dappAddress, inboxInputIndex, sender, input) => {
-        if (parseInputEvent(input).method === 'createGame') {
-          handleEvent()
-        }
+    useEffect(() => {
+      const handleInputAdded = () => {
+        console.log('Input added, refetching notices')
+        refetch()
       }
-    )
-  }, [handleEvent, rollups])
+
+      // Add event listener for inputAdded event
+      rollups?.inputContract.on('InputAdded', handleInputAdded)
+
+      // Cleanup function to remove event listener
+      return () => {
+        rollups?.inputContract.off('InputAdded', handleInputAdded)
+      }
+    }, [rollups, refetch])
+
+  // useEffect(() => {
+  //   rollups?.inputContract.on(
+  //     'InputAdded',
+  //     (dappAddress, inboxInputIndex, sender, input) => {
+  //       if (parseInputEvent(input).method === 'createGame') {
+  //         handleEvent()
+  //       }
+  //     }
+  //   )
+  // }, [handleEvent, rollups])
 
   return (
     <div>
@@ -64,15 +79,24 @@ const Games = () => {
         <div className="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
           {notices &&
             notices.length > 0 &&
-            JSON.parse(notices.reverse()[0].payload)
-            .filter((game: IGame) => game.status === status)
-            .map((game: IGame) => (
-              <GameCard key={game.id} game={game} />
-            ))}
+            JSON.parse(notices[0].payload)
+            // JSON.parse(notices.reverse()[0].payload)
+              .filter((game: IGame) => game.status === status)
+              .reverse()
+              // .sort(
+              //   (a: { dateCreated: number }, b: { dateCreated: number }) =>
+              //     b.dateCreated - a.dateCreated
+              // )
+              .map((game: IGame) => <GameCard key={game.id} game={game} />)}
         </div>
-        {notices && notices.length === 0 && <div className="flex flex-row justify-center">
-          <p>No game found</p>
-          <Button className="w-[200px]" onClick={modalHandler}>Create Game</Button></div>}
+        {notices && notices.length === 0 && (
+          <div className="flex flex-row justify-center">
+            <p>No game found</p>
+            <Button className="w-[200px]" onClick={modalHandler}>
+              Create Game
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

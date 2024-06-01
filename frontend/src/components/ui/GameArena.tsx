@@ -1,112 +1,130 @@
-'use client'
-
-import Apparatus from '@/components/ui/Apparatus'
 import LeaderBoard from './Leaderboard'
 import { dappAddress, shortenAddress } from '@/lib/utils'
 import { useRollups } from '@/hooks/useRollups'
-import { useNotices } from '@/hooks/useNotices'
-import { useCallback, useEffect, useState } from 'react'
+import { memo, useCallback, useEffect, useState } from 'react'
 import Settings from './Settings'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectActivePlayer } from '@/features/leaderboard/leaderboardSlice'
-import toast from 'react-hot-toast'
-import useAudio from '@/hooks/useAudio'
 import Dice from './Dice'
+import { useQuery, gql } from '@apollo/client'
+import { ethers } from 'ethers'
+import { useDispatch } from 'react-redux'
+import { useConnectWallet } from '@web3-onboard/react'
 
-const GameArena = () => {
-  const gameOverSound = useAudio('/sounds/gameOver.mp3')
-  const { notices, refetch } = useNotices()
-  const rollups = useRollups(dappAddress)
-  const dispatch = useDispatch()
 
-  const activePlayer = useSelector((state: any) =>
-    selectActivePlayer(state.leaderboard)
-  )
-
-  const handleEvent = useCallback(async () => {
-    return await refetch()
-  }, [refetch])
-
-  const [game, setGame] = useState<any>()
-
-  const dispatchGameData = useCallback(
-    (game: any) => {
-      setGame(game)
-      dispatch({ type: 'games/setGame', payload: game })
-      dispatch({
-        type: 'leaderboard/updateActivePlayer',
-        payload: game.activePlayer,
-      })
-    },
-    [dispatch]
-  )
-
-  useEffect(() => {
-    const gameId = window.location.pathname.split('/').pop()
-    if (gameId && notices && notices.length > 0) {
-      const game = JSON.parse(notices[notices.length - 1].payload).find(
-        (game: any) => game.id === gameId
-      )
-      if (game) {
-        dispatchGameData(game) // Dispatch actions on page load
+const GET_LATEST_NOTICE = gql`
+  query latestNotice {
+    notices(last: 1) {
+      edges {
+        node {
+          payload
+        }
       }
     }
-  }, [notices, dispatchGameData])
+  }
+`
+
+const GameArena = () => {
+
+  const { loading, error, data, refetch } = useQuery(GET_LATEST_NOTICE, {
+    pollInterval: 500,
+  })
+  const [{ wallet }] = useConnectWallet()
+  const rollups = useRollups(dappAddress)
+  const dispatch = useDispatch()
+  const [game, setGame] = useState<any>()
+
+  const dispatchGameData = useCallback((game: any) => {
+    console.log('gamearena game', game)
+    setGame(game)
+    dispatch({ type: 'games/setGame', payload: game })
+  }, [])
 
   useEffect(() => {
-    console.log('setting game in useeffect, Gamearena')
-    const gameId = window.location.pathname.split('/').pop();
-    if (!gameId || !notices || notices.length === 0) return;
-  
-    const latestGamePayload = JSON.parse(notices[notices.length - 1].payload);
-    const game = latestGamePayload.find((game: any) => game.id === gameId);
-    if (game) {
-      dispatchGameData(game);
+
+    const gameId = window.location.pathname.split('/').pop()
+    if (loading) {
+      console.log('Loading notices')
     }
-  }, [notices, dispatchGameData]);
-  
+    if (error) {
+      console.error(`Error querying Query Server: ${JSON.stringify(error)}`)
+    }
 
-  // useEffect(() => {
-  //   const gameId = window.location.pathname.split('/').pop()
-  //   rollups?.inputContract.on(
-  //     'InputAdded',
-  //     (dappAddress, inboxInputIndex, sender, input) => {
-  //       handleEvent().then(() => {
-  //         if (gameId && notices && notices.length > 0) {
-  //           const game = JSON.parse(notices[notices.length - 1].payload).find(
-  //             (game: any) => game.id === gameId
-  //           )
-  //           if (game) {
-  //             dispatchGameData(game)
+    if (data) {
+      const latestNotice = data.notices.edges[0]
 
-  //             // if (game.status === 'Ended') {
-  //             //   gameOverSound?.play()
-  //             //   toast.success(`${game.winner} won`)
-  //             // }
-  //           }
-  //         }
-  //       })
-  //     }
-  //   )
-  // }, [handleEvent, rollups, dispatch, notices, dispatchGameData, gameOverSound])
+      if (latestNotice) {
+        const noticePayload = ethers.utils.toUtf8String(
+          latestNotice.node.payload
+        )
+
+        if (gameId) {
+          const game = JSON.parse(noticePayload)
+            .find((game: any) => game.id === gameId)
+           
+          if (game) {
+            console.log('Game found:', game)
+            dispatchGameData(game)
+          }
+        }
+      }
+    }
+  }, [data, dispatchGameData, error, loading])
+
+  // Handle inputAdded event to trigger refetch
+  useEffect(() => {
+    
+    const handleInputAdded = () => {
+      console.log('Input added, refetching notices')
+      refetch()
+    }
+
+    // Add event listener for inputAdded event
+    rollups?.inputContract.on('InputAdded', handleInputAdded)
+
+    // Cleanup function to remove event listener
+    return () => {
+      rollups?.inputContract.off('InputAdded', handleInputAdded)
+    }
+  }, [rollups, refetch])
 
   return (
     <div className="py-6 sm:py-8 lg:py-12">
       <div className="grid gap-4 md:grid-cols-2 md:gap-8">
         <div className="flex flex-col items-center gap-4  px-8 py-6 md:gap-6">
-          {/* <Balance /> */}
-          {activePlayer && <p>{shortenAddress(activePlayer)}'s turn</p>}
+          {game && game.status === 'Ended' ? (
+            <p>Game Ended </p>
+          ) : (
+            <p> {game?.activePlayer ? `${shortenAddress(game?.activePlayer)}'s turn` : ''} </p>
+          )}
+          {game?.commitPhase && (
+            <p className="text-center">
+              Players Commiting ... :{' '}
+              {/* {game.participants.filter((p: any) => p.commitment).length}/
+              {game.participants.length} */}
+            </p>
+          )}
+          {game?.revealPhase && (
+            <p className="text-center">
+              Players Revealing ... :{' '}
+              {/* {game.participants.filter((p: any) => p.move).length}/
+              {game.participants.length} */}
+            </p>
+          )}
+          {game &&
+            game.status === 'New' &&
+            wallet &&
+            game.activePlayer !== wallet?.accounts[0].address && (
+              <span className="text-center">Game not Started</span>
+            )}
           <Dice game={game} />
         </div>
-
         <div className="flex flex-col items-center gap-4 md:gap-6">
           <LeaderBoard game={game} />
         </div>
       </div>
-
       <Settings />
     </div>
   )
 }
 
 export default GameArena
+

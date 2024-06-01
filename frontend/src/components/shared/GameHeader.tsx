@@ -24,13 +24,15 @@ const GameHeader = () => {
           />
           GreedyPig
         </Link>
- 
+
         <div className="-ml-8 hidden flex-col gap-2.5 sm:flex-row sm:justify-center lg:flex lg:justify-start">
           <div className="flex items-center gap-8">
             <ConnectButton />
           </div>
         </div>
-
+        {/* <div className="lg-hidden">
+          <ConnectButton />
+        </div> */}
         <button
           type="button"
           className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2.5 py-2 text-sm font-semibold text-gray-500 ring-indigo-300 hover:bg-gray-300 focus-visible:ring active:text-gray-700 md:text-base lg:hidden"

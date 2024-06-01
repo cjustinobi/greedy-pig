@@ -1,7 +1,7 @@
 import { capitalize } from '@/lib/utils'
-import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 import { IGame } from '@/interfaces'
+import { useEffect } from 'react'
 import { useConnectWallet } from '@web3-onboard/react'
 
 interface GameCardProps {
@@ -9,13 +9,30 @@ interface GameCardProps {
 }
 
 const GameCard = ({ game }: GameCardProps) => {
-  const [{ wallet }] = useConnectWallet()
+
   const router = useRouter()
+  const [{ wallet }] = useConnectWallet()
 
   const handleNavigate = (id: string, action: string) => {
-    if (!wallet?.accounts[0].address) return toast.error('Connect Wallet')
     router.push(`/games/${id}?action=${action}`)
   }
+
+  useEffect(() => {
+    if (wallet?.accounts[0].address) {
+      const userAddress = wallet.accounts[0].address
+      const isUserParticipant = game.participants.some(
+        (participant: any) => participant.address === userAddress
+      )
+
+      if (isUserParticipant) {
+        handleNavigate(game.id, 'view')
+      }
+    }
+  }, [wallet, game])
+
+  const isJoined = game.participants.some(
+    (participant: any) => participant.address === wallet?.accounts[0].address
+  )
 
   return (
     <div
@@ -29,7 +46,7 @@ const GameCard = ({ game }: GameCardProps) => {
           alt="Colors"
         />
         <p className="absolute top-0 bg-yellow-300 text-gray-500 font-semibold py-1 px-3 rounded-br-lg rounded-tl-lg">
-          {game.gameSettings.bet ? 'BET' : 'FREE'}
+          {game.gameSettings.bet ? 'STAKE' : 'FREE'}
         </p>
       </div>
       <h1 className="mt-4 text-gray-500 text-2xl font-bold cursor-pointer">
@@ -86,12 +103,15 @@ const GameCard = ({ game }: GameCardProps) => {
           </span>
           <p>{capitalize(game.gameSettings.apparatus)}</p>
         </div>
-        <button
-          onClick={() => handleNavigate(game.id, 'join')}
-          className="mt-4 text-xl w-full text-white bg-indigo-600 py-2 rounded-xl shadow-lg"
-        >
-          Join
-        </button>
+        {(game.status === 'New' || game.status === 'In Progress') && (
+          <button
+            onClick={() => handleNavigate(game.id, 'join')}
+            disabled={isJoined}
+            className="mt-4 text-xl w-full text-white bg-indigo-600 py-2 rounded-xl shadow-lg"
+          >
+            {isJoined ? 'Joined' : 'Join'}
+          </button>
+        )}
       </div>
     </div>
   )

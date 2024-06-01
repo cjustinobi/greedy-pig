@@ -37,7 +37,7 @@ export const useNotices = () => {
   // debugger
   const { loading, error, data, refetch } = useQuery(GET_NOTICES, {
     variables: { cursor },
-    pollInterval: 10000,
+    pollInterval: 0,
   })
 
   const notices: TNotice[] = data?.notices.edges

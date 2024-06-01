@@ -1,22 +1,27 @@
 
 const viem = require('viem')
 const { Router } = require('cartesi-router')
-const { Wallet, Error_out } = require('cartesi-wallet')
+const { Wallet, Error_out, Notice, Report } = require('cartesi-wallet')
 const { 
   noticeHandler,
   reportHandler
  } = require('./utils/helpers')
 const { 
   games, 
+  reveal,
+  commit,
   addParticipant, 
   addGame, 
-  gamePlayHandler
+  playGame,
+  rollDice,
+  transferToWinner
 } = require('./games')
 
 const wallet = new Wallet(new Map())
 const router = new Router(wallet)
 
 const etherPortalAddress = '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044'
+const dappAddressRelay = '0xF5DE34d6BbC0446E2a45719E718efEbaaE179daE'
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
 console.log('HTTP rollup_server url is ' + rollup_server)
 
@@ -37,12 +42,25 @@ async function handle_advance(data) {
         try {
           console.log('payment payload ', payload)
           const res = await router.process("ether_deposit", payload);
-          const r = viem.parse(viem.hexToString(res.payload))
-          console.log('res from payment ', r)
+          console.log ('after payment payload ', res.payload)
+          // const res = updateBalance(address, amount, gameId)
+          // TODO: update the payment record
+          return res
+
         } catch (e) {
           return new Error_out(`failed to process ether deposit ${payload} ${e}`);
         }
-      } else {
+      } else if ( msg_sender.toLowerCase() === dappAddressRelay.toLowerCase()) {
+        
+        rollup_address = payload;
+        router.set_rollup_address(rollup_address, "ether_withdraw");
+        router.set_rollup_address(rollup_address, "erc20_withdraw");
+        router.set_rollup_address(rollup_address, "erc721_withdraw");
+
+        console.log("Setting DApp address");
+        return new Report( `DApp address set up successfully to ${rollup_address}` );
+    }
+      else {
 
         let JSONpayload = {};
 
@@ -53,7 +71,41 @@ async function handle_advance(data) {
 
   try {
 
-    if (JSONpayload.method === 'createGame') {
+    if (JSONpayload.method === 'withdraw') {
+      
+      try {
+        const res = router.process('ether_withdraw', payload  )
+        console.log('result from withraw ', res)
+        return res
+      } catch (error) {
+       console.log(`Error occured trying to withdraw ${error}`)
+       return new Error_out(`Error occured trying to withdraw ${error}`)
+      }
+      
+    } else if (JSONpayload.method === 'transfer') {
+
+      const game = games.find(game => game.id === JSONpayload.gameId)
+      const res = transferToWinner(game)
+      if (res.error) {
+        await reportHandler(res.message);
+        return 'reject';
+      }
+      
+      // try {
+      //   let res = wallet.ether_transfer(JSONpayload.from, JSONpayload.to, BigInt(JSONpayload.amount));
+
+      //   console.log('result after transfer from index ', res)
+      //   return res
+      // } catch (error) {
+      //   console.log("ERROR transfering");
+      //   console.log(error);
+      //   await reportHandler('ERROR transfering')
+      //   return 'reject'
+      // }
+      
+      
+  
+    } else if (JSONpayload.method === 'createGame') {
       if (JSONpayload.data == '' || null) {
         console.log('Result cannot be empty');
         await reportHandler(message)
@@ -61,7 +113,7 @@ async function handle_advance(data) {
       }
   
       console.log('creating game...');
-      const res = addGame(JSONpayload.data);
+      const res = await addGame(JSONpayload.data);
       if (res.error) {
         await reportHandler(res.message);
         return 'reject';
@@ -72,7 +124,7 @@ async function handle_advance(data) {
     } else if (JSONpayload.method === 'addParticipant') {
 
       console.log('adding participant ...', JSONpayload.data);
-      const res = addParticipant(JSONpayload.data)
+      const res = await addParticipant(JSONpayload.data)
       if (res.error) {
         await reportHandler(res.message);
         return 'reject';
@@ -82,13 +134,41 @@ async function handle_advance(data) {
     } else if (JSONpayload.method === 'playGame') {
       
       console.log('game play ...', JSONpayload.data)
-      const res = gamePlayHandler(JSONpayload.data)
+      const res = playGame(JSONpayload.data)
       if (res.error) {
         await reportHandler(res.message);
         return 'reject';
       }
       advance_req = await noticeHandler(games)
     
+    } else if (JSONpayload.method === 'rollDice') {
+      
+      console.log('rolling dice ...', JSONpayload.data)
+      const res = rollDice(JSONpayload.data)
+      if (res.error) {
+        await reportHandler(res.message);
+        return 'reject';
+      }
+      advance_req = await noticeHandler(games)
+    
+    } else if (JSONpayload.method === 'commit') {
+      console.log(`committing for ${msg_sender}...`)
+      const res = commit(JSONpayload.gameId, JSONpayload.commitment, msg_sender.toLowerCase())
+      if (res.error) {
+        await reportHandler(res.message);
+        return 'reject';
+      }
+     
+      advance_req = await noticeHandler(games)
+    } else if(JSONpayload.method === 'reveal') {
+      console.log(`reveaiing for ${msg_sender} ...`)
+      const res = reveal(JSONpayload.gameId, JSONpayload.move, JSONpayload.nonce, msg_sender.toLowerCase())
+      if (res.error) {
+        await reportHandler(res.message);
+        return 'reject';
+      }
+     
+      advance_req = await noticeHandler(games)
     } else {
       console.log('invalid request');
       const message = `method undefined: ${JSONpayload.method}`
@@ -115,7 +195,34 @@ async function handle_advance(data) {
 
 async function handle_inspect(data) {
   console.log('Received inspect request data ' + JSON.stringify(data));
-  return 'accept';
+  try {
+    const url = viem.hexToString(data.payload).split('/')
+
+    const balance = url[0]
+    const address = url[1]
+
+    return router.process(balance, address)
+
+  } catch (error) {
+    const error_msg = `failed to process inspect request ${error}`;
+    console.debug(error_msg);
+    return new Error_out(error_msg);
+  }
+
+}
+
+const send_request = async (output) => {
+  let endpoint = '/report'
+
+  if (output.type === '/voucher') {
+    endpoint = 'voucher'
+  }
+
+  await fetch(rollup_server + endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(output),
+    });
 }
 
 var handlers = {
@@ -142,7 +249,9 @@ var finish = { status: 'accept' };
     } else {
       const rollup_req = await finish_req.json();
       var handler = handlers[rollup_req['request_type']];
-      finish['status'] = await handler(rollup_req['data']);
+      let output = await handler(rollup_req['data']);
+      await send_request(output)
+      finish.status = 'accept'
     }
   }
 })();

@@ -8,9 +8,11 @@ import { addInput } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
 import { dappAddress } from '@/lib/utils'
 import { useConnectWallet } from '@web3-onboard/react'
+import { useNotices } from '@/hooks/useNotices'
 
 const CreateGameModal = () => {
   const [{ wallet }] = useConnectWallet()
+  const { refetch } = useNotices()
   const dispatch = useDispatch()
   const createGameForm = useSelector((state: any) =>
     selectGameModal(state.modal)
@@ -20,13 +22,16 @@ const CreateGameModal = () => {
   const [creator, setCreator] = useState<string | undefined>('')
   const [gameName, setGameName] = useState<string>('')
   const [winningScore, setWinningScore] = useState<number>(20)
-  // const [startTime, setStartTime] = useState<string>('')
+  const [bettingAmount, setBettingAmoun] = useState<string>('0.02')
+  const [bet, setBet] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
 
   const game = {
     creator,
     activePlayer: '',
     gameName,
+    commitPhase: false,
+    revealPhase: false,
     participants: [],
     gameSettings: {
       numbersOfTurn: 2,
@@ -40,8 +45,9 @@ const CreateGameModal = () => {
     status: GameStatus.New,
     rollOutcome: 0,
     winner: '',
-    bettingAmount: 1, // in ether
+    bettingAmount, // in ether
     bettingFund: 0, // total fund transfered by players
+    paidOut: false
   }
 
   const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
@@ -61,10 +67,11 @@ const CreateGameModal = () => {
   }
 
   const createGameHandler = async () => {
-
     game.gameName = gameName
     game.gameSettings.winningScore = winningScore
-
+    game.gameSettings.bet = bet
+    game.bettingAmount = bettingAmount
+debugger
     const jsonPayload = JSON.stringify({
       method: 'createGame',
       data: game,
@@ -73,7 +80,14 @@ const CreateGameModal = () => {
     const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
 
     const result = await tx.wait(1)
-    console.log(result)
+    if (result) {
+      console.log('result: ', result)
+      refetch()
+    }
+  }
+
+  const handleOptionChange = (value: boolean) => {
+    setBet(value)
   }
 
   const reset = () => {
@@ -133,6 +147,7 @@ const CreateGameModal = () => {
             Title
           </label>
           <input
+            required
             onChange={(e) => setGameName(e.target.value)}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="name"
@@ -153,6 +168,7 @@ const CreateGameModal = () => {
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             id="winningScore"
             type="number"
+            min={6}
             placeholder="Set Winning Score"
           />
         </div>
@@ -172,14 +188,14 @@ const CreateGameModal = () => {
         </div> */}
 
         <div className="mb-4">
-          <span className="block">Bet Game?</span>
+          <span className="block">Stake Game?</span>
           <label className="inline-flex items-center">
             <input
               type="radio"
               className="form-radio"
-              disabled
               name="accountType"
-              value="yes"
+              disabled
+              onChange={() => handleOptionChange(true)}
             />
             <span className="ml-2">Yes</span>
           </label>
@@ -187,13 +203,31 @@ const CreateGameModal = () => {
             <input
               type="radio"
               className="form-radio"
-              checked
               name="accountType"
-              value="no"
+              checked
+              onChange={() => handleOptionChange(false)}
             />
             <span className="ml-2">No</span>
           </label>
         </div>
+
+        {bet && (
+          <div className="my-4">
+            <label
+              className="block text-gray-400 text-sm font-bold mb-2"
+              htmlFor="bettingAmount"
+            >
+              Staking Amount
+            </label>
+            <input
+              onChange={(e) => setBettingAmoun(e.target.value)}
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="bettingAmount"
+              type="number"
+              placeholder="Set Staking Amount"
+            />
+          </div>
+        )}
 
         <div className="mb-4">
           <span className="block">Game Apparatus</span>
@@ -244,7 +278,7 @@ const CreateGameModal = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <Button className="w-[200px]" type="submit">
+          <Button disabled={loading} className="w-[200px]" type="submit">
             {loading ? 'Creating ...' : 'Create Game'}
           </Button>
         </div>

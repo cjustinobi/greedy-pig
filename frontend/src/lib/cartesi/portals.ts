@@ -9,23 +9,24 @@ export const addInput = async (
     try {
       let payload = ethers.utils.toUtf8Bytes(data)
 
-      return await rollups.inputContract.addInput(dappAddress, payload)
+      const res = await rollups.inputContract.addInput(dappAddress, payload)
+
+      console.log('res ', res)
+      return res
     } catch (e) {
       console.log(`${e}`)
     }
   }
 }
 
-export const sendEther = async (amount: number, rollups: any, data: any) => {
-  // const data = ethers.utils.toUtf8Bytes(`Deposited (${amount}) ether.`)
+export const sendEther = async (address: string, gameId: string, amount: number, rollups: any) => {
+  const data = ethers.utils.toUtf8Bytes(`${address} Deposited ${amount} ether from gameId: ${gameId}.`)
   const tx = { value: ethers.utils.parseEther(`${amount}`) }
-
-  console.log('Ether to deposit: ', tx)
 
   try {
     return rollups.etherPortalContract.depositEther(
       rollups.dappContract.address,
-      ethers.utils.toUtf8Bytes(data),
+      data,
       tx
     )
   } catch (error) {

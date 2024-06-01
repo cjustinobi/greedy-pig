@@ -1,24 +1,49 @@
+const { 
+  verifyCommitment,
+  resetMoveCommitment,
+  getParticipantsMove,
+  generateRollOutcome
+ } = require('./utils/helpers')
+
 const { v4: uuidv4 } = require('uuid')
 const { Wallet } = require('cartesi-wallet')
+const { Router } = require('cartesi-router')
+const { ethers } = require('ethers')
 
-const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
 const wallet = new Wallet(new Map())
+const router = new Router(wallet)
 
-export const games = []
 
-export const addGame = (game) => {
+const games = []
+
+const withdraw = async (data) => {
+  return router.process('withdraw', data)
+}
+
+const addGame = async (game) => {
   const gameFound = games.length ? games.find(g => g.id === game.id) : null
 
   if (gameFound) {
     return errorResponse(true, 'Game already exist')
   }
 
+  if (game.gameSettings.winningScore < 6) {
+    return errorResponse(true, 'Game winning score should not be less than 6')
+  }
 
-  games.push({ ...game, id: uuidv4()})
+  const newGame = { ...game, id: uuidv4(), dateCreated: Date.now() }
+  games.push(newGame)
+
+  // add participant
+  await addParticipant({
+    gameId: newGame.id,
+    playerAddress: game.creator
+  })
+  
   return errorResponse(false)
 }
 
-export const addParticipant = async ({gameId, playerAddress}) => {
+const addParticipant = async ({gameId, playerAddress}) => {
 
   const game = games.find(game => game.id === gameId)
 
@@ -39,7 +64,10 @@ export const addParticipant = async ({gameId, playerAddress}) => {
       turn: 0,
       turnScore: 0,
       totalScore: 0
-    }
+    },
+    commitment: null,
+    move: null,
+    deposited: false
   })
 
   if (game.gameSettings.bet) {
@@ -52,41 +80,127 @@ export const addParticipant = async ({gameId, playerAddress}) => {
   return errorResponse(false)
 }
 
-const gamePlay = async (gameId, playerAddress) => {
+const commit = (gameId, commitment, playerAddress) => {
+
+  const game = games.find(game => game.id === gameId)
+
+  if (!game) {
+    return errorResponse(true, 'Game not found')
+  }
+
+  if (game.status === getGameStatus('ended')) {
+    return errorResponse(true, 'Game ended')
+  }
+
+  const participant = game.participants.find(p => p.address.toLowerCase() === playerAddress)
+
+  if (!participant) {
+    return errorResponse(true, 'Participant not found')
+  }
+
+  if (participant.commitment) {
+    return errorResponse(true, 'Commitment already exist')
+  }
+
+  if (participant.move) {
+    return errorResponse(true, 'Move already exist')
+  }
+
+
+  if (!game.commitPhase) {
+    game.commitPhase = true
+  } 
+
+  console.log(`committed for ${playerAddress}`)
+  participant.commitment = commitment
+
+  const allPlayersCommitted = game.participants.every((participant) => participant.commitment !== null)
+
+  if (allPlayersCommitted) {
+    game.commitPhase = false
+  }
+
+  return errorResponse(false)
+
+}
+
+const reveal = (gameId, move, nonce, playerAddress) => {
+
+  const game = games.find(game => game.id === gameId)
+
+  if (!game) {
+    return errorResponse(true, 'Game not found')
+  }
+  
+  const participant = game.participants.find(p => p.address.toLowerCase() === playerAddress)
+
+  if (!participant) {
+    return errorResponse(true, 'Participant not found')
+  }
+
+  if (participant.move) {
+    return errorResponse(true, 'Move already exist')
+  }
+
+  const isVerified = verifyCommitment(participant.commitment, move, nonce)
+
+  if (!isVerified) return errorResponse(true, 'Invalid commitment')
+
+  if (!game.revealPhase) {
+    game.revealPhase = true
+  }
+  if (game.commitPhase) {
+    game.commitPhase = false
+  }
+
+  console.log(`revealed for ${playerAddress}`)
+  participant.move = parseInt(move)
+
+  const allPlayersRevealed = game.participants.every((participant) => participant.move !== null)
+
+  if (allPlayersRevealed) {
+    game.revealPhase = false
+  }
+
+  return errorResponse(false)
+}
+
+const rollDice = async ({gameId, playerAddress}) => {
 
   const game = games.find(game => game.id === gameId)
 
   const participant = game.participants.find(p => p.address === playerAddress)
 
-  const rollOutcome = Math.floor(Math.random() * 6) + 1
-  console.log('rollOutcome ', rollOutcome)
-
+  const moves = getParticipantsMove(game)
+  console.log('moves', moves)
+  const rollOutcome = generateRollOutcome(moves)
+  console.log('roll outcome is ', rollOutcome)
 
   if (rollOutcome === 1) {
 
-    console.log('roll outcome is ', rollOutcome)
     participant.playerInfo.turn += 1;
-    // cancel all acumulated point for the turn
-    participant.playerInfo.turnScore = 0; // Reset turn score for the next turn
+  
+    participant.playerInfo.turnScore = 0
     game.activePlayer = game.participants[(game.participants.findIndex(p => p.address === playerAddress) + 1) % game.participants.length].address; // Move to the next player's turn or end the game
-    game.rollOutcome = 0
+    game.rollOutcome = rollOutcome
+    resetMoveCommitment(game)
     return;
 
   } else {
-    console.log('roll outcome is ', rollOutcome)
 
-    game.rollOutcome = rollOutcome; // Update the roll outcome
+    game.rollOutcome = rollOutcome
     participant.playerInfo.turnScore += rollOutcome
 
     const totalScore = participant.playerInfo.turnScore + participant.playerInfo.totalScore
+    console.log('totalScore', totalScore)
     if (game.gameSettings.mode === 'score' && totalScore >= game.gameSettings.winningScore) {
       
       console.log('ending game ...')
       participant.playerInfo.totalScore += participant.playerInfo.turnScore
-      participant.playerInfo.turnScore = 0
+      participant.playerInfo.turnScore = participant.playerInfo.turnScore
       endGame(game);
       // transferToWinner(game);
-      return errorResponse(false);
+      return errorResponse(false)
 
     } else {
 
@@ -95,9 +209,10 @@ const gamePlay = async (gameId, playerAddress) => {
       if (allPlayersFinished) {
         console.log('ending game ...')
         endGame(game)
-        transferToWinner(game)
+        // transferToWinner(game)
         return errorResponse(false)
       }
+      resetMoveCommitment(game)
     }
     return
   }
@@ -106,7 +221,7 @@ const gamePlay = async (gameId, playerAddress) => {
 
 
 // Define a function to handle player responses
-export const gamePlayHandler = ({gameId, playerAddress, response}) => {
+const playGame = ({gameId, playerAddress, response, commitment}) => {
   
   const game = games.find(game => game.id === gameId)
 
@@ -145,7 +260,9 @@ export const gamePlayHandler = ({gameId, playerAddress, response}) => {
  
   if (response === 'yes') {
     try {
-      gamePlay(gameId, playerAddress)
+      console.log('commiting ....')
+      commit(gameId, commitment, playerAddress)
+      // gamePlay(gameId, playerAddress)
     } catch (error) {
       return errorResponse(true, error)
     }
@@ -162,6 +279,8 @@ export const gamePlayHandler = ({gameId, playerAddress, response}) => {
     game.activePlayer = game.participants[nextPlayerIndex].address;
     game.rollOutcome = 0
   }
+
+  // resetMoveCommitment(game)
 
   return errorResponse(false)
 }
@@ -193,7 +312,6 @@ const calculateWinner = game => {
   return winnerAddress;
 }
 
-
 const endGame = game => {
 
   // const winner = calculateWinner(game)
@@ -206,21 +324,33 @@ const endGame = game => {
 }
 
 const transferToWinner = async (game) => {
-  // Transfer to the winner.
-// ether_transfer: (account: Address, to: Address, amount: bigint) => Notice | Error_out;
+
   if (game.gameSettings.bet && game.status === 'Ended') {
-    console.log('transfering to winner: ', game.winner)
-    const addr = '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044'
-     try {
-        let voucher = wallet.ether_transfer(addr, game.winner, BigInt(1))
-        await fetch(rollup_server + "/voucher", {
-          method: "POST", headers: { "Content-Type": "application/json", },
-          body: JSON.stringify({ payload: voucher.payload, destination: voucher.destination }),
-        });
-      } catch (error) {
-        console.log(error)
-        return errorResponse(true, error)
+    const winnerAddress = game.winner.toLowerCase();
+      let res
+      for (const participant of game.participants) {
+        if (participant.address.toLowerCase() !== winnerAddress) {
+          try {
+            res = await wallet.ether_transfer(participant.address.toLowerCase(), winnerAddress.toLowerCase(), ethers.parseEther((game.bettingAmount).toString()));
+            console.log(`Transferred ${game.bettingAmount} to winner from ${participant.address}`);
+            console.log('Result from transfer ', res);
+          } catch (error) {
+            console.log(`Error transferring ${game.bettingAmount} to winner from ${participant.address}`);
+          }
+        }
       }
+      if (res.type === 'error') {
+        return errorResponse(true, 'Error transferring funds to winner')
+      }
+      game.paidOut = true
+  
+    // try {
+    //   const res = wallet.ether_transfer('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', game.winner, ethers.parseEther(game.bettingAmount));
+  
+    //   console.log('result from transfer ', res)
+    // } catch (error) {
+    //   console.log('error from transfer ', error)
+    // }
   }
 }
 
@@ -256,56 +386,71 @@ const getGameStatus = status => {
 ///////////////////////
 
 
-const gameStructure = () => {
-  return {
-   creator: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-   activePlayer: '',
-   gameName: 'Justin Obi',
-   participants: [
-     {
-       address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-       playerInfo: {
-        turn: 0,
-        turnScore: 0,
-        totalScore: 0
-       }
-     },
-     {
-       address: '0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199',
-       playerInfo: {
-        turn: 0,
-        turnScore: 0,
-        totalScore: 0
-       }
-     },
-     {
-       address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
-       playerInfo: {
-        turn: 0,
-        turnScore: 0,
-        totalScore: 0
-       }
-     }
-   ],
-   gameSettings: {
-     numbersOfTurn: 2,
-     winningScore: 0,
-     mode: 'turn', // turn || score
-     apparatus: 'roulette',
-     bet: true,
-     maxPlayer: 10,
-     limitNumberOfPlayer: true
-   },
-   status: 'New',
-   startTime: '2024-02-20T11:28',
-   id: 'j57c7p49x610z9q2s63xbz7rk56ktg8v',
-   startAngle: 0,
-   bettingAmount: 0,
-   bettingFund: 0,
-   winner: ''
- }
+  const gameStructure = () => {
+    return {
+    creator: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+    activePlayer: '',
+    gameName: 'Justin Obi',
+    commit: false,
+    participants: [
+      {
+        move: null,
+        commitment: '',
+        address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+        playerInfo: {
+          turn: 0,
+          turnScore: 0,
+          totalScore: 0
+        }
+      },
+      {
+        move: null,
+        commitment: '',
+        address: '0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199',
+        playerInfo: {
+          turn: 0,
+          turnScore: 0,
+          totalScore: 0
+        }
+      },
+      {
+        move: null,
+        commitment: '',
+        address: '0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266',
+        playerInfo: {
+          turn: 0,
+          turnScore: 0,
+          totalScore: 0
+        }
+      }
+    ],
+    gameSettings: {
+      numbersOfTurn: 2,
+      winningScore: 0,
+      mode: 'turn', // turn || score
+      apparatus: 'roulette', // roulette || dice
+      bet: true,
+      maxPlayer: 10,
+      limitNumberOfPlayer: true
+    },
+    status: 'New',
+    startTime: '2024-02-20T11:28',
+    id: 'j57c7p49x610z9q2s63xbz7rk56ktg8v',
+    startAngle: 0,
+    bettingAmount: 0,
+    bettingFund: 0,
+    winner: ''
+  }
+  }
+
+module.exports = {
+  games,
+  withdraw,
+  addGame,
+  addParticipant,
+  commit,
+  reveal,
+  rollDice,
+  playGame,
+  transferToWinner
 }
-
-
-
-

@@ -9,11 +9,11 @@ const Features = () => {
       <div className="mx-auto max-w-screen-2xl px-4 md:px-8">
         <div className="mb-10 md:mb-16">
           <h2 className="mb-4 text-center text-2xl font-bold text-gray-500 md:mb-6 lg:text-3xl">
-            Your chance. Your strategy
+            How to play the Game
           </h2>
 
           <p className="mx-auto max-w-screen-md text-center text-gray-500 md:text-lg">
-            Master the Tool, Conquer the Game
+            Your chance. Your strategy
           </p>
         </div>
 
