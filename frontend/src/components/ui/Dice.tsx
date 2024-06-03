@@ -16,9 +16,10 @@ import { useConnectWallet, useSetChain } from '@web3-onboard/react'
 import { addInput, sendEther, inspectCall } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
 import Button from '../shared/Button'
-import { ethers } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
+import { parseEther } from 'ethers/lib/utils'
 
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
@@ -65,7 +66,9 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       `balance/${playerAddress}`,
       connectedChain
     )
-    const res = hasDeposited(game.bettingAmount, reports)
+    console.log('balance for: ' + playerAddress, reports)
+    const res = hasDeposited(game.bettingAmount, reports[0])
+    debugger
     if (res) {
       toast('Successfully deposited. You can join game!')
       return true
@@ -92,7 +95,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           connectedChain
         )
    
-        const res = hasDeposited(game.bettingAmount, reports)
+        const res = hasDeposited(game.bettingAmount, reports[0])
 
         if (!res) return toast.error(`You need to deposit ${game.bettingAmount} ether to join`)
         
@@ -379,7 +382,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       gameId: game.id,
       rollupAddress: dappAddress,
       account: game.winner,
-      amount: game.bettingAmount
+      amount: parseEther(game.bettingAmount)
     })
 
     const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
@@ -389,6 +392,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const depositHandler = async () => {
     if (!game?.gameSettings.bet) return toast.error('Not a betting game')
+console.log('betting amount ', game.bettingAmount)
 
     setDepositing(true)
     try {
@@ -553,14 +557,17 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col justify-center">
+      <button onClick={sendRelayAddress}>Set DappAddress</button>
+      <button onClick={checkBalance}>Check balance</button>
       {userJoining &&
         game?.participants.some(
           (participant: any) =>
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
-      {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
-        <Button onClick={sendRelayAddress}>
+      {game?.status === 'Ended' && (
+      // {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
+        <Button onClick={transfer}>
           Claim Fund
         </Button>
       )}
@@ -583,7 +590,7 @@ useEffect(() => {
           game.status === 'New' &&
           game.gameSettings.bet &&
           wallet &&
-          !deposited &&
+          // !deposited &&
           !game.commitPhase &&
           !game.revealPhase && (
             <div className="flex justify-center">

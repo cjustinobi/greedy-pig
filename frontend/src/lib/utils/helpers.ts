@@ -36,7 +36,7 @@ export const generateCommitment = async (address: string) => {
 };
 
 export const hasDeposited = (bettingAmount: number, reports: any) => {
-  const hasDeposited = (reports && parseInt(utils.formatEther(reports[0].ether))) >= bettingAmount
+  const hasDeposited = (reports && parseInt(utils.formatEther(reports.ether))) >= bettingAmount
 
   return !!hasDeposited
 }

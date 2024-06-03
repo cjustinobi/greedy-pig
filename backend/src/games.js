@@ -341,21 +341,24 @@ const transferToWinner = async (game, rollupAddress) => {
       if (participant.address.toLowerCase() !== winnerAddress) {
 
         console.log('inside the payment loop')
+        console.log('betting amount ', ethers.parseEther((game.bettingAmount).toString()))
 
         try {
             let notice = wallet.ether_transfer(
               participant.address.toLowerCase(),
               game.winner,
-              // ethers.parseEther((game.bettingAmount).toString())
-              ethers.parseEther('1')
+              // 1000000000000000000
+              ethers.parseEther((game.bettingAmount).toString())
+
+              // ethers.parseEther('1')
           );
           
-          await fetch(rollup_server + "/notice", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ payload: notice.payload }),
-          });
-          console.log('transfered ...', notice)
+          // await fetch(rollup_server + "/notice", {
+          //   method: "POST",
+          //   headers: { "Content-Type": "application/json" },
+          //   body: JSON.stringify({ payload: notice.payload }),
+          // });
+          console.log('notice ...', notice)
           } catch (error) {
             console.log("transfer ERROR");
             console.log(error);

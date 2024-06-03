@@ -6,6 +6,7 @@ export const addInput = async (
   rollups: any
 ) => {
   if (rollups) {
+    console.log(data)
     try {
       let payload = ethers.utils.toUtf8Bytes(data)
 
@@ -19,7 +20,7 @@ export const addInput = async (
   }
 }
 
-export const sendEther = async (address: string, gameId: string, amount: number, rollups: any) => {
+export const sendEther = async (address: string, gameId: string, amount: any, rollups: any) => {
   const data = ethers.utils.toUtf8Bytes(`${address} Deposited ${amount} ether from gameId: ${gameId}.`)
   const tx = { value: ethers.utils.parseEther(`${amount}`) }
 
