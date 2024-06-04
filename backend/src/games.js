@@ -346,7 +346,7 @@ const transferToWinner = async (game, rollupAddress) => {
         try {
             let notice = wallet.ether_transfer(
               participant.address.toLowerCase(),
-              game.winner,
+              winnerAddress,
               // 1000000000000000000
               ethers.parseEther((game.bettingAmount).toString())
 
