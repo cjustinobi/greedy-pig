@@ -42,8 +42,19 @@ async function handle_advance(data) {
       if ( msg_sender.toLowerCase() === etherPortalAddress.toLowerCase() ) {
         try {
           console.log('payment payload ', payload)
-          const res = await router.process("ether_deposit", payload);
+          // const res = await router.process("ether_deposit", payload);
+          notice = wallet.ether_deposit_process(payload)
+          const res = await fetch(rollup_server + "/notice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ payload: notice.payload }),
+          });
+          console.log('deposit notice ', res)
           console.log ('after payment payload ', res.payload)
+
+          const bal = await wallet.balance_get(msg_sender.toLowerCase())
+          console.log('balance ', bal.ether_get())
+
 
           return res
 
@@ -102,16 +113,29 @@ async function handle_advance(data) {
     } else if (JSONpayload.method === 'ether_transfer') {
 
       
-      // console.log("transfering");
-      // return router.process(JSONpayload.method, data);
+      console.log("transfering");
+      return router.process(JSONpayload.method, data);
 
-      const game = games.find(game => game.id === JSONpayload.gameId)
-      const res = transferToWinner(game, JSONpayload.rollupAddress)
-      if (res.error) {
-        await reportHandler(res.message);
-        return 'reject';
-      }
+      // const game = games.find(game => game.id === JSONpayload.gameId)
+      // const res = transferToWinner(game, JSONpayload.rollupAddress)
+      // if (res.error) {
+      //   await reportHandler(res.message);
+      //   return 'reject';
+      // }
   
+    } else if (JSONpayload.method === 'ether_deposit_transfer') {
+      
+      console.log('depositing ...', data);
+      const res = await router.process('ether_deposit', data.payload)
+      console.log('response after depositing', res)
+
+      if (res) {
+          console.log('before transfering')
+          const res = await router.process('ether_transfer', data.payload)
+          console.log('response after transfering', res)
+      }
+
+
     } else if (JSONpayload.method === 'ether_withdraw') {
 
       
@@ -137,6 +161,19 @@ async function handle_advance(data) {
     } else if (JSONpayload.method === 'addParticipant') {
 
       console.log('adding participant ...', JSONpayload.data);
+
+      const bal = await wallet.balance_get(msg_sender.toLowerCase())
+      console.log('balance ', bal.ether_get())
+
+      let transferNotice = await wallet.ether_transfer(
+        msg_sender.toLowerCase(),
+        '0x0',
+        1000000000000000000
+        // viem.parseEther((JSONpayload.data.amount).toString())
+      );
+
+      console.log('transfer notice ', transferNotice)
+
       const res = await addParticipant(JSONpayload.data)
       if (res.error) {
         await reportHandler(res.message);

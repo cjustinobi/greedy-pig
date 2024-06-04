@@ -203,7 +203,7 @@ const rollDice = async ({gameId, playerAddress}) => {
       participant.playerInfo.totalScore += participant.playerInfo.turnScore
       participant.playerInfo.turnScore = participant.playerInfo.turnScore
       endGame(game);
-      // transferToWinner(game);
+      transferToWinner(game);
       return errorResponse(false)
 
     } else {
@@ -337,57 +337,44 @@ const transferToWinner = async (game, rollupAddress) => {
 // ether_transfer: (account: Address, to: Address, amount: bigint) => Notice | Error_out;
     let error = false
 
-    for (const participant of game.participants) {
-      if (participant.address.toLowerCase() !== winnerAddress) {
+    try {
+      let transferNotice = await wallet.ether_transfer(
+        '0x0',
+        winnerAddress,
+        viem.parseEther((game.bettingAmount).toString())
+      );
+  
+      console.log(transferNotice)
+    } catch (error) {
+      console.log('transfering to winner error ', error)
+      error = true
+    }
 
-        console.log('inside the payment loop')
-        console.log('betting amount ', ethers.parseEther((game.bettingAmount).toString()))
+    // for (const participant of game.participants) {
+    //   if (participant.address.toLowerCase() !== winnerAddress) {
 
-        try {
-            let notice = wallet.ether_transfer(
-              participant.address.toLowerCase(),
-              winnerAddress,
-              // 1000000000000000000
-              ethers.parseEther((game.bettingAmount).toString())
+    //     console.log('inside the payment loop')
+    //     console.log('betting amount ', ethers.parseEther((game.bettingAmount).toString()))
 
-              // ethers.parseEther('1')
-          );
+    //     try {
+    //         let notice = wallet.ether_transfer(
+    //           participant.address.toLowerCase(),
+    //           winnerAddress,
+    //           // 1000000000000000000
+    //           ethers.parseEther((game.bettingAmount).toString())
+
+    //           // ethers.parseEther('1')
+    //       );
           
-          // await fetch(rollup_server + "/notice", {
-          //   method: "POST",
-          //   headers: { "Content-Type": "application/json" },
-          //   body: JSON.stringify({ payload: notice.payload }),
-          // });
-          console.log('notice ...', notice)
-          } catch (error) {
-            console.log("transfer ERROR");
-            console.log(error);
-          }
 
-        // try {
-          // let voucher = wallet.ether_withdraw(
-          //   rollupAddress,
-          //   game.winner,
-          //   ethers.parseEther((game.bettingAmount).toString())
-          // );
+    //       console.log('notice ...', notice)
+    //       } catch (error) {
+    //         console.log("transfer ERROR");
+    //         console.log(error);
+    //       }
 
-        //   console.log('voucher', voucher)
-
-        //   const res = await fetch(rollup_server + "/voucher", {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify({ payload: voucher.payload, destination: voucher.destination }),
-        //   });
-
-        //   console.log('voucher res from game', res)
-
-        //   } catch (error) {
-        //     console.log("voucher ERROR");
-        //     console.log(error);
-        //     error = true
-        //   }
-        }
-      }
+    //     }
+    //   }
       if (error) {
         return errorResponse(true, 'Error transferring funds to winner')
       } else {

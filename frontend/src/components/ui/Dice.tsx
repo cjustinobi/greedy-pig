@@ -68,7 +68,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     )
     console.log('balance for: ' + playerAddress, reports)
     const res = hasDeposited(game.bettingAmount, reports[0])
-    debugger
+    
     if (res) {
       toast('Successfully deposited. You can join game!')
       return true
@@ -84,7 +84,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     if (!wallet?.accounts[0].address) return toast.error('Connect account')
 
-      const playerAddress = wallet.accounts[0].address
+      const playerAddress = wallet.accounts[0].address.toLowerCase()
 
 
       // check if player has deposited
@@ -113,7 +113,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       try {
         const jsonPayload = JSON.stringify({
           method: 'addParticipant',
-          data: { gameId: id, playerAddress },
+          data: { gameId: id, playerAddress, amount: game.bettingAmount },
         })
   
         const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
@@ -377,17 +377,30 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const transfer = async () => {
 
-    const jsonPayload = JSON.stringify({
-      method: 'ether_transfer',
-      gameId: game.id,
-      rollupAddress: dappAddress,
-      account: game.winner,
-      amount: parseEther(game.bettingAmount)
-    })
+        try {
+          
+          const jsonPayload = JSON.stringify({
+            method: 'ether_transfer',
+            args: {
+              account: wallet?.accounts[0].address,
+              to: '0x0',
+              amount: parseEther(game.bettingAmount)
+            }
+          })
 
-    const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
-    const res = await tx.wait(1)
-    console.log('transfer ', res)
+          const tx = await addInput(
+            JSON.stringify(jsonPayload),
+            dappAddress,
+            rollups
+          )
+          const res = await tx.wait(1)
+          console.log('transfer ', res)
+
+      
+        } catch (error) {
+          console.log(error)
+          setDepositing(false)
+        }
   }
 
   const depositHandler = async () => {
@@ -558,6 +571,7 @@ useEffect(() => {
   return (
     <div className="flex flex-col justify-center">
       <button onClick={sendRelayAddress}>Set DappAddress</button>
+      <button onClick={transfer}>TRansfer</button>
       <button onClick={checkBalance}>Check balance</button>
       {userJoining &&
         game?.participants.some(
