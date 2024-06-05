@@ -57,14 +57,29 @@ const GameArena = () => {
         )
 
         if (gameId) {
-          const game = JSON.parse(noticePayload)
-            .find((game: any) => game.id === gameId)
-           
-          if (game) {
-            console.log('Game found:', game)
-            dispatchGameData(game)
+          const parsedPayload = JSON.parse(noticePayload)
+
+          if (Array.isArray(parsedPayload)) {
+            const game = parsedPayload.find((game: any) => game.id === gameId)
+
+            if (game) {
+              console.log('Game found:', game)
+              dispatchGameData(game)
+            }
+          } else {
+            console.warn('Parsed payload is not an array:', parsedPayload)
           }
         }
+
+        // if (gameId) {
+        //   const game = JSON.parse(noticePayload) // line 60
+        //     .find((game: any) => game.id === gameId)
+           
+        //   if (game) {
+        //     console.log('Game found:', game)
+        //     dispatchGameData(game)
+        //   }
+        // }
       }
     }
   }, [data, dispatchGameData, error, loading])

@@ -9,6 +9,8 @@ import { useRollups } from '@/hooks/useRollups'
 import { dappAddress } from '@/lib/utils'
 import { useConnectWallet } from '@web3-onboard/react'
 import { useNotices } from '@/hooks/useNotices'
+import { parseEther, parseUnits } from 'ethers/lib/utils'
+import { BigNumber } from 'ethers'
 
 const CreateGameModal = () => {
   const [{ wallet }] = useConnectWallet()
@@ -22,7 +24,7 @@ const CreateGameModal = () => {
   const [creator, setCreator] = useState<string | undefined>('')
   const [gameName, setGameName] = useState<string>('')
   const [winningScore, setWinningScore] = useState<number>(20)
-  const [bettingAmount, setBettingAmoun] = useState<string>('0.02')
+  const [bettingAmount, setBettingAmoun] = useState<any>('0.02')
   const [bet, setBet] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
 

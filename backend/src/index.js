@@ -42,8 +42,15 @@ async function handle_advance(data) {
       if ( msg_sender.toLowerCase() === etherPortalAddress.toLowerCase() ) {
         try {
           console.log('payment payload ', payload)
-          const res = await router.process("ether_deposit", payload);
-          console.log ('after payment payload ', res.payload)
+          // const res = await router.process("ether_deposit", payload);
+          notice = wallet.ether_deposit_process(payload)
+       
+          console.log('deposit notice ', res)
+          // console.log ('after payment payload ', res.payload)
+
+          const bal = await wallet.balance_get(msg_sender.toLowerCase())
+          console.log('balance ', bal.ether_get())
+
 
           return res
 
@@ -99,19 +106,28 @@ async function handle_advance(data) {
       //  return new Error_out(`Error occured trying to withdraw ${error}`)
       // }
       
-    } else if (JSONpayload.method === 'ether_transfer') {
+    } else if (JSONpayload.method === 'ether_transfer2') {
 
-      
-      // console.log("transfering");
-      // return router.process(JSONpayload.method, data);
-
-      const game = games.find(game => game.id === JSONpayload.gameId)
-      const res = transferToWinner(game, JSONpayload.rollupAddress)
-      if (res.error) {
-        await reportHandler(res.message);
-        return 'reject';
-      }
+      console.log("transfering2");
+      const res = await router.process('ether_transfer', data);
+      console.log('transfer2 res ', res)
+      return res
   
+    } else if (JSONpayload.method === 'ether_transfer') {
+      
+      const bal = await wallet.balance_get(msg_sender.toLowerCase())
+      console.log('balance ', bal.ether_get())
+
+      let transferNotice = await wallet.ether_transfer(
+        msg_sender.toLowerCase(),
+        '0x0',
+        1000000000000000000
+        // viem.parseEther((JSONpayload.data.amount).toString())
+      );
+
+      console.log('transfer notice ', transferNotice)
+
+
     } else if (JSONpayload.method === 'ether_withdraw') {
 
       
@@ -137,6 +153,19 @@ async function handle_advance(data) {
     } else if (JSONpayload.method === 'addParticipant') {
 
       console.log('adding participant ...', JSONpayload.data);
+
+      const bal = await wallet.balance_get(msg_sender.toLowerCase())
+      console.log('balance ', bal.ether_get())
+
+      let transferNotice = await wallet.ether_transfer(
+        msg_sender.toLowerCase(),
+        '0x0',
+        1000000000000000000
+        // viem.parseEther((JSONpayload.data.amount).toString())
+      );
+
+      console.log('transfer notice ', transferNotice)
+
       const res = await addParticipant(JSONpayload.data)
       if (res.error) {
         await reportHandler(res.message);

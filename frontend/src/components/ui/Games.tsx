@@ -77,17 +77,12 @@ const Games = () => {
           </select>
         </div>
         <div className="md:px-4 md:grid md:grid-cols-2 lg:grid-cols-3 gap-5 space-y-4 md:space-y-0">
-          {notices &&
-            notices.length > 0 &&
+          {notices && notices.length > 0 && Array.isArray(JSON.parse(notices[0].payload)) && (
             JSON.parse(notices[0].payload)
-            // JSON.parse(notices.reverse()[0].payload)
               .filter((game: IGame) => game.status === status)
               .reverse()
-              // .sort(
-              //   (a: { dateCreated: number }, b: { dateCreated: number }) =>
-              //     b.dateCreated - a.dateCreated
-              // )
-              .map((game: IGame) => <GameCard key={game.id} game={game} />)}
+              .map((game: IGame) => <GameCard key={game.id} game={game} />)
+          )}
         </div>
         {notices && notices.length === 0 && (
           <div className="flex flex-row justify-center">
