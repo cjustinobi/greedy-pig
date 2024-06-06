@@ -45,13 +45,7 @@ async function handle_advance(data) {
           // const res = await router.process("ether_deposit", payload);
           notice = wallet.ether_deposit_process(payload)
        
-          console.log('deposit notice ', res)
-          // console.log ('after payment payload ', res.payload)
-
-          const bal = await wallet.balance_get(msg_sender.toLowerCase())
-          console.log('balance ', bal.ether_get())
-
-
+          console.log('notice payload after deposit ', notice.payload)
           return res
 
         } catch (e) {
@@ -92,6 +86,7 @@ async function handle_advance(data) {
       body: JSON.stringify({ payload: voucher.payload, destination: voucher.destination }),
     });
     console.log('voucher ', res)
+    return res
   } catch (error) {
     console.log("voucher ERROR");
     console.log(error);
@@ -121,11 +116,17 @@ async function handle_advance(data) {
       let transferNotice = await wallet.ether_transfer(
         msg_sender.toLowerCase(),
         '0x0',
-        1000000000000000000
+        1000000000000000000n
         // viem.parseEther((JSONpayload.data.amount).toString())
       );
 
       console.log('transfer notice ', transferNotice)
+
+      const res = await fetch(rollup_server + "/notice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payload: transferNotice.payload }),
+      });
 
 
     } else if (JSONpayload.method === 'ether_withdraw') {

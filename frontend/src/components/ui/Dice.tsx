@@ -12,8 +12,8 @@ import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
 import { dappAddress, dappRelayAddress, hasDeposited } from '@/lib/utils'
-import { useConnectWallet, useSetChain } from '@web3-onboard/react'
-import { addInput, sendEther, inspectCall } from '@/lib/cartesi'
+import { useConnectWallet, useSetChain, useWallets } from '@web3-onboard/react'
+import { addInput, sendEther, inspectCall, depositErc20 } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
 import Button from '../shared/Button'
 import { BigNumber, ethers } from 'ethers'
@@ -28,6 +28,7 @@ interface ApparatusProps {
   game: any
 }
 
+const erc20Token = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
@@ -43,6 +44,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const players = useSelector((state: any) =>
     selectParticipantAddresses(state.games)
   )
+  const [connectedWallet] = useWallets();
+  const provider = connectedWallet ? new ethers.providers.Web3Provider(connectedWallet.provider) : null;
 
   const [rollCount, setRollCount] = useState<number>(0)
   const [isRolling, setIsRolling] = useState<boolean>(false)
@@ -425,6 +428,36 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         }
   }
 
+  const depositErc20Handler = async () => {
+    if (!game?.gameSettings.bet) return toast.error('Not a betting game')
+      console.log('betting amount ', game.bettingAmount)
+
+    setDepositing(true)
+    try {
+      debugger
+      const tx = await depositErc20(erc20Token, game.bettingAmount, rollups, provider)
+  
+      const res = await tx.wait(1)
+      if (res) {
+        const result = await checkBalance()
+        if (result) {
+          setDepositing(false)
+          setDeposited(true)
+          toast.success('Deposit successful')
+        }
+      } else {
+        setDepositing(false)
+        toast.error('Deposit not successful')
+      }
+     
+  
+    } catch (error) {
+      console.log(error)
+      setDepositing(false)
+    }
+
+  }
+
   const depositHandler = async () => {
     if (!game?.gameSettings.bet) return toast.error('Not a betting game')
 console.log('betting amount ', game.bettingAmount)
@@ -634,7 +667,7 @@ useEffect(() => {
               <Button
                 disabled={depositing}
                 className="my-6"
-                onClick={depositHandler}
+                onClick={depositErc20Handler}
               >
                 {depositing ? 'Depositing ...' : 'Deposit'}
               </Button>
