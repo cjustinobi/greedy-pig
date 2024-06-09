@@ -159,6 +159,35 @@
       }
 
       drawRouletteWheel()
+
+
+       if (JSONpayload.method === "faucet") {
+          console.log("sending erc20 tokens.....");
+          if (DAPP_ADDRESS === "null") {
+            console.log("Dapp address is not set");
+            return "reject";
+          }
+          // console.log("abi is", erc20abi);
+          const call = viem.encodeFunctionData({
+            abi: erc20abi,
+            functionName: "transfer",
+            args: [data.metadata.msg_sender, BigInt(JSONpayload.value)],
+          });
+          let voucher = {
+            destination: erc20_contract_address, // dapp Address
+            payload: call,
+          };
+          console.log(voucher);
+          advance_req = await fetch(rollup_server + "/voucher", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(voucher),
+          });
+          console.log("starting a voucher");
+          //{"method":"faucet","value":"150000"}
+        }
     </script>
   </body>
 </html>

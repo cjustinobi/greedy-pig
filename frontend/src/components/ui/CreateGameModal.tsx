@@ -224,8 +224,6 @@ const CreateGameModal = () => {
               onChange={(e) => setBettingAmoun(e.target.value)}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="bettingAmount"
-              type="number"
-              min={0}
               placeholder="Set Staking Amount"
             />
           </div>

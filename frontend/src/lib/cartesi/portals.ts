@@ -24,30 +24,36 @@ export const addInput = async (
 export const depositErc20 = async (token: string, amount: number, rollups: any, provider: any) => {
   try {
     if (rollups && provider) {
+
       const data = ethers.utils.toUtf8Bytes(
         `Deposited (${amount}) of ERC20 (${token}).`
       );
       //const data = `Deposited ${args.amount} tokens (${args.token}) for DAppERC20Portal(${portalAddress}) (signer: ${address})`;
       const signer = provider.getSigner();
-      const signerAddress = await signer.getAddress();
-
+      const signerAddress = await signer.getAddress()
+      
       const erc20PortalAddress = rollups.erc20PortalContract.address;
       const tokenContract = signer
-        ? IERC20__factory.connect(token, signer)
-        : IERC20__factory.connect(token, provider);
-
+      ? IERC20__factory.connect(token, signer)
+      : IERC20__factory.connect(token, provider);
+      
       // query current allowance
       const currentAllowance = await tokenContract.allowance(
-        signerAddress,
-        erc20PortalAddress
-      );
-      if (ethers.utils.parseEther(`${amount}`) > currentAllowance) {
-        // Allow portal to withdraw `amount` tokens from signer
-        const tx = await tokenContract.approve(
-          erc20PortalAddress,
-          ethers.utils.parseEther(`${amount}`)
+        signerAddress.toLowerCase(),
+        erc20PortalAddress.toLowerCase()
         );
-        const receipt = await tx.wait(1);
+   
+      // if (true) {
+      if (ethers.utils.parseEther(`${amount}`) > currentAllowance) {
+
+        console.log('amount ', ethers.utils.parseEther(`${amount}`))
+        // Allow portal to withdraw `amount` tokens from signer
+        try {
+          const tx = await tokenContract.approve(
+            erc20PortalAddress,
+            ethers.utils.parseEther(`${amount}`)
+          );
+          const receipt = await tx.wait(1);
         const event = (
           await tokenContract.queryFilter(
             tokenContract.filters.Approval(),
@@ -59,6 +65,21 @@ export const depositErc20 = async (token: string, amount: number, rollups: any, 
             `could not approve ${amount} tokens for DAppERC20Portal(${erc20PortalAddress})  (signer: ${signerAddress}, tx: ${tx.hash})`
           );
         }
+        } catch (error) {
+          console.log('error from transgfering ', error)
+        }
+        // const receipt = await tx.wait(1);
+        // const event = (
+        //   await tokenContract.queryFilter(
+        //     tokenContract.filters.Approval(),
+        //     receipt.blockHash
+        //   )
+        // ).pop();
+        // if (!event) {
+        //   throw Error(
+        //     `could not approve ${amount} tokens for DAppERC20Portal(${erc20PortalAddress})  (signer: ${signerAddress}, tx: ${tx.hash})`
+        //   );
+        // }
       }
 
       return await rollups.erc20PortalContract.depositERC20Tokens(

@@ -22,6 +22,7 @@ const wallet = new Wallet(new Map())
 const router = new Router(wallet)
 
 const etherPortalAddress = '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044'
+const erc20PortalAddress = '0x9C21AEb2093C32DDbC53eEF24B873BDCd1aDa1DB'
 const dappAddressRelay = '0xF5DE34d6BbC0446E2a45719E718efEbaaE179daE'
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
 console.log('HTTP rollup_server url is ' + rollup_server)
@@ -46,6 +47,17 @@ async function handle_advance(data) {
           notice = wallet.ether_deposit_process(payload)
        
           console.log('notice payload after deposit ', notice.payload)
+          return res
+
+        } catch (e) {
+          return new Error_out(`failed to process ether deposit ${payload} ${e}`);
+        }
+      } else if ( msg_sender.toLowerCase() === erc20PortalAddress.toLowerCase() ) {
+        try {
+          
+          notice = wallet.erc20_deposit_process(payload)
+       
+          console.log('notice payload after erc20 deposit ', notice.payload)
           return res
 
         } catch (e) {
@@ -115,7 +127,7 @@ async function handle_advance(data) {
 
       let transferNotice = await wallet.ether_transfer(
         msg_sender.toLowerCase(),
-        '0x0',
+        JSONpayload.to,
         1000000000000000000n
         // viem.parseEther((JSONpayload.data.amount).toString())
       );
@@ -161,8 +173,7 @@ async function handle_advance(data) {
       let transferNotice = await wallet.ether_transfer(
         msg_sender.toLowerCase(),
         '0x0',
-        1000000000000000000
-        // viem.parseEther((JSONpayload.data.amount).toString())
+        viem.parseEther((JSONpayload.data.amount).toString())
       );
 
       console.log('transfer notice ', transferNotice)

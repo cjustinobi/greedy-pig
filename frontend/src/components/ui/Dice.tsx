@@ -28,7 +28,12 @@ interface ApparatusProps {
   game: any
 }
 
-const erc20Token = '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+// const erc20Token = '0x2797a6a6D9D94633BA700b52Ad99337DdaFA3f52'
+const erc20Token = '0x9eBB8aF697f1b5ae2561E7859CD7E75c98bA094a' //mytoken
+
+// const erc20_contract_address = viem.getAddress(
+//   '0x2797a6a6D9D94633BA700b52Ad99337DdaFA3f52'
+// )
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
@@ -434,7 +439,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     setDepositing(true)
     try {
-      debugger
+      
       const tx = await depositErc20(erc20Token, game.bettingAmount, rollups, provider)
   
       const res = await tx.wait(1)
@@ -636,10 +641,8 @@ useEffect(() => {
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
       {game?.status === 'Ended' && (
-      // {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
-        <Button onClick={transfer}>
-          Claim Fund
-        </Button>
+        // {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
+        <Button onClick={transfer}>Claim Fund</Button>
       )}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
@@ -667,9 +670,27 @@ useEffect(() => {
               <Button
                 disabled={depositing}
                 className="my-6"
-                onClick={depositErc20Handler}
+                onClick={depositHandler}
+                // onClick={depositErc20Handler}
               >
                 {depositing ? 'Depositing ...' : 'Deposit'}
+              </Button>
+            </div>
+          )}
+        {game &&
+          game.status === 'New' &&
+          game.gameSettings.bet &&
+          wallet &&
+          // !deposited &&
+          !game.commitPhase &&
+          !game.revealPhase && (
+            <div className="flex justify-center">
+              <Button
+                disabled={depositing}
+                className="my-6"
+                onClick={depositErc20Handler}
+              >
+                {depositing ? 'Depositing ...' : 'Deposit ERC20'}
               </Button>
             </div>
           )}
