@@ -47,7 +47,7 @@ async function handle_advance(data) {
           notice = wallet.ether_deposit_process(payload)
        
           console.log('notice payload after deposit ', notice.payload)
-          return res
+          return 'accept'
 
         } catch (e) {
           return new Error_out(`failed to process ether deposit ${payload} ${e}`);
@@ -58,7 +58,7 @@ async function handle_advance(data) {
           notice = wallet.erc20_deposit_process(payload)
        
           console.log('notice payload after erc20 deposit ', notice.payload)
-          return res
+          return 'accept'
 
         } catch (e) {
           return new Error_out(`failed to process ether deposit ${payload} ${e}`);
@@ -104,41 +104,36 @@ async function handle_advance(data) {
     console.log(error);
   }
       
-      // try {
-      //   const res = router.process('ether_withdraw', payload  )
-      //   console.log('result from withraw ', res)
-      //   return res
-      // } catch (error) {
-      //  console.log(`Error occured trying to withdraw ${error}`)
-      //  return new Error_out(`Error occured trying to withdraw ${error}`)
-      // }
+
       
-    } else if (JSONpayload.method === 'ether_transfer2') {
+    } else if (JSONpayload.method === 'erc20_transfer2') {
 
       console.log("transfering2");
-      const res = await router.process('ether_transfer', data);
+      const res = await router.process('erc20_transfer', data);
       console.log('transfer2 res ', res)
-      return res
+      return 'accept'
   
-    } else if (JSONpayload.method === 'ether_transfer') {
+    } else if (JSONpayload.method === 'erc20_transfer') {
       
       const bal = await wallet.balance_get(msg_sender.toLowerCase())
       console.log('balance ', bal.ether_get())
 
-      let transferNotice = await wallet.ether_transfer(
-        msg_sender.toLowerCase(),
-        JSONpayload.to,
-        1000000000000000000n
-        // viem.parseEther((JSONpayload.data.amount).toString())
+      let transferNotice = await wallet.erc20_transfer(
+        JSONpayload.from.toLowerCase(),
+        JSONpayload.to.toLowerCase(),
+        JSONpayload.erc20.toLowerCase(),
+        viem.parseEther((JSONpayload.amount).toString())
       );
 
       console.log('transfer notice ', transferNotice)
 
-      const res = await fetch(rollup_server + "/notice", {
+      await fetch(rollup_server + "/notice", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ payload: transferNotice.payload }),
       });
+
+      return 'accept'
 
 
     } else if (JSONpayload.method === 'ether_withdraw') {
