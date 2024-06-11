@@ -47,7 +47,7 @@ async function handle_advance(data) {
           notice = wallet.ether_deposit_process(payload)
        
           console.log('notice payload after deposit ', notice.payload)
-          return res
+          return 'accept'
 
         } catch (e) {
           return new Error_out(`failed to process ether deposit ${payload} ${e}`);
@@ -58,10 +58,16 @@ async function handle_advance(data) {
           notice = wallet.erc20_deposit_process(payload)
        
           console.log('notice payload after erc20 deposit ', notice.payload)
-          return res
 
+          await fetch(rollup_server + "/notice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payload: notice.payload })
+        });
+
+          return 'accept'
         } catch (e) {
-          return new Error_out(`failed to process ether deposit ${payload} ${e}`);
+          return new Error_out(`failed to process erc20 deposit ${payload} ${e}`);
         }
       } else if ( msg_sender.toLowerCase() === dappAddressRelay.toLowerCase()) {
         
@@ -113,38 +119,39 @@ async function handle_advance(data) {
       //  return new Error_out(`Error occured trying to withdraw ${error}`)
       // }
       
-    } else if (JSONpayload.method === 'ether_transfer2') {
+    } else if (JSONpayload.method === 'erc20_transfer2') {
 
       console.log("transfering2");
-      const res = await router.process('ether_transfer', data);
+      router.process('erc20_transfer', data);
       console.log('transfer2 res ', res)
-      return res
+      return 'accept'
   
-    } else if (JSONpayload.method === 'ether_transfer') {
+    } else if (JSONpayload.method === 'erc20_transfer') {
+
+      try {
+        let transferNotice = wallet.erc20_transfer(
+          JSONpayload.from,
+          JSONpayload.to,
+          JSONpayload.erc20,
+          viem.parseEther((JSONpayload.amount).toString())
+        );
+  
+        console.log('transfer notice ', transferNotice)
+  
+        const res = await fetch(rollup_server + "/notice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ payload: transferNotice.payload }),
+        });
+        return 'accept'
+      } catch (error) {
+        new Report(`Error while transfering: ${error}`)
+      }
+
+
+    } else if (JSONpayload.method === 'erc20_withdraw') {
       
-      const bal = await wallet.balance_get(msg_sender.toLowerCase())
-      console.log('balance ', bal.ether_get())
-
-      let transferNotice = await wallet.ether_transfer(
-        msg_sender.toLowerCase(),
-        JSONpayload.to,
-        1000000000000000000n
-        // viem.parseEther((JSONpayload.data.amount).toString())
-      );
-
-      console.log('transfer notice ', transferNotice)
-
-      const res = await fetch(rollup_server + "/notice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ payload: transferNotice.payload }),
-      });
-
-
-    } else if (JSONpayload.method === 'ether_withdraw') {
-
-      
-      console.log("ether_withdraw");
+      console.log("erc20_withdraw");
       return router.process(JSONpayload.method, data);
   
     } else if (JSONpayload.method === 'createGame') {
@@ -170,7 +177,7 @@ async function handle_advance(data) {
       const bal = await wallet.balance_get(msg_sender.toLowerCase())
       console.log('balance ', bal.ether_get())
 
-      let transferNotice = await wallet.ether_transfer(
+      let transferNotice = await wallet.erc20_transfer(
         msg_sender.toLowerCase(),
         '0x0',
         viem.parseEther((JSONpayload.data.amount).toString())
@@ -240,10 +247,10 @@ async function handle_advance(data) {
   console.log('Game status ', JSON.stringify(games))
 
   return 'accept';
-      }
-    } catch (error) {
-      return new Error_out(`failed to process ether deposti ${payload} ${error}`);
-    }
+  }
+  } catch (error) {
+    return new Error_out(`failed to process ether deposti ${payload} ${error}`);
+  }
  
 }
 

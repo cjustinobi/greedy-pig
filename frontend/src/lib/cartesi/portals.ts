@@ -68,18 +68,7 @@ export const depositErc20 = async (token: string, amount: number, rollups: any, 
         } catch (error) {
           console.log('error from transgfering ', error)
         }
-        // const receipt = await tx.wait(1);
-        // const event = (
-        //   await tokenContract.queryFilter(
-        //     tokenContract.filters.Approval(),
-        //     receipt.blockHash
-        //   )
-        // ).pop();
-        // if (!event) {
-        //   throw Error(
-        //     `could not approve ${amount} tokens for DAppERC20Portal(${erc20PortalAddress})  (signer: ${signerAddress}, tx: ${tx.hash})`
-        //   );
-        // }
+      
       }
 
       return await rollups.erc20PortalContract.depositERC20Tokens(

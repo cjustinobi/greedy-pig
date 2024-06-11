@@ -1,193 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Roulette Game</title>
-
-    <style>
-      #canvas {
-        width: 500px;
-        height: 500px;
-        /* background-image: url('roulette.png'); */
-        background-size: cover;
-        /* Adjust background size */
-      }
-    </style>
-  </head>
-
-  <body>
-    <input type="button" value="spin" style="float: left" id="spin" />
-
-    <canvas id="canvas" width="500" height="500"></canvas>
-
-    <script>
-      var options = [1, 2, 3, 4, 5, 6]
-
-      var startAngle = 0
-      var arc = Math.PI / (options.length / 2)
-      var spinTimeout = null
-
-      var spinArcStart = 10
-      var spinTime = 0
-      var spinTimeTotal = 0
-
-      var ctx
-
-      document.getElementById('spin').addEventListener('click', spin)
-
-      function byte2Hex(n) {
-        var nybHexString = '0123456789ABCDEF'
-        return (
-          String(nybHexString.substr((n >> 4) & 0x0f, 1)) +
-          nybHexString.substr(n & 0x0f, 1)
-        )
-      }
-
-      function RGB2Color(r, g, b) {
-        return '#' + byte2Hex(r) + byte2Hex(g) + byte2Hex(b)
-      }
-
-      function getColor(item, maxitem) {
-        var phase = 0
-        var center = 128
-        var width = 127
-        var frequency = (Math.PI * 2) / maxitem
-
-        red = Math.sin(frequency * item + 2 + phase) * width + center
-        green = Math.sin(frequency * item + 0 + phase) * width + center
-        blue = Math.sin(frequency * item + 4 + phase) * width + center
-
-        return RGB2Color(red, green, blue)
-      }
-
-      function drawRouletteWheel() {
-        var canvas = document.getElementById('canvas')
-        if (canvas.getContext) {
-          var outsideRadius = 200
-          var textRadius = 160
-          var insideRadius = 125
-
-          ctx = canvas.getContext('2d')
-          ctx.clearRect(0, 0, 500, 500)
-
-          ctx.strokeStyle = 'black'
-          ctx.lineWidth = 2
-
-          ctx.font = 'bold 12px Helvetica, Arial'
-
-          for (var i = 0; i < options.length; i++) {
-            var angle = startAngle + i * arc
-            //ctx.fillStyle = colors[i];
-            ctx.fillStyle = getColor(i, options.length)
-
-            ctx.beginPath()
-            ctx.arc(250, 250, outsideRadius, angle, angle + arc, false)
-            ctx.arc(250, 250, insideRadius, angle + arc, angle, true)
-            ctx.stroke()
-            ctx.fill()
-
-            ctx.save()
-            ctx.shadowOffsetX = -1
-            ctx.shadowOffsetY = -1
-            ctx.shadowBlur = 0
-            ctx.shadowColor = 'rgb(220,220,220)'
-            ctx.fillStyle = 'black'
-            ctx.translate(
-              250 + Math.cos(angle + arc / 2) * textRadius,
-              250 + Math.sin(angle + arc / 2) * textRadius
-            )
-            ctx.rotate(angle + arc / 2 + Math.PI / 2)
-            var text = options[i]
-            ctx.fillText(text, -ctx.measureText(text).width / 2, 0)
-            ctx.restore()
-          }
-
-          //Arrow
-          ctx.fillStyle = 'black'
-          ctx.beginPath()
-          ctx.moveTo(250 - 4, 250 - (outsideRadius + 5))
-          ctx.lineTo(250 + 4, 250 - (outsideRadius + 5))
-          ctx.lineTo(250 + 4, 250 - (outsideRadius - 5))
-          ctx.lineTo(250 + 9, 250 - (outsideRadius - 5))
-          ctx.lineTo(250 + 0, 250 - (outsideRadius - 13))
-          ctx.lineTo(250 - 9, 250 - (outsideRadius - 5))
-          ctx.lineTo(250 - 4, 250 - (outsideRadius - 5))
-          ctx.lineTo(250 - 4, 250 - (outsideRadius + 5))
-          ctx.fill()
-        }
-      }
-
-      function spin() {
-        // spinAngleStart = Math.random() * 10 + 10; // 10 to 19.999
-        spinAngleStart = 12
-        spinTime = 0
-        spinTimeTotal = Math.random() * 3 + 4 * 1000 // 4000 to 7999
-        rotateWheel()
-      }
-
-      function rotateWheel() {
-        spinTime += 4
-        if (spinTime >= spinTimeTotal) {
-          stopRotateWheel()
-          return
-        }
-        var spinAngle =
-          spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal)
-        startAngle += (spinAngle * Math.PI) / 180
-        drawRouletteWheel()
-        spinTimeout = setTimeout('rotateWheel()', 30)
-      }
-
-      function stopRotateWheel() {
-        clearTimeout(spinTimeout)
-        var degrees = (startAngle * 180) / Math.PI + 90
-        var arcd = (arc * 180) / Math.PI
-        // debugger
-        var index = Math.floor((360 - (degrees % 360)) / arcd)
-        ctx.save()
-        ctx.font = 'bold 30px Helvetica, Arial'
-        var text = options[index]
-        ctx.fillText(text, 250 - ctx.measureText(text).width / 2, 250 + 10)
-        ctx.restore()
-      }
-
-      function easeOut(t, b, c, d) {
-        var ts = (t /= d) * t
-        var tc = ts * t
-        return b + c * (tc + -3 * ts + 3 * t)
-      }
-
-      drawRouletteWheel()
-
-
-       if (JSONpayload.method === "faucet") {
-          console.log("sending erc20 tokens.....");
-          if (DAPP_ADDRESS === "null") {
-            console.log("Dapp address is not set");
-            return "reject";
-          }
-          // console.log("abi is", erc20abi);
-          const call = viem.encodeFunctionData({
-            abi: erc20abi,
-            functionName: "transfer",
-            args: [data.metadata.msg_sender, BigInt(JSONpayload.value)],
-          });
-          let voucher = {
-            destination: erc20_contract_address, // dapp Address
-            payload: call,
-          };
-          console.log(voucher);
-          advance_req = await fetch(rollup_server + "/voucher", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(voucher),
-          });
-          console.log("starting a voucher");
-          //{"method":"faucet","value":"150000"}
-        }
-    </script>
-  </body>
-</html>
+ts_sent_count: 8, data: AdvanceStateInput(RollupsAdvanceStateInput { metadata: InputMetadata { msg_sender:
+6ad513fda973bf1fc24c04256d686cbe05d714c7, block_number: 6078211, timestamp: 1718018388, epoch_index: 0, input_index: 7
+}, payload:
+IntcIm1ldGhvZFwiOlwiZXJjMjBfdHJhbnNmZXIyXCIsXCJhcmdzXCI6e1wiYWNjb3VudFwiOlwiMHg2YWQ1MTNmZGE5NzNiZjFmYzI0YzA0MjU2ZDY4NmNiZTA1ZDcxNGM3XA==...[total:
+186 bytes], tx_hash: 4f48569df11f9e4a0e192fe57117f6fa7a08d008caaca4712516082917c46a2a }) } service=dispatcher
+2024-06-10T11:20:03.770 INF INFO advance_runner::runner: consumed input event event=RollupsInput { parent_id:
+"1718017873496-0", epoch_index: 0, inputs_sent_count: 8, data: AdvanceStateInput(RollupsAdvanceStateInput { metadata:
+InputMetadata { msg_sender: 6ad513fda973bf1fc24c04256d686cbe05d714c7, block_number: 6078211, timestamp: 1718018388,
+epoch_index: 0, input_index: 7 }, payload:
+IntcIm1ldGhvZFwiOlwiZXJjMjBfdHJhbnNmZXIyXCIsXCJhcmdzXCI6e1wiYWNjb3VudFwiOlwiMHg2YWQ1MTNmZGE5NzNiZjFmYzI0YzA0MjU2ZDY4NmNiZTA1ZDcxNGM3XA==...[total:
+186 bytes], tx_hash: 4f48569df11f9e4a0e192fe57117f6fa7a08d008caaca4712516082917c46a2a }) } service=advance-runner
+2024-06-10T11:20:03.771 INF INFO indexer::indexer: received event event=Input(Event { id: "1718018403768-0", payload:
+RollupsInput { parent_id: "1718017873496-0", epoch_index: 0, inputs_sent_count: 8, data:
+AdvanceStateInput(RollupsAdvanceStateInput { metadata: InputMetadata { msg_sender:
+6ad513fda973bf1fc24c04256d686cbe05d714c7, block_number: 6078211, timestamp: 1718018388, epoch_index: 0, input_index: 7
+}, payload:
+IntcIm1ldGhvZFwiOlwiZXJjMjBfdHJhbnNmZXIyXCIsXCJhcmdzXCI6e1wiYWNjb3VudFwiOlwiMHg2YWQ1MTNmZGE5NzNiZjFmYzI0YzA0MjU2ZDY4NmNiZTA1ZDcxNGM3XA==...[total:
+186 bytes], tx_hash: 4f48569df11f9e4a0e192fe57117f6fa7a08d008caaca4712516082917c46a2a }) } }) service=indexer
+2024-06-10T11:20:03.804 INF INFO indexer::indexer: waiting for next event self.state=IndexerState { inputs_last_id:
+"1718018403768-0", outputs_last_id: "1718017875614-0", inputs_stream: RollupsInputsStream { key:
+"{chain-11155111:dapp-1f00b846a2a3428aab5bd09d5c6968cee6cd46c5}:rollups-inputs" }, outputs_stream: RollupsOutputsStream
+{ key: "{chain-11155111:dapp-1f00b846a2a3428aab5bd09d5c6968cee6cd46c5}:rollups-outputs" } } service=indexer
+2024-06-10T11:20:03.891 INF [INFO rollup_http_server::http_service] Received new request of type ADVANCE
+service=server-manager
+2024-06-10T11:20:03.893 INF [INFO actix_web::middleware::logger] 127.0.0.1 "POST /finish HTTP/1.1" 200 577 "-" "undici"
+0.001152 service=server-manager
+2024-06-10T11:20:03.956 INF Received finish status 200 service=server-manager
+2024-06-10T11:20:03.995 INF Received advance request data
+{"metadata":{"msg_sender":"0x6ad513fda973bf1fc24c04256d686cbe05d714c7","epoch_index":0,"input_index":7,"block_number":6078211,"timestamp":1718018388},"payload":"0x227b5c226d6574686f645c223a5c2265726332305f7472616e73666572325c222c5c22617267735c223a7b5c226163636f756e745c223a5c223078366164353133666461393733626631666332346330343235366436383663626530356437313463375c222c5c22746f5c223a5c223078305c222c5c22616d6f756e745c223a7b5c22747970655c223a5c224269674e756d6265725c222c5c226865785c223a5c223078323961323234316166363263303030305c227d7d7d22"}
+service=server-manager
+2024-06-10T11:20:03.997 INF msg sender is 0x6ad513fda973bf1fc24c04256d686cbe05d714c7 service=server-manager
+2024-06-10T11:20:04.031 INF received request
+{"method":"erc20_transfer2","args":{"account":"0x6ad513fda973bf1fc24c04256d686cbe05d714c7","to":"0x0","amount":{"type":"BigNumber","hex":"0x29a2241af62c0000"}}}
+service=server-manager
+2024-06-10T11:20:04.032 INF transfering2 service=server-manager
+2024-06-10T11:20:04.038 INF executing operation erc20_transfer service=server-manager
+2024-06-10T11:20:04.141 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/125.0.0.0 Safari/537.36" 0.002201 service=graphql-server
+2024-06-10T11:20:04.203 INF [INFO actix_web::middleware::logger] 127.0.0.1 "POST /report HTTP/1.1" 202 0 "-" "undici"
+0.000512 service=server-manager
+2024-06-10T11:20:04.266 INF [INFO actix_web::middleware::logger] 127.0.0.1 "POST /report HTTP/1.1" 400 96 "-" "undici"
+0.000448 service=server-manager
+2024-06-10T11:20:04.782 INF INFO indexer::indexer: received event event=Output(Event { id: "1718018404781-0", payload:
+AdvanceResult(RollupsAdvanceResult { input_index: 7, status: Accepted }) }) service=indexer
+2024-06-10T11:20:04.784 INF INFO advance_runner::runner: waiting for the next input event service=advance-runner
+2024-06-10T11:20:04.791 INF INFO indexer::indexer: waiting for next event self.state=IndexerState { inputs_last_id:
+"1718018403768-0", outputs_last_id: "1718018404781-0", inputs_stream: RollupsInputsStream { key:
+"{chain-11155111:dapp-1f00b846a2a3428aab5bd09d5c6968cee6cd46c5}:rollups-inputs" }, outputs_stream: RollupsOutputsStream
+{ key: "{chain-11155111:dapp-1f00b846a2a3428aab5bd09d5c6968cee6cd46c5}:rollups-outputs" } } service=indexer
+2024-06-10T11:20:04.792 INF INFO indexer::indexer: received event event=Output(Event { id: "1718018404782-0", payload:
+Report(RollupsReport { index: 0, input_index: 7, payload:
+eyJlcnJvciI6IlR5cGVFcnJvcjogQ2Fubm90IHJlYWQgcHJvcGVydGllcyBvZiB1bmRlZmluZWQgKHJlYWRpbmcgJ3RvJykifQ== }) })
+service=indexer
+2024-06-10T11:20:04.798 INF INFO indexer::indexer: waiting for next event self.state=IndexerState { inputs_last_id:
+"1718018403768-0", outputs_last_id: "1718018404782-0", inputs_stream: RollupsInputsStream { key:
+"{chain-11155111:dapp-1f00b846a2a3428aab5bd09d5c6968cee6cd46c5}:rollups-inputs" }, outputs_stream: RollupsOutputsStream
+{ key: "{chain-11155111:dapp-1f00b846a2a3428aab5bd09d5c6968cee6cd46c5}:rollups-outputs" } } service=indexer
+2024-06-10T11:20:05.060 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:126.0) Gecko/20100101 Firefox/126.0" 0.002796
+service=graphql-server
+2024-06-10T11:20:06.144 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/125.0.0.0 Safari/537.36" 0.003870 service=graphql-server
+2024-06-10T11:20:07.075 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:126.0) Gecko/20100101 Firefox/126.0" 0.002535
+service=graphql-server
+2024-06-10T11:20:08.142 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/125.0.0.0 Safari/537.36" 0.003635 service=graphql-server
+2024-06-10T11:20:09.082 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:126.0) Gecko/20100101 Firefox/126.0" 0.002422
+service=graphql-server
+2024-06-10T11:20:10.147 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/125.0.0.0 Safari/537.36" 0.005897 service=graphql-server
+2024-06-10T11:20:12.107 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:126.0) Gecko/20100101 Firefox/126.0" 0.006285
+service=graphql-server
+2024-06-10T11:20:12.145 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/125.0.0.0 Safari/537.36" 0.002994 service=graphql-server
+2024-06-10T11:20:14.163 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)
+Chrome/125.0.0.0 Safari/537.36" 0.012798 service=graphql-server
+2024-06-10T11:20:15.145 INF INFO actix_web::middleware::logger: 127.0.0.1 "POST /graphql HTTP/1.1" 200 1476
+"http://localhost:3000/" "Mozilla/5.0 (Macintosh; Inte

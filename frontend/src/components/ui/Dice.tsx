@@ -7,7 +7,7 @@ import Die5 from '@/assets/img/dice_5.png'
 import Die6 from '@/assets/img/dice_6.png'
 import Image from 'next/image'
 import useAudio from '@/hooks/useAudio'
-import { generateCommitment } from '@/lib/utils'
+import { generateCommitment, erc20Token } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
@@ -28,12 +28,6 @@ interface ApparatusProps {
   game: any
 }
 
-// const erc20Token = '0x2797a6a6D9D94633BA700b52Ad99337DdaFA3f52'
-const erc20Token = '0x9eBB8aF697f1b5ae2561E7859CD7E75c98bA094a' //mytoken
-
-// const erc20_contract_address = viem.getAddress(
-//   '0x2797a6a6D9D94633BA700b52Ad99337DdaFA3f52'
-// )
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
@@ -387,7 +381,10 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     try {
       
       const jsonPayload = JSON.stringify({
-        method: 'ether_transfer'
+        method: 'erc20_transfer',
+        from: '0x6ad513fda973bf1fc24c04256d686cbe05d714c7',
+        to: '0x20fA3116F6D23d07149698eBd2b4520192856895',
+        erc20: erc20Token
       })
 
       const tx = await addInput(
@@ -410,10 +407,11 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         try {
           
           const jsonPayload = JSON.stringify({
-            method: 'ether_transfer2',
+            method: 'erc20_transfer2',
             args: {
               account: wallet?.accounts[0].address,
               to: '0x0',
+              erc20: erc20Token,
               amount: parseEther(game.bettingAmount)
             }
           })
@@ -435,7 +433,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const depositErc20Handler = async () => {
     if (!game?.gameSettings.bet) return toast.error('Not a betting game')
-      console.log('betting amount ', game.bettingAmount)
 
     setDepositing(true)
     try {
@@ -659,29 +656,12 @@ useEffect(() => {
       </button>
 
       <div className="flex flex-col justify-center">
+
         {game &&
           game.status === 'New' &&
           game.gameSettings.bet &&
           wallet &&
-          // !deposited &&
-          !game.commitPhase &&
-          !game.revealPhase && (
-            <div className="flex justify-center">
-              <Button
-                disabled={depositing}
-                className="my-6"
-                onClick={depositHandler}
-                // onClick={depositErc20Handler}
-              >
-                {depositing ? 'Depositing ...' : 'Deposit'}
-              </Button>
-            </div>
-          )}
-        {game &&
-          game.status === 'New' &&
-          game.gameSettings.bet &&
-          wallet &&
-          // !deposited &&
+          !deposited &&
           !game.commitPhase &&
           !game.revealPhase && (
             <div className="flex justify-center">
@@ -690,7 +670,7 @@ useEffect(() => {
                 className="my-6"
                 onClick={depositErc20Handler}
               >
-                {depositing ? 'Depositing ...' : 'Deposit ERC20'}
+                {depositing ? 'Depositing ...' : 'Deposit'}
               </Button>
             </div>
           )}
