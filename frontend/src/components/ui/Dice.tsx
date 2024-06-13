@@ -7,7 +7,7 @@ import Die5 from '@/assets/img/dice_5.png'
 import Die6 from '@/assets/img/dice_6.png'
 import Image from 'next/image'
 import useAudio from '@/hooks/useAudio'
-import { generateCommitment } from '@/lib/utils'
+import { generateCommitment, erc20Token } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
@@ -27,13 +27,6 @@ const die = [Die1, Die2, Die3, Die4, Die5, Die6]
 interface ApparatusProps {
   game: any
 }
-
-// const erc20Token = '0x2797a6a6D9D94633BA700b52Ad99337DdaFA3f52'
-const erc20Token = '0x9eBB8aF697f1b5ae2561E7859CD7E75c98bA094a' //mytoken
-
-// const erc20_contract_address = viem.getAddress(
-//   '0x2797a6a6D9D94633BA700b52Ad99337DdaFA3f52'
-// )
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
@@ -124,7 +117,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           data: { gameId: id, playerAddress, amount: game.bettingAmount },
         })
   
-        const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+        const tx = await addInput(jsonPayload, dappAddress, rollups)
         const result = await tx.wait(1)
 
         if (result) {
@@ -159,7 +152,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       if (game.activePlayer === wallet?.accounts[0].address) {
         const tx = await addInput(
-          JSON.stringify(jsonPayload),
+          jsonPayload,
           dappAddress,
           rollups
         )
@@ -382,44 +375,23 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   }
 
+
   const transfer = async () => {
-
-    try {
-      
-      const jsonPayload = JSON.stringify({
-        method: 'ether_transfer'
-      })
-
-      const tx = await addInput(
-        JSON.stringify(jsonPayload),
-        dappAddress,
-        rollups
-      )
-      const res = await tx.wait(1)
-      console.log('transfer ', res)
-
-  
-    } catch (error) {
-      console.log(error)
-      setDepositing(false)
-    }
-}
-
-  const transfer2 = async () => {
 
         try {
           
           const jsonPayload = JSON.stringify({
-            method: 'ether_transfer2',
+            method: "erc20_transfer",
             args: {
-              account: wallet?.accounts[0].address,
-              to: '0x0',
-              amount: parseEther(game.bettingAmount)
+              from: wallet?.accounts[0].address,
+              to: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+              erc20: erc20Token,
+              amount: 1
             }
           })
 
           const tx = await addInput(
-            JSON.stringify(jsonPayload),
+            jsonPayload,
             dappAddress,
             rollups
           )
@@ -455,37 +427,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         toast.error('Deposit not successful')
       }
      
-  
-    } catch (error) {
-      console.log(error)
-      setDepositing(false)
-    }
-
-  }
-
-  const depositHandler = async () => {
-    if (!game?.gameSettings.bet) return toast.error('Not a betting game')
-console.log('betting amount ', game.bettingAmount)
-
-    setDepositing(true)
-    try {
-      const tx = await sendEther(dappAddress, game.id, game.bettingAmount, rollups)
-  
-      const res = await tx.wait(1)
-      if (res) {
-        const result = await checkBalance()
-        if (result) {
-          setDepositing(false)
-          setDeposited(true)
-          toast.success('Deposit successful')
-        }
-      } else {
-        setDepositing(false)
-        toast.error('Deposit not successful')
-      }
-      // setDeposited(true)
-      // checkBalance()
-      // setTimeout(joinGame, 7000)
   
     } catch (error) {
       console.log(error)
@@ -632,7 +573,6 @@ useEffect(() => {
     <div className="flex flex-col justify-center">
       <button onClick={sendRelayAddress}>Set DappAddress</button>
       <button onClick={transfer}>TRansfer</button>
-      <button onClick={transfer2}>TRansfer2</button>
       <button onClick={checkBalance}>Check balance</button>
       {userJoining &&
         game?.participants.some(
@@ -663,25 +603,7 @@ useEffect(() => {
           game.status === 'New' &&
           game.gameSettings.bet &&
           wallet &&
-          // !deposited &&
-          !game.commitPhase &&
-          !game.revealPhase && (
-            <div className="flex justify-center">
-              <Button
-                disabled={depositing}
-                className="my-6"
-                onClick={depositHandler}
-                // onClick={depositErc20Handler}
-              >
-                {depositing ? 'Depositing ...' : 'Deposit'}
-              </Button>
-            </div>
-          )}
-        {game &&
-          game.status === 'New' &&
-          game.gameSettings.bet &&
-          wallet &&
-          // !deposited &&
+          !deposited &&
           !game.commitPhase &&
           !game.revealPhase && (
             <div className="flex justify-center">
@@ -806,3 +728,14 @@ useEffect(() => {
 }
 
 export default Dice
+
+// {"method": "erc20_transfer",
+// "args": {
+//   "from": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+// "to": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+// "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2",
+// "amount": 1
+// }
+// }
+
+// {"method": "erc20_transfer", "args": {   "from": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", "to": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2", "amount": 1 } }

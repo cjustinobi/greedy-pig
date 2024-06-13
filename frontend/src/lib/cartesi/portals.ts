@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { IERC20__factory } from '../../generated/rollups'
 
 export const addInput = async (
-  data: string,
+  data: any,
   dappAddress: string,
   rollups: any
 ) => {
