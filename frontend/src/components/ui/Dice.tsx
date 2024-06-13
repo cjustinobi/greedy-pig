@@ -208,7 +208,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         })
 
         const tx = await addInput(
-          JSON.stringify(jsonPayload),
+          jsonPayload,
           dappAddress,
           rollups
         )
@@ -248,7 +248,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         })
 
         const tx = await addInput(
-          JSON.stringify(jsonPayload),
+          jsonPayload,
           dappAddress,
           rollups
         )
@@ -297,7 +297,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       })
   
       setCommiting(true)
-      const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+      const tx = await addInput(jsonPayload, dappAddress, rollups)
       const res = await tx.wait(1)
   
       if (res) {
@@ -349,7 +349,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
    try {
      const tx = await addInput(
-       JSON.stringify(jsonPayload),
+       jsonPayload,
        dappAddress,
        rollups
      )
@@ -572,7 +572,6 @@ useEffect(() => {
   return (
     <div className="flex flex-col justify-center">
       <button onClick={sendRelayAddress}>Set DappAddress</button>
-      <button onClick={transfer}>TRansfer</button>
       <button onClick={checkBalance}>Check balance</button>
       {userJoining &&
         game?.participants.some(
@@ -580,8 +579,8 @@ useEffect(() => {
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
-      {game?.status === 'Ended' && (
-        // {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
+
+      {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
         <Button onClick={transfer}>Claim Fund</Button>
       )}
       <button

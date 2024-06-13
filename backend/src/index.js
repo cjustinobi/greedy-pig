@@ -132,6 +132,50 @@ async function handle_advance(data) {
       advance_req = await noticeHandler(games)
       return 'accept'
 
+    } else if (JSONPayload.method === 'playGame') {
+      
+      console.log('game play ...', JSONPayload.data)
+      const res = playGame(JSONPayload.data)
+      if (res.error) {
+        await reportHandler(res.message);
+        return 'reject';
+      }
+      advance_req = await noticeHandler(games)
+      return 'accept'
+    
+    } else if (JSONPayload.method === 'rollDice') {
+      
+      console.log('rolling dice ...', JSONPayload.data)
+      const res = rollDice(JSONPayload.data)
+      if (res.error) {
+        await reportHandler(res.message);
+        return 'reject';
+      }
+      advance_req = await noticeHandler(games)
+      return 'accept'
+    
+    } else if (JSONPayload.method === 'commit') {
+      console.log(`committing for ${msg_sender}...`)
+      const res = commit(JSONPayload.gameId, JSONPayload.commitment, msg_sender.toLowerCase())
+      if (res.error) {
+        await reportHandler(res.message);
+        return 'reject';
+      }
+     
+      advance_req = await noticeHandler(games)
+      return 'accept'
+
+    } else if(JSONPayload.method === 'reveal') {
+      console.log(`reveaiing for ${msg_sender} ...`)
+      const res = reveal(JSONPayload.gameId, JSONPayload.move, JSONPayload.nonce, msg_sender.toLowerCase())
+      if (res.error) {
+        await reportHandler(res.message);
+        return 'reject';
+      }
+     
+      advance_req = await noticeHandler(games)
+      return 'accept'
+
     } else {
 
       try {
