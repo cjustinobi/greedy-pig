@@ -28,7 +28,6 @@ interface ApparatusProps {
   game: any
 }
 
-
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
   // const [result, reexecuteQuery] = useVouchersQuery()
@@ -118,7 +117,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           data: { gameId: id, playerAddress, amount: game.bettingAmount },
         })
   
-        const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+        const tx = await addInput(jsonPayload, dappAddress, rollups)
         const result = await tx.wait(1)
 
         if (result) {
@@ -153,7 +152,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       if (game.activePlayer === wallet?.accounts[0].address) {
         const tx = await addInput(
-          JSON.stringify(jsonPayload),
+          jsonPayload,
           dappAddress,
           rollups
         )
@@ -209,7 +208,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         })
 
         const tx = await addInput(
-          JSON.stringify(jsonPayload),
+          jsonPayload,
           dappAddress,
           rollups
         )
@@ -249,7 +248,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         })
 
         const tx = await addInput(
-          JSON.stringify(jsonPayload),
+          jsonPayload,
           dappAddress,
           rollups
         )
@@ -298,7 +297,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       })
   
       setCommiting(true)
-      const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+      const tx = await addInput(jsonPayload, dappAddress, rollups)
       const res = await tx.wait(1)
   
       if (res) {
@@ -350,7 +349,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
    try {
      const tx = await addInput(
-       JSON.stringify(jsonPayload),
+       jsonPayload,
        dappAddress,
        rollups
      )
@@ -376,48 +375,23 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   }
 
+
   const transfer = async () => {
-
-    try {
-      
-      const jsonPayload = JSON.stringify({
-        method: 'erc20_transfer',
-        from: '0x6ad513fda973bf1fc24c04256d686cbe05d714c7',
-        to: '0x20fA3116F6D23d07149698eBd2b4520192856895',
-        erc20: erc20Token
-      })
-
-      const tx = await addInput(
-        JSON.stringify(jsonPayload),
-        dappAddress,
-        rollups
-      )
-      const res = await tx.wait(1)
-      console.log('transfer ', res)
-
-  
-    } catch (error) {
-      console.log(error)
-      setDepositing(false)
-    }
-}
-
-  const transfer2 = async () => {
 
         try {
           
           const jsonPayload = JSON.stringify({
-            method: 'erc20_transfer2',
+            method: "erc20_transfer",
             args: {
-              account: wallet?.accounts[0].address,
-              to: '0x0',
+              from: wallet?.accounts[0].address,
+              to: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
               erc20: erc20Token,
-              amount: parseEther(game.bettingAmount)
+              amount: 1
             }
           })
 
           const tx = await addInput(
-            JSON.stringify(jsonPayload),
+            jsonPayload,
             dappAddress,
             rollups
           )
@@ -452,37 +426,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         toast.error('Deposit not successful')
       }
      
-  
-    } catch (error) {
-      console.log(error)
-      setDepositing(false)
-    }
-
-  }
-
-  const depositHandler = async () => {
-    if (!game?.gameSettings.bet) return toast.error('Not a betting game')
-console.log('betting amount ', game.bettingAmount)
-
-    setDepositing(true)
-    try {
-      const tx = await sendEther(dappAddress, game.id, game.bettingAmount, rollups)
-  
-      const res = await tx.wait(1)
-      if (res) {
-        const result = await checkBalance()
-        if (result) {
-          setDepositing(false)
-          setDeposited(true)
-          toast.success('Deposit successful')
-        }
-      } else {
-        setDepositing(false)
-        toast.error('Deposit not successful')
-      }
-      // setDeposited(true)
-      // checkBalance()
-      // setTimeout(joinGame, 7000)
   
     } catch (error) {
       console.log(error)
@@ -628,8 +571,6 @@ useEffect(() => {
   return (
     <div className="flex flex-col justify-center">
       <button onClick={sendRelayAddress}>Set DappAddress</button>
-      <button onClick={transfer}>TRansfer</button>
-      <button onClick={transfer2}>TRansfer2</button>
       <button onClick={checkBalance}>Check balance</button>
       {userJoining &&
         game?.participants.some(
@@ -637,8 +578,8 @@ useEffect(() => {
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
-      {game?.status === 'Ended' && (
-        // {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
+
+      {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
         <Button onClick={transfer}>Claim Fund</Button>
       )}
       <button
@@ -786,3 +727,14 @@ useEffect(() => {
 }
 
 export default Dice
+
+// {"method": "erc20_transfer",
+// "args": {
+//   "from": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+// "to": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+// "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2",
+// "amount": 1
+// }
+// }
+
+// {"method": "erc20_transfer", "args": {   "from": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", "to": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2", "amount": 1 } }

@@ -37,7 +37,7 @@ init({
 
 //Setup GraphQL Apollo client
 const serverUrl = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:10000'
+  ? 'http://localhost:8080'
   : process.env.NEXT_PUBLIC_SERVER_URL
 // const serverUrl = 'https://greedypig.fly.dev'
 // const serverUrl = 'http://127.0.0.1:8080'

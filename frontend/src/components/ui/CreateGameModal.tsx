@@ -80,7 +80,7 @@ const CreateGameModal = () => {
       data: game,
     })
 
-    const tx = await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
+    const tx = await addInput(jsonPayload, dappAddress, rollups)
 
     const result = await tx.wait(1)
     if (result) {
