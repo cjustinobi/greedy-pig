@@ -26,12 +26,6 @@ const {
 const wallet = new Wallet(new Map())
 const router = new Router(wallet)
 
-// const etherPortalAddress = '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044'
-// const erc20PortalAddress = '0x9C21AEb2093C32DDbC53eEF24B873BDCd1aDa1DB'
-// const dappAddressRelay = '0xF5DE34d6BbC0446E2a45719E718efEbaaE179daE'
-// const erc20 = '0x92C6bcA388E99d6B304f1Af3c3Cd749Ff0b591e2'
-// const dappAddress = '0xab7528bb862fb57e8a2bcd567a2e929a0be56a5e'
-
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
 console.log('HTTP rollup_server url is ' + rollup_server)
 
@@ -91,7 +85,6 @@ async function handle_advance(data) {
       rollup_address = payload
       router.set_rollup_address(rollup_address, 'ether_withdraw')
       router.set_rollup_address(rollup_address, 'erc20_withdraw')
-      router.set_rollup_address(rollup_address, 'erc721_withdraw')
       router.set_rollup_address(rollup_address, 'erc721_withdraw')
 
       console.log('Setting DApp address')
@@ -223,6 +216,12 @@ async function handle_advance(data) {
 
       console.log('router process payload ', data)
 
+      if (JSONPayload.gameId) {
+        const game = getGame(JSONPayload.gameId)
+        if (game.status === 'Ended' && game.winner.toLowerCase() === msg_sender.toLowerCase())
+        data.metadata.msg_sender = dappAddress
+      }
+
       try {
         return router.process(JSONPayload.method, data)
       } catch (e) {
@@ -235,9 +234,8 @@ async function handle_advance(data) {
     console.error(e)
     return new Error_out(`failed to process advance_request ${e}`)
   }
-}
 
-console.log('Game status ', JSON.stringify(games))
+}
 
 async function handle_inspect(data) {
   console.debug(`received inspect request data${data.payload}`)
@@ -282,6 +280,8 @@ async function handle_inspect(data) {
       if (output instanceof Error_out) {
         finish.status = 'reject'
       }
+
+      console.log('Game status ', JSON.stringify(games))
   
       await send_request(output)
     }

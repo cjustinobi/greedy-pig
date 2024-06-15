@@ -19,7 +19,6 @@ import Button from '../shared/Button'
 import { BigNumber, ethers } from 'ethers'
 import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
-import { parseEther } from 'ethers/lib/utils'
 
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
@@ -388,17 +387,19 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }
 
 
-  const transfer = async () => {
+  const transfer = async (gameId = null) => {
 
         try {
           
           const jsonPayload = JSON.stringify({
-            method: "erc20_transfer",
+            method: 'erc20_transfer',
+            gameId,
             args: {
               from: dappAddress,
               to: wallet?.accounts[0].address,
               erc20: erc20Token,
-              amount: 1
+              amount: 4
+              // amount: ethers.utils.parseEther(game.bettingAmount.toString())
             }
           })
 
@@ -508,19 +509,19 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   useEffect(() => {
     const checkDeposit = async () => {
       if (wallet?.accounts[0].address && game?.gameSettings.bet) {
-        const playerAddress = wallet.accounts[0].address
-        const reports = await inspectCall(
-          `balance/${playerAddress}`,
-          connectedChain
+        const participant = game?.participants.find(
+          (participant: any) =>
+            participant.address === wallet?.accounts[0].address
         )
-
-        const hasUserDeposited = hasDeposited(game.bettingAmount, reports[0])
-        setDeposited(hasUserDeposited)
+        const hasDeposited = participant?.deposited
+        setDeposited(hasDeposited)
       }
     }
 
-    checkDeposit()
-  }, [wallet, game?.gameSettings.bet, connectedChain])
+    if (wallet?.accounts[0].address && game?.gameSettings.bet) {
+      checkDeposit()
+    }
+  }, [wallet?.accounts[0].address, game?.gameSettings.bet])
 
   useEffect(() => {
     if (canRollDice) {
@@ -583,7 +584,7 @@ useEffect(() => {
     <div className="flex flex-col justify-center">
       <button onClick={sendRelayAddress}>Set DappAddress</button>
       <button onClick={checkBalance}>Check balance</button>
-      <button onClick={transfer}>Transfer</button>
+      <button onClick={() =>transfer()}>Transfer</button>
       {userJoining &&
         game?.participants.some(
           (participant: any) =>
@@ -592,7 +593,7 @@ useEffect(() => {
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
 
       {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
-        <Button onClick={transfer}>Claim Fund</Button>
+        <Button onClick={() => transfer(game.id)}>Claim Fund</Button>
       )}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
@@ -749,4 +750,4 @@ export default Dice
 // }
 // }
 
-// {"method": "erc20_transfer", "args": {   "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2", "amount": 2 } }
+// {"method": "erc20_transfer", "args": {   "from": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", "to": "0x0", "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2", "amount": 2 } }

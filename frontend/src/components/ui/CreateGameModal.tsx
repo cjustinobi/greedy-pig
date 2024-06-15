@@ -119,8 +119,12 @@ const CreateGameModal = () => {
     }
   }
 
-  const handleOptionChange = (value: boolean) => {
+  const handleOptionChange = async (value: boolean) => {
     setBet(value)
+    if (value) {
+      const hasDeposited = await checkBalance()
+      setHasUserDeposited(hasDeposited)
+    }
   }
 
   const reset = () => {
@@ -142,8 +146,8 @@ const CreateGameModal = () => {
 
        const res = await tx.wait(1)
        if (res) {
-         const result = await checkBalance()
-         if (result) {
+         const hasDeposited = await checkBalance()
+         if (hasDeposited) {
            setDepositing(false)
            setHasUserDeposited(true)
            toast.success('Deposit successful')
@@ -167,13 +171,7 @@ const CreateGameModal = () => {
       console.log('balance for: ' + creator, reports)
       const res = hasDeposited(bettingAmount, reports[0])
 
-      if (res) {
-        toast('Successfully deposited. You can continue creating game!')
-        return true
-      } else {
-        toast(`Deposit ${bettingAmount} to join game`)
-        return false
-      }
+      return !!res
     }
 
   useEffect(() => {
