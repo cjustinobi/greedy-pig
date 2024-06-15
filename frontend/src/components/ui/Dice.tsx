@@ -114,7 +114,19 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       try {
         const jsonPayload = JSON.stringify({
           method: 'addParticipant',
-          data: { gameId: id, playerAddress, amount: game.bettingAmount },
+          data: {
+            gameId: id,
+            playerAddress,
+            amount: game.bettingAmount
+          },
+          ...(game.gameSettings.bet && {
+            args: {
+              from: wallet?.accounts[0].address,
+              to: dappAddress,
+              erc20: erc20Token,
+              amount: game.bettingAmount
+            }
+          })
         })
   
         const tx = await addInput(jsonPayload, dappAddress, rollups)
@@ -383,8 +395,8 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           const jsonPayload = JSON.stringify({
             method: "erc20_transfer",
             args: {
-              from: wallet?.accounts[0].address,
-              to: "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+              from: dappAddress,
+              to: wallet?.accounts[0].address,
               erc20: erc20Token,
               amount: 1
             }
@@ -482,7 +494,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       if (allPlayersMoved) {
         toast.success('Dice set to roll!')
-        // setForceTrigger(true)
         setCanRollDice(true)
         setRevealMove(false)
       }
@@ -503,7 +514,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           connectedChain
         )
 
-        const hasUserDeposited = hasDeposited(game.bettingAmount, reports)
+        const hasUserDeposited = hasDeposited(game.bettingAmount, reports[0])
         setDeposited(hasUserDeposited)
       }
     }
@@ -572,6 +583,7 @@ useEffect(() => {
     <div className="flex flex-col justify-center">
       <button onClick={sendRelayAddress}>Set DappAddress</button>
       <button onClick={checkBalance}>Check balance</button>
+      <button onClick={transfer}>Transfer</button>
       {userJoining &&
         game?.participants.some(
           (participant: any) =>
@@ -608,7 +620,7 @@ useEffect(() => {
             <div className="flex justify-center">
               <Button
                 disabled={depositing}
-                className="my-6"
+                className="my-6 w-[200px]"
                 onClick={depositErc20Handler}
               >
                 {depositing ? 'Depositing ...' : 'Deposit'}
@@ -737,4 +749,4 @@ export default Dice
 // }
 // }
 
-// {"method": "erc20_transfer", "args": {   "from": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", "to": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2", "amount": 1 } }
+// {"method": "erc20_transfer", "args": {   "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65", "to": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2", "amount": 2 } }

@@ -5,8 +5,13 @@ const { Wallet, Error_out, Notice, Report, Output } = require('cartesi-wallet')
 
 const { 
   noticeHandler,
-  reportHandler
- } = require('./utils/helpers')
+  reportHandler,
+  etherPortalAddress,
+  erc20PortalAddress,
+  dappAddressRelay,
+  dappAddress
+ } = require('./utils')
+
 const { 
   games, 
   reveal,
@@ -15,15 +20,17 @@ const {
   addGame, 
   playGame,
   rollDice,
-  transferToWinner
+  getGame
 } = require('./games')
 
 const wallet = new Wallet(new Map())
 const router = new Router(wallet)
 
-const etherPortalAddress = '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044'
-const erc20PortalAddress = '0x9C21AEb2093C32DDbC53eEF24B873BDCd1aDa1DB'
-const dappAddressRelay = '0xF5DE34d6BbC0446E2a45719E718efEbaaE179daE'
+// const etherPortalAddress = '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044'
+// const erc20PortalAddress = '0x9C21AEb2093C32DDbC53eEF24B873BDCd1aDa1DB'
+// const dappAddressRelay = '0xF5DE34d6BbC0446E2a45719E718efEbaaE179daE'
+// const erc20 = '0x92C6bcA388E99d6B304f1Af3c3Cd749Ff0b591e2'
+// const dappAddress = '0xab7528bb862fb57e8a2bcd567a2e929a0be56a5e'
 
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
 console.log('HTTP rollup_server url is ' + rollup_server)
@@ -60,7 +67,7 @@ const send_request = async (output) => {
       body: JSON.stringify(output),
     });
     console.debug(
-      `received ${output.payload} status ${response.status} body ${response.body}`
+      `received ${output.payload} status ${response.status} body ${JSON.stringify(response.body)}`
     );
   }
 };
@@ -94,9 +101,15 @@ async function handle_advance(data) {
 
     if (msg_sender.toLowerCase() === erc20PortalAddress.toLowerCase()) {
       try {
-        return router.process("erc20_deposit", payload);
+        const res = router.process("erc20_deposit", payload);
+        console.log('res after depositing erc20 ', res.payload)
+        const payloadStr = hexToString(res.payload);
+        const JSONPayload = JSON.parse(payloadStr);
+        console.log("erc20 payload ", JSONPayload);
+        return res
+
       } catch (e) {
-        return new Error_out(`failed ot process ERC20Deposit ${payload} ${e}`);
+        return new Error_out(`failed to process ERC20Deposit ${payload} ${e}`);
       }
     }
 
@@ -110,27 +123,56 @@ async function handle_advance(data) {
         await reportHandler(message)
         return 'reject'
       }
-  
-      console.log('creating game...');
-      const res = await addGame(JSONPayload.data);
-      if (res.error) {
-        await reportHandler(res.message);
-        return 'reject';
+
+      if (JSONPayload.data.gameSettings.bet) {
+        if (JSONPayload.args.to.toLowerCase() !== dappAddress) return new Error_out(`${msg_sender}: You are transfering to the wrong address`)
+        // check that the amount is equal to the game amount
       }
-      advance_req = await noticeHandler(games);
-      return 'accept'
+
+
+  
+      console.log('creating game...')
+
+      try {
+        const transferNotice = router.process('erc20_transfer', data)
+  
+        const res = await addGame(JSONPayload.data)
+        if (res.error) {
+          return new Error_out(`failed to add participant ${res.message}`)
+        }
+        advance_req = await noticeHandler(games);
+        return transferNotice
+      } catch (error) {
+        return new Error_out(`failed to add participant ${error}`)
+      }
   
     } else if (JSONPayload.method === 'addParticipant') {
 
+      const game = getGame(JSONPayload.data.gameId)
+
+      if (game.gameSettings.bet) {
+        if (JSONPayload.args.to.toLowerCase() !== dappAddress) return new Error_out(`${msg_sender}: You are transfering to the wrong address`)
+      }
+
       console.log('adding participant ...', JSONPayload.data);
 
-      const res = await addParticipant(JSONPayload.data)
-      if (res.error) {
-        await reportHandler(res.message);
-        return 'reject';
+      try {
+
+        const transferNotice = router.process('erc20_transfer', data)
+  
+        const res = await addParticipant(JSONPayload.data)
+        if (res.error) {
+          return new Error_out(`failed to add participant ${res.message}`)
+        }
+  
+        advance_req = await noticeHandler(games)
+
+        return transferNotice
+
+      } catch (error) {
+        return new Error_out(`failed to add participant ${error}`)
       }
-      advance_req = await noticeHandler(games)
-      return 'accept'
+
 
     } else if (JSONPayload.method === 'playGame') {
       
@@ -178,6 +220,8 @@ async function handle_advance(data) {
 
     } else {
 
+      console.log("router process payload ", data)
+
       try {
         return router.process(JSONPayload.method, data);
       } catch (e) {
@@ -195,7 +239,7 @@ async function handle_advance(data) {
 console.log('Game status ', JSON.stringify(games))
 
 async function handle_inspect(data) {
-  console.debug(`received inspect request data${data}`);
+  console.debug(`received inspect request data${data.payload}`);
   try {
     const url = hexToString(data.payload).split("/");
     console.log("url is ", url);

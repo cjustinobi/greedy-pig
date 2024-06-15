@@ -57,7 +57,8 @@ async function handle_advance(data) {
   } else if ( msg_sender.toLowerCase() === erc20PortalAddress.toLowerCase() ) {
     try {
       
-      return router.process("erc20_deposit", payload);
+      const res = router.process("erc20_deposit", payload);
+      console.log('res after depositing erc20 ', res)
 
     } catch (e) {
       return new Error_out(`failed to process ether deposit ${payload} ${e}`);

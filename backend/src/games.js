@@ -2,18 +2,23 @@ const {
   verifyCommitment,
   resetMoveCommitment,
   getParticipantsMove,
-  generateRollOutcome
- } = require('./utils/helpers')
+  generateRollOutcome,
+  dappAddress,
+  erc20
+ } = require('./utils')
 
 const { v4: uuidv4 } = require('uuid')
 const { Wallet } = require('cartesi-wallet')
 const { Router } = require('cartesi-router')
-const { ethers } = require('ethers')
+const viem = require('viem')
 
 const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
 
 const wallet = new Wallet(new Map())
 const router = new Router(wallet)
+
+// const dappAddress = '0xab7528bb862fb57e8a2bcd567a2e929a0be56a5e'
+// const erc20 = '0x92C6bcA388E99d6B304f1Af3c3Cd749Ff0b591e2'
 
 
 const games = []
@@ -69,7 +74,7 @@ const addParticipant = async ({gameId, playerAddress}) => {
     },
     commitment: null,
     move: null,
-    deposited: false
+    deposited: game?.gameSettings.bet ? true : false
   })
 
   if (game?.gameSettings.bet) {
@@ -202,8 +207,7 @@ const rollDice = async ({gameId, playerAddress}) => {
       console.log('ending game ...')
       participant.playerInfo.totalScore += participant.playerInfo.turnScore
       participant.playerInfo.turnScore = participant.playerInfo.turnScore
-      endGame(game);
-      transferToWinner(game);
+      endGame(game)
       return errorResponse(false)
 
     } else {
@@ -213,7 +217,7 @@ const rollDice = async ({gameId, playerAddress}) => {
       if (allPlayersFinished) {
         console.log('ending game ...')
         endGame(game)
-        // transferToWinner(game)
+      
         return errorResponse(false)
       }
       resetMoveCommitment(game)
@@ -284,8 +288,6 @@ const playGame = ({gameId, playerAddress, response, commitment}) => {
     game.rollOutcome = 0
   }
 
-  // resetMoveCommitment(game)
-
   return errorResponse(false)
 }
 
@@ -322,67 +324,10 @@ const endGame = game => {
 
   game.status = getGameStatus('ended')
   game.winner = game.activePlayer
-  // game.activePlayer = ''
   return
  
 }
 
-const transferToWinner = async (game, rollupAddress) => {
-
-  if (game?.gameSettings.bet && game.status === 'Ended') {
-
-    const winnerAddress = game.winner.toLowerCase();
-
-    // ether_withdraw: (rollup_address: Address, account: Address, amount: bigint) => Voucher | Error_out;
-// ether_transfer: (account: Address, to: Address, amount: bigint) => Notice | Error_out;
-    let error = false
-
-    try {
-      let transferNotice = await wallet.ether_transfer(
-        '0x0',
-        winnerAddress,
-        viem.parseEther((game.bettingAmount).toString())
-      );
-  
-      console.log(transferNotice)
-    } catch (error) {
-      console.log('transfering to winner error ', error)
-      error = true
-    }
-
-    // for (const participant of game.participants) {
-    //   if (participant.address.toLowerCase() !== winnerAddress) {
-
-    //     console.log('inside the payment loop')
-    //     console.log('betting amount ', ethers.parseEther((game.bettingAmount).toString()))
-
-    //     try {
-    //         let notice = wallet.ether_transfer(
-    //           participant.address.toLowerCase(),
-    //           winnerAddress,
-    //           // 1000000000000000000
-    //           ethers.parseEther((game.bettingAmount).toString())
-
-    //           // ethers.parseEther('1')
-    //       );
-          
-
-    //       console.log('notice ...', notice)
-    //       } catch (error) {
-    //         console.log("transfer ERROR");
-    //         console.log(error);
-    //       }
-
-    //     }
-    //   }
-      if (error) {
-        return errorResponse(true, 'Error transferring funds to winner')
-      } else {
-         game.paidOut = true
-      }
-     
-  }
-}
 
 const errorResponse = (error, message = '') => {
   return { error, message }
@@ -395,6 +340,10 @@ const calcScore = (startAngle) => {
   const arcd = arc * 180 / Math.PI
   const index = Math.floor((360 - degrees % 360) / arcd)
   return options[index]
+}
+
+const getGame = (gameId) => {
+  return games.find(game => game.id === gameId)
 }
 
 const getGameStatus = status => {
@@ -482,5 +431,5 @@ module.exports = {
   reveal,
   rollDice,
   playGame,
-  transferToWinner
+  getGame
 }

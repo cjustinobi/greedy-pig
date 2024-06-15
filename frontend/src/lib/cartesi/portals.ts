@@ -66,7 +66,7 @@ export const depositErc20 = async (token: string, amount: number, rollups: any, 
           );
         }
         } catch (error) {
-          console.log('error from transgfering ', error)
+          console.log('error from transfering ', error)
         }
       
       }
