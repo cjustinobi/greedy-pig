@@ -20,7 +20,8 @@ const {
   addGame, 
   playGame,
   rollDice,
-  getGame
+  getGame,
+  getWinner
 } = require('./games')
 
 const wallet = new Wallet(new Map())
@@ -216,17 +217,32 @@ async function handle_advance(data) {
 
       console.log('router process payload ', data)
 
-      if (JSONPayload.gameId) {
+      if (JSONPayload.action === 'transferToWinner') {
         const game = getGame(JSONPayload.gameId)
         if (game.status === 'Ended' && game.winner.toLowerCase() === msg_sender.toLowerCase())
         data.metadata.msg_sender = dappAddress
-      }
 
       try {
+        const resultNotice = router.process(JSONPayload.method, data)
+        if (resultNotice) {
+          const winner = getWinner(JSONPayload.gameId)
+          winner.fundTransfered = true
+        }
+
+
+      } catch (e) {
+        return new Error_out(`failed to process command ${payloadStr} ${e}`)
+      }
+
+      } else {
+        try {
         return router.process(JSONPayload.method, data)
       } catch (e) {
         return new Error_out(`failed to process command ${payloadStr} ${e}`)
       }
+      }
+
+      
     }
 
     

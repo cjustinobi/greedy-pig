@@ -19,6 +19,7 @@ import Button from '../shared/Button'
 import { BigNumber, ethers } from 'ethers'
 import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
+import { action } from '@/convex/_generated/server'
 
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
@@ -174,6 +175,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       }
     } catch (error) {
       console.error('Error during game roll:', error)
+      rollDice()
     }
   }
 
@@ -387,13 +389,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }
 
 
-  const transfer = async (gameId = null) => {
+  const transfer = async (action = '') => {
 
         try {
           
           const jsonPayload = JSON.stringify({
             method: 'erc20_transfer',
-            gameId,
+            gameId: game.id,
+            action,
             args: {
               from: dappAddress,
               to: wallet?.accounts[0].address,
@@ -416,6 +419,33 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
           console.log(error)
           setDepositing(false)
         }
+  }
+
+  const withdraw = async () => {
+    //  return this.wallet.erc20_withdraw(
+    //    getAddress(this.msg_sender),
+    //    getAddress(this.request_args.erc20.toLowerCase()),
+    //    BigInt(this.request_args.amount)
+    //  )
+    try {
+      const jsonPayload = JSON.stringify({
+        method: 'erc20_withdraw',
+        gameId: game.id,
+        action: null,
+        args: {
+          account: wallet?.accounts[0].address,
+          erc20: erc20Token,
+          amount: 4
+        }
+      })
+
+      const tx = await addInput(jsonPayload, dappAddress, rollups)
+      const res = await tx.wait(1)
+      console.log('withdraw ', res)
+    } catch (error) {
+      console.log(error)
+      setDepositing(false)
+    }
   }
 
   const depositErc20Handler = async () => {
@@ -523,6 +553,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
   }, [wallet?.accounts[0].address, game?.gameSettings.bet])
 
+
   useEffect(() => {
     if (canRollDice) {
       setCommitted(false)
@@ -584,7 +615,7 @@ useEffect(() => {
     <div className="flex flex-col justify-center">
       <button onClick={sendRelayAddress}>Set DappAddress</button>
       <button onClick={checkBalance}>Check balance</button>
-      <button onClick={() =>transfer()}>Transfer</button>
+      <button onClick={() => transfer()}>Transfer</button>
       {userJoining &&
         game?.participants.some(
           (participant: any) =>
@@ -592,9 +623,20 @@ useEffect(() => {
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
 
-      {game?.status === 'Ended' && game?.winner == wallet?.accounts[0].address && (
-        <Button onClick={() => transfer(game.id)}>Claim Fund</Button>
-      )}
+      {game?.status === 'Ended' &&
+        game?.winner == wallet?.accounts[0].address && (
+          <Button onClick={() => transfer('transferToWinner')}>
+            Claim Fund
+          </Button>
+        )}
+      {game?.status === 'Ended' &&
+        game?.participants.find(
+          (participant: any) =>
+            participant.address === wallet?.accounts[0].address
+        )?.fundTransfered &&
+        game?.winner == wallet?.accounts[0].address && (
+          <Button onClick={withdraw}>Withdraw</Button>
+        )}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
@@ -610,7 +652,6 @@ useEffect(() => {
       </button>
 
       <div className="flex flex-col justify-center">
-
         {game &&
           game.status === 'New' &&
           game.gameSettings.bet &&

@@ -74,7 +74,9 @@ const addParticipant = async ({gameId, playerAddress}) => {
     },
     commitment: null,
     move: null,
-    deposited: game?.gameSettings.bet ? true : false
+    deposited: game?.gameSettings.bet ? true : false,
+    fundTransfered: false,
+    fundClaimed: false
   })
 
   if (game?.gameSettings.bet) {
@@ -342,8 +344,16 @@ const calcScore = (startAngle) => {
   return options[index]
 }
 
-const getGame = (gameId) => {
+const getGame = gameId => {
   return games.find(game => game.id === gameId)
+}
+
+const getWinner = gameId => {
+  const game = getGame(gameId)
+  if (!game) return null
+  const winnerAddress = game.winner
+  const winner = game.participants.find(p => p.address === winnerAddress)
+  return winner
 }
 
 const getGameStatus = status => {
@@ -431,5 +441,6 @@ module.exports = {
   reveal,
   rollDice,
   playGame,
-  getGame
+  getGame,
+  getWinner
 }
