@@ -297,7 +297,7 @@ async function handle_inspect(data) {
         finish.status = 'reject'
       }
 
-      console.log('Game status ', JSON.stringify(games))
+      console.log('Games ', JSON.stringify(games))
   
       await send_request(output)
     }

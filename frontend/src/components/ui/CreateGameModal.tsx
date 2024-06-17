@@ -354,11 +354,19 @@ const CreateGameModal = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <Button disabled={loading} className="w-[200px]" type="submit">
+          <Button
+            disabled={loading || depositing}
+            className="w-[200px]"
+            type="submit"
+          >
             {loading ? 'Creating ...' : 'Create Game'}
           </Button>
           {hasUserDeposited === false && (
-            <Button className="w-[200px]" type="button" onClick={depositErc20Handler}>
+            <Button
+              className="w-[200px]"
+              type="button"
+              onClick={depositErc20Handler}
+            >
               {depositing ? 'Depositing ...' : 'Deposit'}
             </Button>
           )}

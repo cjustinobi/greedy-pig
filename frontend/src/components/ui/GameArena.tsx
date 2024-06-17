@@ -8,7 +8,6 @@ import { useQuery, gql } from '@apollo/client'
 import { ethers } from 'ethers'
 import { useDispatch } from 'react-redux'
 import { useConnectWallet } from '@web3-onboard/react'
-import { Vouchers } from '../Vouchers'
 
 const GET_LATEST_NOTICE = gql`
   query latestNotice {
@@ -70,16 +69,6 @@ const GameArena = () => {
             console.warn('Parsed payload is not an array:', parsedPayload)
           }
         }
-
-        // if (gameId) {
-        //   const game = JSON.parse(noticePayload) // line 60
-        //     .find((game: any) => game.id === gameId)
-           
-        //   if (game) {
-        //     console.log('Game found:', game)
-        //     dispatchGameData(game)
-        //   }
-        // }
       }
     }
   }, [data, dispatchGameData, error, loading])

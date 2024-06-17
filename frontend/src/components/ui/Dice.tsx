@@ -7,7 +7,7 @@ import Die5 from '@/assets/img/dice_5.png'
 import Die6 from '@/assets/img/dice_6.png'
 import Image from 'next/image'
 import useAudio from '@/hooks/useAudio'
-import { generateCommitment, erc20Token } from '@/lib/utils'
+import { generateCommitment, erc20Token, getPlayerVouchers } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
@@ -20,6 +20,7 @@ import { BigNumber, ethers } from 'ethers'
 import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
 import { action } from '@/convex/_generated/server'
+import { VoucherService } from '@/lib/cartesi/vouchers'
 
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
@@ -29,6 +30,8 @@ interface ApparatusProps {
 }
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
+
+  const voucherService = new VoucherService()
 
   // const [result, reexecuteQuery] = useVouchersQuery()
   const updateUserAction = useMutation(api.game.updateGame)
@@ -422,11 +425,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }
 
   const withdraw = async () => {
-    //  return this.wallet.erc20_withdraw(
-    //    getAddress(this.msg_sender),
-    //    getAddress(this.request_args.erc20.toLowerCase()),
-    //    BigInt(this.request_args.amount)
-    //  )
+
     try {
       const jsonPayload = JSON.stringify({
         method: 'erc20_withdraw',
@@ -441,6 +440,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       const tx = await addInput(jsonPayload, dappAddress, rollups)
       const res = await tx.wait(1)
+      // if (res) {
+      //   const vouchers = await voucherService.getVouchers()
+      //   if (vouchers.length && wallet?.accounts[0].address) {
+      //     const playerVouchers = getPlayerVouchers(wallet?.accounts[0].address, vouchers)
+      //     console.log('playerVouchers ', playerVouchers)
+      //   }
+      // }
       console.log('withdraw ', res)
     } catch (error) {
       console.log(error)
@@ -494,6 +500,24 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       }
     }
   }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (wallet?.accounts[0].address) {
+        const vouchers = await voucherService.getVouchers()
+        if (vouchers.length) {
+          const playerVouchers = getPlayerVouchers(
+            wallet?.accounts[0].address,
+            vouchers
+          )
+          console.log('playerVouchers ', playerVouchers)
+        }
+      }
+    }
+
+    fetchData()
+  }, [wallet?.accounts[0].address])
+
 
   useEffect(() => {
 
@@ -623,12 +647,12 @@ useEffect(() => {
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
 
-      {game?.status === 'Ended' &&
+      {/* {game?.status === 'Ended' &&
         game?.winner == wallet?.accounts[0].address && (
           <Button onClick={() => transfer('transferToWinner')}>
             Claim Fund
           </Button>
-        )}
+        )} */}
       {game?.status === 'Ended' &&
         game?.participants.find(
           (participant: any) =>
@@ -637,6 +661,7 @@ useEffect(() => {
         game?.winner == wallet?.accounts[0].address && (
           <Button onClick={withdraw}>Withdraw</Button>
         )}
+      <Button onClick={withdraw}>Withdraww</Button>
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}

@@ -91,21 +91,21 @@ export const Vouchers: React.FC<IVoucherPropos> = (propos) => {
     }
   }
 
-  // useEffect(() => {
-  //   const setVoucher = async (voucher: any) => {
-  //     if (rollups) {
-  //       voucher.executed = await rollups.dappContract.wasVoucherExecuted(
-  //         BigNumber.from(voucher.input.index),
-  //         BigNumber.from(voucher.index)
-  //       )
-  //     }
-  //     setVoucherToExecute(voucher)
-  //   }
+  useEffect(() => {
+    const setVoucher = async (voucher: any) => {
+      if (rollups) {
+        voucher.executed = await rollups.dappContract.wasVoucherExecuted(
+          BigNumber.from(voucher.input.index),
+          BigNumber.from(voucher.index)
+        )
+      }
+      setVoucherToExecute(voucher)
+    }
 
-  //   if (!voucherResult.fetching && voucherResult.data) {
-  //     setVoucher(voucherResult.data.voucher)
-  //   }
-  // }, [voucherResult, rollups])
+    if (!voucherResult.fetching && voucherResult.data) {
+      setVoucher(voucherResult.data.voucher)
+    }
+  }, [voucherResult, rollups])
 
   if (fetching) return <p>Loading...</p>
   if (error) return <p>Oh no... {error.message}</p>

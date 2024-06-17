@@ -97,3 +97,29 @@ export const sendEther = async (address: string, gameId: string, amount: any, ro
     console.log('error from sending ehther ', error)
   }
 }
+
+  export const wasVoucherExecuted = async (inputIndex: Number, index: Number, rollups: any) => {
+    // if (!this.dappContract) {
+    //   throw new Error('Token Contract not initialized');
+    // }
+    let executed = true
+    try {
+        executed = await rollups.dappContract['wasVoucherExecuted'](inputIndex, index);
+    } catch (e) {
+        console.log(`${e}`);
+    }
+    return executed
+  }
+
+  //   async wasVoucherExecuted(inputIndex: Number, index: Number) {
+  //   if (!this.dappContract) {
+  //     throw new Error('Token Contract not initialized');
+  //   }
+  //   let executed = true
+  //   try {
+  //       executed = await this.dappContract['wasVoucherExecuted'](inputIndex, index);
+  //   } catch (e) {
+  //       console.log(`${e}`);
+  //   }
+  //   return executed
+  // }
