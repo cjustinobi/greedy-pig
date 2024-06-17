@@ -21,6 +21,7 @@ import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
 import { action } from '@/convex/_generated/server'
 import { VoucherService } from '@/lib/cartesi/vouchers'
+import ClaimModal from './ClaimModal'
 
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
@@ -31,7 +32,7 @@ interface ApparatusProps {
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
-  const voucherService = new VoucherService()
+  // const voucherService = new VoucherService()
 
   // const [result, reexecuteQuery] = useVouchersQuery()
   const updateUserAction = useMutation(api.game.updateGame)
@@ -61,6 +62,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [depositing, setDepositing] = useState<boolean>(false)
   const [joining, setJoining] = useState<boolean>(false)
   const [pass, setPass] = useState<boolean>(false)
+  const [claimModal, setClaimModal] = useState<boolean>(false)
   const [gameEnded, setGameEnded] = useState<boolean>(false)
   const previousRollCount = useRef<string | null>(null)
 
@@ -501,22 +503,26 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (wallet?.accounts[0].address) {
-        const vouchers = await voucherService.getVouchers()
-        if (vouchers.length) {
-          const playerVouchers = getPlayerVouchers(
-            wallet?.accounts[0].address,
-            vouchers
-          )
-          console.log('playerVouchers ', playerVouchers)
-        }
-      }
-    }
+  const handleCloseModal = () => {
+    setClaimModal(false)
+  }
 
-    fetchData()
-  }, [wallet?.accounts[0].address])
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (wallet?.accounts[0].address) {
+  //       const vouchers = await voucherService.getVouchers()
+  //       if (vouchers.length) {
+  //         const playerVouchers = getPlayerVouchers(
+  //           wallet?.accounts[0].address,
+  //           vouchers
+  //         )
+  //         console.log('playerVouchers ', playerVouchers)
+  //       }
+  //     }
+  //   }
+
+  //   fetchData()
+  // }, [wallet?.accounts[0].address])
 
 
   useEffect(() => {
@@ -637,6 +643,7 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col justify-center">
+      <ClaimModal claimModal={claimModal} onClose={handleCloseModal} />
       <button onClick={sendRelayAddress}>Set DappAddress</button>
       <button onClick={checkBalance}>Check balance</button>
       <button onClick={() => transfer()}>Transfer</button>
@@ -646,22 +653,26 @@ useEffect(() => {
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
-
-      {/* {game?.status === 'Ended' &&
-        game?.winner == wallet?.accounts[0].address && (
-          <Button onClick={() => transfer('transferToWinner')}>
-            Claim Fund
-          </Button>
-        )} */}
       {game?.status === 'Ended' &&
-        game?.participants.find(
+        game?.participants.some(
           (participant: any) =>
-            participant.address === wallet?.accounts[0].address
-        )?.fundTransfered &&
+            participant.address == wallet?.accounts[0].address &&
+            participant.fundTransfered === false
+        ) &&
         game?.winner == wallet?.accounts[0].address && (
           <Button onClick={withdraw}>Withdraw</Button>
         )}
-      <Button onClick={withdraw}>Withdraww</Button>
+      {game?.status === 'Ended' &&
+        game?.participants.some(
+          (participant: any) =>
+            participant.address == wallet?.accounts[0].address &&
+            participant.fundTransfered === true &&
+            participant.fundClaimed === false
+        ) &&
+        game?.winner == wallet?.accounts[0].address && (
+          <Button onClick={() => setClaimModal(true)}>Claim</Button>
+        )}
+      <Button onClick={() => setClaimModal(true)}>Claim</Button>
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
@@ -675,7 +686,6 @@ useEffect(() => {
           />
         )}
       </button>
-
       <div className="flex flex-col justify-center">
         {game &&
           game.status === 'New' &&
