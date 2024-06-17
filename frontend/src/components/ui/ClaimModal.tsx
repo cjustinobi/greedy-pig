@@ -3,6 +3,7 @@ import { VoucherService } from '@/lib/cartesi/vouchers'
 import { dappAddress, getPlayerVouchers } from '@/lib/utils'
 import { useConnectWallet } from '@web3-onboard/react'
 import { BigNumber } from 'ethers'
+import { parseUnits } from 'ethers/lib/utils'
 import { FC, useEffect, useState } from 'react'
 
 interface IClaimModalProps {
@@ -41,54 +42,76 @@ const ClaimModal: FC<IClaimModalProps> = ({ claimModal, onClose }) => {
 
   }
 
-  const executeVoucher = async (voucher: any) => {
-    if (rollups && !!voucher.proof) {
-      const newVoucherToExecute = { ...voucher }
-      try {
-        const tx = await rollups.dappContract.executeVoucher(
-          voucher.destination,
-          voucher.payload,
-          voucher.proof
-        )
-        const receipt = await tx.wait()
-        newVoucherToExecute.msg = `voucher executed! (tx="${tx.hash}")`
-        if (receipt.events) {
-          newVoucherToExecute.msg = `${
-            newVoucherToExecute.msg
-          } - resulting events: ${JSON.stringify(receipt.events)}`
-          newVoucherToExecute.executed =
-            await rollups.dappContract.wasVoucherExecuted(
-              BigNumber.from(voucher.input.index),
-              BigNumber.from(voucher.index)
-            )
-        }
-      } catch (e) {
-        newVoucherToExecute.msg = `COULD NOT EXECUTE VOUCHER: ${JSON.stringify(
-          e
-        )}`
-        console.log(`COULD NOT EXECUTE VOUCHER: ${JSON.stringify(e)}`)
-      }
-      console.log('newVoucherToExecute ', newVoucherToExecute)
-    }
-  }
+   const executeVoucher = async (voucher: any) => {
+     if (rollups && !!voucher.proof) {
+       const newVoucherToExecute = { ...voucher }
+       try {
+         const tx = await rollups.dappContract.executeVoucher(
+           voucher.destination,
+           voucher.payload,
+           voucher.proof
+         )
+         const receipt = await tx.wait()
+         newVoucherToExecute.msg = `voucher executed! (tx="${tx.hash}")`
+         if (receipt.events) {
+           newVoucherToExecute.msg = `${
+             newVoucherToExecute.msg
+           } - resulting events: ${JSON.stringify(receipt.events)}`
+         }
+         // Check execution status after transaction
+         newVoucherToExecute.executed =
+           await rollups.dappContract.wasVoucherExecuted(
+             BigNumber.from(voucher.input.index),
+             BigNumber.from(voucher.index)
+           )
+         setPlayerVouchers((prevVouchers) =>
+           prevVouchers.map((prevVoucher) =>
+             prevVoucher.index === voucher.index
+               ? newVoucherToExecute
+               : prevVoucher
+           )
+         )
+       } catch (e) {
+         newVoucherToExecute.msg = `COULD NOT EXECUTE VOUCHER: ${JSON.stringify(
+           e
+         )}`
+         console.log(`COULD NOT EXECUTE VOUCHER: ${JSON.stringify(e)}`)
+       }
+       console.log('newVoucherToExecute ', newVoucherToExecute)
+     }
+   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (wallet?.accounts[0].address) {
-        const vouchers = await voucherService.getVouchers()
-        if (vouchers.length) {
-          const playerVouchers = getPlayerVouchers(
-            wallet?.accounts[0].address,
-            vouchers
-          )
-          console.log(playerVouchers)
-          setPlayerVouchers(playerVouchers)
-        }
-      }
-    }
+   useEffect(() => {
+     const fetchData = async () => {
+       if (wallet?.accounts[0].address) {
+         const vouchers = await voucherService.getVouchers()
+         if (vouchers.length) {
+           const playerVouchersData = getPlayerVouchers(
+             wallet?.accounts[0].address,
+             vouchers
+           )
+           // Check execution status for initial data
+           const updatedVouchers = await Promise.all(
+             playerVouchersData.map(async (voucher: any) => {
+               if (rollups) {
+                 const isExecuted =
+                   await rollups.dappContract.wasVoucherExecuted(
+                     BigNumber.from(voucher.input.index),
+                     BigNumber.from(voucher.index)
+                   )
+                 return { ...voucher, executed: isExecuted }
+               } else {
+                 return voucher // No rollups available, keep voucher as-is
+               }
+             })
+           )
+           setPlayerVouchers(updatedVouchers)
+         }
+       }
+     }
 
-    fetchData()
-  }, [wallet?.accounts[0].address])
+     fetchData()
+   }, [wallet?.accounts[0].address, rollups])
 
   return (
     <div
@@ -112,7 +135,7 @@ const ClaimModal: FC<IClaimModalProps> = ({ claimModal, onClose }) => {
                     <button
                       onClick={() => claim(voucher.index, voucher.input.index)}
                     >
-                      Claim
+                      {voucher.executed ? 'Claimed' : 'Claim'}
                     </button>
                   </td>
                 </tr>
