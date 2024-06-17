@@ -32,9 +32,6 @@ interface ApparatusProps {
 
 const Dice: FC<ApparatusProps> = ({ game }) => {
 
-  // const voucherService = new VoucherService()
-
-  // const [result, reexecuteQuery] = useVouchersQuery()
   const updateUserAction = useMutation(api.game.updateGame)
   const creatUserAction = useMutation(api.game.createGame)
   const userJoining = useQuery(api.game.getUserJoining)
@@ -82,8 +79,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       toast(`Deposit ${game.bettingAmount} to join game`)
       return false
     }
-      // ? toast('Successfully deposited. You can join game!')
-      // : toast(`Deposit ${game.bettingAmount} to join game`)
   }
 
   const joinGame = async () => {
@@ -506,23 +501,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const handleCloseModal = () => {
     setClaimModal(false)
   }
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (wallet?.accounts[0].address) {
-  //       const vouchers = await voucherService.getVouchers()
-  //       if (vouchers.length) {
-  //         const playerVouchers = getPlayerVouchers(
-  //           wallet?.accounts[0].address,
-  //           vouchers
-  //         )
-  //         console.log('playerVouchers ', playerVouchers)
-  //       }
-  //     }
-  //   }
-
-  //   fetchData()
-  // }, [wallet?.accounts[0].address])
 
 
   useEffect(() => {

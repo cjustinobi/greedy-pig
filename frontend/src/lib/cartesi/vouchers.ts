@@ -51,7 +51,7 @@ export class VoucherService {
   }
 
 
-  async getVoucherWithProof(voucherIndex: Number, inputIndex: Number) {
+  async getVoucherWithProof(voucherIndex: number, inputIndex: number) {
     const query = `
     query GetVoucher($voucherIndex: Int!,  $inputIndex: Int!) {   
       voucher( voucherIndex: $voucherIndex,  inputIndex: $inputIndex) {
@@ -83,12 +83,8 @@ export class VoucherService {
       "voucherIndex": voucherIndex,
       "inputIndex": inputIndex
     })).toPromise()
-    
-    return result.data.voucher
-  }
 
-  playerVoucher = async (playerAddress: string) => {
-    
+    return result.data.voucher
   }
 
 }
