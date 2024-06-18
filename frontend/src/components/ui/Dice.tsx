@@ -644,9 +644,11 @@ useEffect(() => {
             participant.fundClaimed === false
         ) &&
         game?.winner == wallet?.accounts[0].address && (
-          <Button className="w-[200px]" disabled={claiming} onClick={claim}>
-            {claiming ? 'Claiming ... ' : 'Claim'}
-          </Button>
+          <div className="flex justify-center mb-6">
+            <Button disabled={claiming} onClick={claim}>
+              {claiming ? 'Claiming ... ' : 'Claim'}
+            </Button>
+          </div>
         )}
       {game?.status === 'Ended' &&
       game.paidOut === false &&
@@ -656,9 +658,11 @@ useEffect(() => {
             participant.fundClaimed === true
         ) &&
         game?.winner == wallet?.accounts[0].address && (
-          <Button disabled={withdrawing} onClick={withdrawModalHandler}>
-            {withdrawing ? 'Withdrawing' : 'Withdraw'}
-          </Button>
+          <div className="flex justify-center mb-6">
+            <Button disabled={withdrawing} onClick={withdrawModalHandler}>
+              {withdrawing ? 'Withdrawing' : 'Withdraw'}
+            </Button>
+          </div>
         )}
       {/* <Button disabled={withdrawing} onClick={withdrawModalHandler}>
         {withdrawing ? 'Withdrawing' : 'Withdraw'}

@@ -31,7 +31,7 @@ const CreateGameModal = () => {
   const [creator, setCreator] = useState<string | undefined>('')
   const [gameName, setGameName] = useState<string>('')
   const [winningScore, setWinningScore] = useState<number>(20)
-  const [bettingAmount, setBettingAmoun] = useState<any>('0.02')
+  const [bettingAmount, setBettingAmount] = useState<any>('0.02')
   const [bet, setBet] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
   const [depositing, setDepositing] = useState<boolean>(false)
@@ -69,6 +69,7 @@ const CreateGameModal = () => {
       const reports = await inspectCall(`balance/${creator}`, connectedChain)
 
       setHasUserDeposited(hasDeposited(bettingAmount, reports[0]))
+      console.log('userdeposite ', hasUserDeposited)
      
       if (!hasUserDeposited)
         return toast.error(
@@ -122,12 +123,13 @@ const CreateGameModal = () => {
     }
   }
 
-  const handleOptionChange = async (value: boolean) => {
+  const handleOptionChange = (value: boolean) => {
     setBet(value)
-    if (value) {
-      const hasDeposited = await checkBalance()
-      setHasUserDeposited(hasDeposited)
-    }
+  }
+
+  const handleBettingAmount = async (value: any) => {
+    setBettingAmount(value)
+    
   }
 
   const reset = () => {
@@ -174,7 +176,7 @@ const CreateGameModal = () => {
       console.log('balance for: ' + creator, reports)
       const res = hasDeposited(bettingAmount, reports[0])
 
-      return !!res
+      return res
     }
 
   useEffect(() => {
@@ -279,7 +281,7 @@ const CreateGameModal = () => {
               Staking Amount
             </label>
             <input
-              onChange={(e) => setBettingAmoun(e.target.value)}
+              onChange={(e) => handleBettingAmount(e.target.value)}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="bettingAmount"
               placeholder="Set Staking Amount"
