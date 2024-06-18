@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { GameStatus } from '@/interfaces'
 import GameCard from './GameCard'
 import { useNotices } from '@/hooks/useNotices'
 import { IGame } from '@/interfaces'
-import { dappAddress, parseInputEvent } from '@/lib/utils'
+import { dappAddress } from '@/lib/utils'
 import { useRollups } from '@/hooks/useRollups'
 import { useDispatch } from 'react-redux'
 import { useConnectWallet } from '@web3-onboard/react'
@@ -26,13 +26,8 @@ const Games = () => {
     dispatch({ type: 'modal/toggleGameModal' })
   }
 
-  const handleEvent = useCallback(async () => {
-    await refetch()
-  }, [refetch])
-
     useEffect(() => {
       const handleInputAdded = () => {
-        console.log('Input added, refetching notices')
         refetch()
       }
 
@@ -44,17 +39,6 @@ const Games = () => {
         rollups?.inputContract.off('InputAdded', handleInputAdded)
       }
     }, [rollups, refetch])
-
-  // useEffect(() => {
-  //   rollups?.inputContract.on(
-  //     'InputAdded',
-  //     (dappAddress, inboxInputIndex, sender, input) => {
-  //       if (parseInputEvent(input).method === 'createGame') {
-  //         handleEvent()
-  //       }
-  //     }
-  //   )
-  // }, [handleEvent, rollups])
 
   return (
     <div>

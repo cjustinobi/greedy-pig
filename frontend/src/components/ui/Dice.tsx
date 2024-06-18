@@ -16,12 +16,12 @@ import { useConnectWallet, useSetChain, useWallets } from '@web3-onboard/react'
 import { addInput, sendEther, inspectCall, depositErc20 } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
 import Button from '../shared/Button'
-import { BigNumber, ethers } from 'ethers'
+import { ethers } from 'ethers'
 import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
 import { action } from '@/convex/_generated/server'
 import { VoucherService } from '@/lib/cartesi/vouchers'
-import ClaimModal from './ClaimModal'
+import WithdrawModal from '@/components/ui/WithdrawModal'
 
 
 const die = [Die1, Die2, Die3, Die4, Die5, Die6]
@@ -58,9 +58,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [deposited, setDeposited] = useState<boolean>(false)
   const [depositing, setDepositing] = useState<boolean>(false)
   const [joining, setJoining] = useState<boolean>(false)
+  const [withdrawing, setWithdrawing] = useState<boolean>(false)
+  const [claiming, setClaiming] = useState<boolean>(false)
   const [pass, setPass] = useState<boolean>(false)
-  const [claimModal, setClaimModal] = useState<boolean>(false)
+  const [withdrawModal, setWithdrawModal] = useState<boolean>(false)
   const [gameEnded, setGameEnded] = useState<boolean>(false)
+  const [paidOut, setPaidOut] = useState<boolean>(false)
   const previousRollCount = useRef<string | null>(null)
 
   const checkBalance = async () => {
@@ -86,7 +89,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     if (!wallet?.accounts[0].address) return toast.error('Connect account')
 
       const playerAddress = wallet.accounts[0].address.toLowerCase()
-
 
       // check if player has deposited
 
@@ -115,7 +117,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         const jsonPayload = JSON.stringify({
           method: 'addParticipant',
           data: {
-            gameId: id,
+            gameId: parseInt(id),
             playerAddress,
             amount: game.bettingAmount
           },
@@ -124,7 +126,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               from: wallet?.accounts[0].address,
               to: dappAddress,
               erc20: erc20Token,
-              amount: game.bettingAmount
+              amount: Number(ethers.utils.parseUnits(game.bettingAmount.toString(), 18))
             }
           })
         })
@@ -401,8 +403,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               from: dappAddress,
               to: wallet?.accounts[0].address,
               erc20: erc20Token,
-              amount: 4
-              // amount: ethers.utils.parseEther(game.bettingAmount.toString())
+              amount: Number(ethers.utils.parseUnits(game.bettingAmount.toString(), 18))
             }
           })
 
@@ -421,33 +422,32 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         }
   }
 
-  const withdraw = async () => {
+  const claim = async () => {
+
+    setClaiming(true)
 
     try {
       const jsonPayload = JSON.stringify({
         method: 'erc20_withdraw',
         gameId: game.id,
-        action: null,
+        action: 'claim',
         args: {
           account: wallet?.accounts[0].address,
           erc20: erc20Token,
-          amount: 4
+          amount: Number(ethers.utils.parseUnits(game.bettingFund.toString(), 18))
         }
       })
 
       const tx = await addInput(jsonPayload, dappAddress, rollups)
       const res = await tx.wait(1)
-      // if (res) {
-      //   const vouchers = await voucherService.getVouchers()
-      //   if (vouchers.length && wallet?.accounts[0].address) {
-      //     const playerVouchers = getPlayerVouchers(wallet?.accounts[0].address, vouchers)
-      //     console.log('playerVouchers ', playerVouchers)
-      //   }
-      // }
-      console.log('withdraw ', res)
+
+      if (res) {
+        setClaiming(false)
+      }
+      console.log('claim ', res)
     } catch (error) {
       console.log(error)
-      setDepositing(false)
+      setClaiming(false)
     }
   }
 
@@ -498,8 +498,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
   }
 
+  const withdrawModalHandler = () => {
+    setWithdrawModal(true)
+    setWithdrawing(true)
+  }
+
   const handleCloseModal = () => {
-    setClaimModal(false)
+    setWithdrawModal(false)
+    setWithdrawing(false)
   }
 
 
@@ -621,10 +627,10 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col justify-center">
-      <ClaimModal claimModal={claimModal} onClose={handleCloseModal} />
-      <button onClick={sendRelayAddress}>Set DappAddress</button>
+      <WithdrawModal withdrawModal={withdrawModal} onClose={handleCloseModal} onPaidOut={() => setPaidOut(true)} />
+      {/* <button onClick={sendRelayAddress}>Set DappAddress</button>
       <button onClick={checkBalance}>Check balance</button>
-      <button onClick={() => transfer()}>Transfer</button>
+      <button onClick={() => transfer()}>Transfer</button> */}
       {userJoining &&
         game?.participants.some(
           (participant: any) =>
@@ -635,22 +641,28 @@ useEffect(() => {
         game?.participants.some(
           (participant: any) =>
             participant.address == wallet?.accounts[0].address &&
-            participant.fundTransfered === false
-        ) &&
-        game?.winner == wallet?.accounts[0].address && (
-          <Button onClick={withdraw}>Withdraw</Button>
-        )}
-      {game?.status === 'Ended' &&
-        game?.participants.some(
-          (participant: any) =>
-            participant.address == wallet?.accounts[0].address &&
-            participant.fundTransfered === true &&
             participant.fundClaimed === false
         ) &&
         game?.winner == wallet?.accounts[0].address && (
-          <Button onClick={() => setClaimModal(true)}>Claim</Button>
+          <Button className="w-[200px]" disabled={claiming} onClick={claim}>
+            {claiming ? 'Claiming ... ' : 'Claim'}
+          </Button>
         )}
-      <Button onClick={() => setClaimModal(true)}>Claim</Button>
+      {game?.status === 'Ended' &&
+      game.paidOut === false &&
+        game?.participants.some(
+          (participant: any) =>
+            participant.address == wallet?.accounts[0].address &&
+            participant.fundClaimed === true
+        ) &&
+        game?.winner == wallet?.accounts[0].address && (
+          <Button disabled={withdrawing} onClick={withdrawModalHandler}>
+            {withdrawing ? 'Withdrawing' : 'Withdraw'}
+          </Button>
+        )}
+      {/* <Button disabled={withdrawing} onClick={withdrawModalHandler}>
+        {withdrawing ? 'Withdrawing' : 'Withdraw'}
+      </Button> */}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}

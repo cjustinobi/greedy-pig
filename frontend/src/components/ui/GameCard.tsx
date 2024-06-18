@@ -1,7 +1,6 @@
 import { capitalize } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { IGame } from '@/interfaces'
-import { useEffect } from 'react'
 import { useConnectWallet } from '@web3-onboard/react'
 
 interface GameCardProps {
@@ -13,22 +12,9 @@ const GameCard = ({ game }: GameCardProps) => {
   const router = useRouter()
   const [{ wallet }] = useConnectWallet()
 
-  const handleNavigate = (id: string, action: string) => {
-    router.push(`/games/${id}?action=${action}`)
+  const handleNavigate = (id: number) => {
+    router.push(`/games/${id}`)
   }
-
-  // useEffect(() => {
-  //   if (wallet?.accounts[0].address) {
-  //     const userAddress = wallet.accounts[0].address
-  //     const isUserParticipant = game.participants.some(
-  //       (participant: any) => participant.address === userAddress
-  //     )
-
-  //     if (isUserParticipant) {
-  //       handleNavigate(game.id, 'view')
-  //     }
-  //   }
-  // }, [wallet, game])
 
   const isJoined = game.participants.some(
     (participant: any) => participant.address === wallet?.accounts[0].address
@@ -105,7 +91,7 @@ const GameCard = ({ game }: GameCardProps) => {
         </div>
         {(game.status === 'New' || game.status === 'In Progress') && (
           <button
-            onClick={() => handleNavigate(game.id, 'join')}
+            onClick={() => handleNavigate(game.id)}
             className="mt-4 text-xl w-full text-white bg-indigo-600 py-2 rounded-xl shadow-lg"
           >
             {isJoined ? 'Joined' : 'Join'}

@@ -53,7 +53,6 @@ const send_request = async (output) => {
       endpoint = '/report'
     }
 
-    console.log(`sending request ${typeof output}`)
     const response = await fetch(rollup_server + endpoint, {
       method: 'POST',
       headers: {
@@ -114,9 +113,7 @@ async function handle_advance(data) {
 
     if (JSONPayload.method === 'createGame') {
       if (JSONPayload.data == '' || null) {
-        console.log('Result cannot be empty')
-        await reportHandler(message)
-        return 'reject'
+        return new Error_out(`Data cannot be empty`)
       }
 
       if (JSONPayload.data.gameSettings.bet) {
@@ -124,8 +121,6 @@ async function handle_advance(data) {
         // check that the amount is equal to the game amount
       }
 
-
-  
       console.log('creating game...')
 
       try {
@@ -174,8 +169,7 @@ async function handle_advance(data) {
       console.log('game play ...', JSONPayload.data)
       const res = playGame(JSONPayload.data)
       if (res.error) {
-        await reportHandler(res.message)
-        return 'reject'
+        return new Error_out(`Failed to play game: ${JSONPayload.data}, ${res.message}`)
       }
       advance_req = await noticeHandler(games)
       return 'accept'
@@ -185,8 +179,7 @@ async function handle_advance(data) {
       console.log('rolling dice ...', JSONPayload.data)
       const res = rollDice(JSONPayload.data)
       if (res.error) {
-        await reportHandler(res.message)
-        return 'reject'
+        return new Error_out(`Failed to roll dice: ${JSONPayload.data}, ${res.message}`)
       }
       advance_req = await noticeHandler(games)
       return 'accept'
@@ -195,8 +188,7 @@ async function handle_advance(data) {
       console.log(`committing for ${msg_sender}...`)
       const res = commit(JSONPayload.gameId, JSONPayload.commitment, msg_sender.toLowerCase())
       if (res.error) {
-        await reportHandler(res.message)
-        return 'reject'
+        return new Error_out(`Failed to commit: ${JSONPayload}, ${res.message}`)
       }
      
       advance_req = await noticeHandler(games)
@@ -206,8 +198,18 @@ async function handle_advance(data) {
       console.log(`reveaiing for ${msg_sender} ...`)
       const res = reveal(JSONPayload.gameId, JSONPayload.move, JSONPayload.nonce, msg_sender.toLowerCase())
       if (res.error) {
-        await reportHandler(res.message)
-        return 'reject'
+        return new Error_out(`Failed to reveal: ${JSONPayload}, ${res.message}`)
+      }
+     
+      advance_req = await noticeHandler(games)
+      return 'accept'
+
+    } else if(JSONPayload.method === 'paidOut') {
+      const game = getGame(JSONPayload.gameId)
+      game.paidOut = true
+
+      if (res.error) {
+        return new Error_out(`Failed to update game: ${JSONPayload}`)
       }
      
       advance_req = await noticeHandler(games)
@@ -217,8 +219,10 @@ async function handle_advance(data) {
 
       console.log('router process payload ', data)
 
-      if (JSONPayload.action === 'transferToWinner') {
+      if (JSONPayload.action === 'claim') {
         const game = getGame(JSONPayload.gameId)
+        // TODO: handle transfered amount from here
+
         if (game.status === 'Ended' && game.winner.toLowerCase() === msg_sender.toLowerCase())
         data.metadata.msg_sender = dappAddress
 
@@ -226,7 +230,7 @@ async function handle_advance(data) {
         const resultNotice = router.process(JSONPayload.method, data)
         if (resultNotice) {
           const winner = getWinner(JSONPayload.gameId)
-          winner.fundTransfered = true
+          winner.fundClaimed = true
         }
 
 
@@ -241,10 +245,7 @@ async function handle_advance(data) {
         return new Error_out(`failed to process command ${payloadStr} ${e}`)
       }
       }
-
-      
     }
-
     
   } catch (e) {
     console.error(e)

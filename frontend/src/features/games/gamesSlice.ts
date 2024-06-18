@@ -8,7 +8,7 @@ function extractParticipantAddresses(gameState: GameState): string[] {
   return gameState.participants.map((participant) => participant.address)
 }
 interface GameState {
-  _id: string
+  _id: number
   activePlayer: string
   creator: string
   gameName: string
@@ -31,7 +31,7 @@ interface GameState {
   }[]
   // startTime: string
   status: 'New' | 'In Progress' | 'Ended' | 'Cancelled'
-  id: string
+  id: number
   startAngle: number
   bettingAmount: number
   bettingFund: number

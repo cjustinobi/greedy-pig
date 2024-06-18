@@ -7,20 +7,14 @@ const {
   erc20
  } = require('./utils')
 
-const { v4: uuidv4 } = require('uuid')
+
 const { Wallet } = require('cartesi-wallet')
 const { Router } = require('cartesi-router')
 const viem = require('viem')
 
-const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
 
 const wallet = new Wallet(new Map())
 const router = new Router(wallet)
-
-// const dappAddress = '0xab7528bb862fb57e8a2bcd567a2e929a0be56a5e'
-// const erc20 = '0x92C6bcA388E99d6B304f1Af3c3Cd749Ff0b591e2'
-
-
 const games = []
 
 const withdraw = async (data) => {
@@ -34,11 +28,13 @@ const addGame = async (game) => {
     return errorResponse(true, 'Game already exist')
   }
 
-  // if (game.gameSettings.winningScore < 6) {
-  //   return errorResponse(true, 'Game winning score should not be less than 6')
-  // }
+  if (game.gameSettings.winningScore < 6) {
+    return errorResponse(true, 'Game winning score should not be less than 6')
+  }
 
-  const newGame = { ...game, id: uuidv4(), dateCreated: Date.now() }
+  const id = games.length + 1
+
+  const newGame = { ...game, id, dateCreated: Date.now() }
   games.push(newGame)
 
   // add participant
@@ -75,7 +71,6 @@ const addParticipant = async ({gameId, playerAddress}) => {
     commitment: null,
     move: null,
     deposited: game?.gameSettings.bet ? true : false,
-    fundTransfered: false,
     fundClaimed: false
   })
 
@@ -272,7 +267,7 @@ const playGame = ({gameId, playerAddress, response, commitment}) => {
     try {
       console.log('commiting ....')
       commit(gameId, commitment, playerAddress)
-      // gamePlay(gameId, playerAddress)
+
     } catch (error) {
       return errorResponse(true, error)
     }

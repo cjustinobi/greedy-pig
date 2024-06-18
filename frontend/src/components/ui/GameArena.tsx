@@ -59,7 +59,7 @@ const GameArena = () => {
           const parsedPayload = JSON.parse(noticePayload)
 
           if (Array.isArray(parsedPayload)) {
-            const game = parsedPayload.find((game: any) => game.id === gameId)
+            const game = parsedPayload.find((game: any) => game.id == gameId)
 
             if (game) {
               console.log('Game found:', game)
@@ -73,11 +73,9 @@ const GameArena = () => {
     }
   }, [data, dispatchGameData, error, loading])
 
-  // Handle inputAdded event to trigger refetch
   useEffect(() => {
     
     const handleInputAdded = () => {
-      console.log('Input added, refetching notices')
       refetch()
     }
 

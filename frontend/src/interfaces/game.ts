@@ -1,7 +1,7 @@
 import { GameStatus } from "./convex"
 
 export interface IGame {
-  id: string
+  id: number
   gameName: string
   status: GameStatus
   participants: any

@@ -11,6 +11,7 @@ import { useConnectWallet, useSetChain, useWallets } from '@web3-onboard/react'
 import { useNotices } from '@/hooks/useNotices'
 import { parseEther, parseUnits } from 'ethers/lib/utils'
 import { BigNumber, ethers } from 'ethers'
+import CloseBtn from '../shared/CloseBtn'
 
 const CreateGameModal = () => {
 
@@ -105,7 +106,9 @@ const CreateGameModal = () => {
           from: wallet?.accounts[0].address,
           to: dappAddress,
           erc20: erc20Token,
-          amount: game.bettingAmount
+          amount: Number(
+            ethers.utils.parseUnits(game.bettingAmount.toString(), 18)
+          )
         }
       })
     })
@@ -196,28 +199,7 @@ const CreateGameModal = () => {
         className="mx-auto mt-10 w-[38rem] p-5 bg-gray-700 rounded-lg relative"
         onSubmit={submitHandler}
       >
-        <button
-          onClick={reset}
-          type="button"
-          className="box-content rounded-none border-none hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-none absolute right-6 z-50"
-          data-te-modal-dismiss
-          aria-label="Close"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            className="h-6 w-6"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
+        <CloseBtn handleClose={reset} />
         <div className="my-4">
           <label
             className="block text-gray-400 text-sm font-bold mb-2"

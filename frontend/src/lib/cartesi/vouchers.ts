@@ -44,7 +44,7 @@ export class VoucherService {
 
     let result = await (this.client.query(query, {})).toPromise()
 
-    if (!result || !result.data.vouchers.edges){
+    if (!result || !result.data?.vouchers.edges){
       return []
     }
     return result.data.vouchers.edges
