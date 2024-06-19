@@ -393,42 +393,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
 
   const claim = async () => {
-
-        try {
-          
-          const jsonPayload = JSON.stringify({
-            method: 'erc20_transfer',
-            gameId: game.id,
-            action: 'claim',
-            args: {
-              from: dappAddress,
-              to: wallet?.accounts[0].address,
-              erc20: erc20Token,
-              amount: Number(ethers.utils.parseUnits(game.bettingFund.toString(), 18))
-            }
-          })
-
-          const tx = await addInput(
-            jsonPayload,
-            dappAddress,
-            rollups
-          )
-
-          const res = await tx.wait(1)
-
-          if (res) {
-            withdraw()
-          }
-
-      
-        } catch (error) {
-          console.log(error)
-          setClaiming(false)
-        }
-  }
-
-  const withdraw = async () => {
-    setWithdrawing(true)
+    setClaiming(true)
 
     try {
       const jsonPayload = JSON.stringify({
@@ -448,13 +413,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       const res = await tx.wait(1)
 
       if (res) {
-        setWithdrawing(false)
+        setClaiming(false)
         setFundClaimed(true)
       }
       console.log('claim response', res)
     } catch (error) {
       console.log(error)
-      setWithdrawing(false)
+      setClaiming(false)
     }
   }
 
@@ -513,7 +478,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const handleCloseModal = () => {
     setWithdrawModal(false)
-    setWithdrawing(false)
   }
 
 
@@ -656,8 +620,8 @@ useEffect(() => {
         (paidOut === false || game.paidOut === false) &&
         game?.winner == wallet?.accounts[0].address && (
           <div className="flex justify-center mb-6">
-            <Button disabled={withdrawing} onClick={withdraw}>
-              {withdrawing ? 'Claiming' : 'Claim'}
+            <Button disabled={claiming} onClick={claim}>
+              {claiming ? 'Claiming ...' : 'Claim'}
             </Button>
           </div>
         )}
@@ -667,7 +631,7 @@ useEffect(() => {
         game?.winner == wallet?.accounts[0].address && (
           <div className="flex justify-center mb-6">
             <Button disabled={withdrawing} onClick={withdrawModalHandler}>
-              {withdrawing ? 'Withdrawing' : 'Withdraw'}
+              {'Withdraw'}
             </Button>
           </div>
         )}
