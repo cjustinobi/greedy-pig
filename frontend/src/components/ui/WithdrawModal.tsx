@@ -8,6 +8,7 @@ import { BigNumber } from 'ethers'
 import CloseBtn from '@/components/shared/CloseBtn'
 import { addInput } from '@/lib/cartesi'
 import Button from '../shared/Button'
+import toast from 'react-hot-toast'
 
 interface IWithdrawModalProps {
   withdrawModal: boolean
@@ -80,6 +81,8 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
         newVoucherToExecute.msg = `voucher executed! (tx="${tx.hash}")`
         if (receipt.events) {
           console.log('voucher receipt ', receipt)
+
+          toast.success('Congratulation! Fund successfully withdrawn')
 
           newVoucherToExecute.msg = `${
             newVoucherToExecute.msg

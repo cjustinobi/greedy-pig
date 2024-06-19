@@ -70,4 +70,5 @@ metamask. You will need some tokens to play the game when in a *BET* mode game
 - Revamp the UI to have more game texture
 - Activate use of Roulette
 - Implement Turn-based mode
+- Create player Dashboard
 - Explore Account Abstraction to improve game experience and adoption

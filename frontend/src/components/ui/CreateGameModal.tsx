@@ -9,7 +9,6 @@ import { useRollups } from '@/hooks/useRollups'
 import { dappAddress, erc20Token, hasDeposited } from '@/lib/utils'
 import { useConnectWallet, useSetChain, useWallets } from '@web3-onboard/react'
 import { useNotices } from '@/hooks/useNotices'
-import { parseEther, parseUnits } from 'ethers/lib/utils'
 import { BigNumber, ethers } from 'ethers'
 import CloseBtn from '../shared/CloseBtn'
 
@@ -32,7 +31,7 @@ const CreateGameModal = () => {
   const [gameName, setGameName] = useState<string>('')
   const [winningScore, setWinningScore] = useState<number>(20)
   const [bettingAmount, setBettingAmount] = useState<any>('0.02')
-  const [bet, setBet] = useState<boolean>(false)
+  const [bet, setBet] = useState<boolean>(true)
   const [loading, setLoading] = useState<boolean>(false)
   const [depositing, setDepositing] = useState<boolean>(false)
   const [hasUserDeposited, setHasUserDeposited] = useState<boolean | null>(null)
@@ -256,6 +255,7 @@ const CreateGameModal = () => {
           <label className="inline-flex items-center">
             <input
               type="radio"
+              checked={bet}
               className="form-radio"
               name="accountType"
               onChange={() => handleOptionChange(true)}
@@ -265,6 +265,7 @@ const CreateGameModal = () => {
           <label className="inline-flex items-center ml-6">
             <input
               type="radio"
+              checked={!bet}
               className="form-radio"
               name="accountType"
               onChange={() => handleOptionChange(false)}
