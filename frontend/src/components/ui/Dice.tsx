@@ -634,7 +634,7 @@ useEffect(() => {
 
       {game?.status === 'Ended' &&
         game.fundTransfered &&
-        (paidOut === false || game.paidOut === false) &&
+        game.paidOut === false &&
         game?.winner == wallet?.accounts[0].address && (
           <div className="flex justify-center mb-6">
             <Button disabled={claiming} onClick={claim}>
@@ -683,11 +683,7 @@ useEffect(() => {
               </Button>
             </div>
           )}
-        {/* {gameEnded && (
-          <Button className="my-6" onClick={transfer}>
-            Transfer
-          </Button>
-        )} */}
+
         {game &&
           game.status === 'In Progress' &&
           game?.activePlayer === wallet?.accounts[0].address &&
@@ -795,14 +791,3 @@ useEffect(() => {
 }
 
 export default Dice
-
-// {"method": "erc20_transfer",
-// "args": {
-//   "from": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
-// "to": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
-// "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2",
-// "amount": 1
-// }
-// }
-
-// {"method": "erc20_transfer", "args": {   "from": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266", "to": "0x0", "erc20": "0x92c6bca388e99d6b304f1af3c3cd749ff0b591e2", "amount": 2 } }
