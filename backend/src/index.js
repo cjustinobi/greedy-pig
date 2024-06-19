@@ -1,5 +1,6 @@
 
 const { hexToString } = require('viem')
+const { ethers } = require('ethers')
 const { Router } = require('cartesi-router')
 const { Wallet, Error_out, Notice, Report, Output } = require('cartesi-wallet')
 
@@ -9,7 +10,8 @@ const {
   etherPortalAddress,
   erc20PortalAddress,
   dappAddressRelay,
-  dappAddress
+  dappAddress,
+  erc20
  } = require('./utils')
 
 const { 
@@ -171,29 +173,60 @@ async function handle_advance(data) {
       if (res.error) {
         return new Error_out(`Failed to play game: ${JSONPayload.data}, ${res.message}`)
       }
-      advance_req = await noticeHandler(games)
-      return 'accept'
+      return await noticeHandler(games)
     
     } else if (JSONPayload.method === 'rollDice') {
       
       console.log('rolling dice ...', JSONPayload.data)
       const res = rollDice(JSONPayload.data)
+
       if (res.error) {
         return new Error_out(`Failed to roll dice: ${JSONPayload.data}, ${res.message}`)
       }
 
-      advance_req = await noticeHandler(games)
-      return 'accept'
+      const game = getGame(JSONPayload.data.gameId)
+
+      if (game.status === 'Ended' && game.winner.toLowerCase() === msg_sender.toLowerCase()) {
+
+        try {
+
+          const newData = { ...data }
+
+          const newPayload = {
+            args: {
+              from: dappAddress,
+              to: game.winner,
+              erc20: erc20,
+              amount: Number(ethers.parseUnits(game.bettingFund.toString(), 18))
+            }
+          }
+       
+          const stringfiedPayload = JSON.stringify(newPayload)
+          const payloadHex = ethers.hexlify(ethers.toUtf8Bytes(stringfiedPayload))
+          newData.payload = payloadHex
+          newData.metadata.msg_sender = dappAddress
+  
+          router.process('erc20_transfer', newData)
+
+          game.fundTransfered = true
+
+        } catch (error) {
+          return new Error_out(`Failed to transfer: ${error}`)
+        }
+        
+      }
+
+      return await noticeHandler(games)
     
     } else if (JSONPayload.method === 'commit') {
+
       console.log(`committing for ${msg_sender}...`)
       const res = commit(JSONPayload.gameId, JSONPayload.commitment, msg_sender.toLowerCase())
       if (res.error) {
         return new Error_out(`Failed to commit: ${JSONPayload}, ${res.message}`)
       }
      
-      advance_req = await noticeHandler(games)
-      return 'accept'
+      return await noticeHandler(games)
 
     } else if(JSONPayload.method === 'reveal') {
       console.log(`reveaiing for ${msg_sender} ...`)
@@ -202,10 +235,10 @@ async function handle_advance(data) {
         return new Error_out(`Failed to reveal: ${JSONPayload}, ${res.message}`)
       }
      
-      advance_req = await noticeHandler(games)
-      return 'accept'
+      return await noticeHandler(games)
 
     } else if(JSONPayload.method === 'paidOut') {
+      
       const game = getGame(JSONPayload.gameId)
       game.paidOut = true
 
@@ -213,8 +246,8 @@ async function handle_advance(data) {
         return new Error_out(`Failed to update game: ${JSONPayload}`)
       }
      
-      advance_req = await noticeHandler(games)
-      return 'accept'
+      return await noticeHandler(games)
+   
 
     } else {
 
@@ -229,11 +262,7 @@ async function handle_advance(data) {
 
       try {
         const resultNotice = router.process(JSONPayload.method, data)
-        // if (resultNotice) {
-          const winner = getWinner(JSONPayload.gameId)
-          winner.fundClaimed = true
-        // }
-
+ 
 
       } catch (e) {
         return new Error_out(`failed to process command ${payloadStr} ${e}`)

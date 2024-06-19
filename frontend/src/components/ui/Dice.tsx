@@ -650,27 +650,11 @@ useEffect(() => {
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
+
+
       {game?.status === 'Ended' &&
-        fundClaimed === false &&
-        game?.participants.some(
-          (participant: any) =>
-            participant.address == wallet?.accounts[0].address &&
-            participant.fundClaimed === false
-        ) &&
-        game?.winner == wallet?.accounts[0].address && (
-          <div className="flex justify-center mb-6">
-            <Button disabled={claiming} onClick={sendRelayAddress}>
-              {claiming ? 'Claiming ... ' : 'Claim Fund'}
-            </Button>
-          </div>
-        )}
-      {game?.status === 'Ended' &&
-        (paidOut === false || game.paidOut === false) &&
-        game?.participants.some(
-          (participant: any) =>
-            participant.address == wallet?.accounts[0].address &&
-            participant.fundClaimed === true
-        ) &&
+      game.fundTransfered &&
+        (paidOut === false || game.paidOut === false) &&   
         game?.winner == wallet?.accounts[0].address && (
           <div className="flex justify-center mb-6">
             <Button disabled={withdrawing} onClick={withdrawModalHandler}>
@@ -679,21 +663,7 @@ useEffect(() => {
           </div>
         )}
 
-        {/* tmp */}
-        {game?.status === 'Ended' &&
-        (paidOut === false || game.paidOut === false) &&
-        game?.participants.some(
-          (participant: any) =>
-            participant.address == wallet?.accounts[0].address
-        ) &&
-        game?.winner == wallet?.accounts[0].address && (
-      <div className="flex justify-center mb-6">
-        <Button disabled={withdrawing} onClick={withdrawModalHandler}>
-          {withdrawing ? 'Withdrawing' : 'Withdraw'}
-        </Button>
-      </div>
-        )}
-        {/* tmp */}
+   
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}

@@ -71,7 +71,7 @@ const addParticipant = async ({gameId, playerAddress}) => {
     commitment: null,
     move: null,
     deposited: game?.gameSettings.bet ? true : false,
-    fundClaimed: false
+
   })
 
   if (game?.gameSettings.bet) {

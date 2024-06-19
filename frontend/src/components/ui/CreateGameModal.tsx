@@ -59,6 +59,7 @@ const CreateGameModal = () => {
     winner: '',
     bettingAmount, // in ether
     bettingFund: 0, // total fund transfered by players
+    fundTransfered: false,
     paidOut: false
   }
 
