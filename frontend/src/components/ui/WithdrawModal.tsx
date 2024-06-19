@@ -179,7 +179,7 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
                         withdraw(voucher.index, voucher.input.index)
                       }
                     >
-                      {voucher.executed ? 'Withdrawn' : withdrawing ? 'Withdrawing...' : 'Withdraw'}
+                      {voucher.executed ? 'Withdrawn' : 'Withdraw'}
                     </Button>
                   </td>
                 </tr>

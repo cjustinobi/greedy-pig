@@ -509,7 +509,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const withdrawModalHandler = () => {
     setWithdrawModal(true)
-    setWithdrawing(true)
   }
 
   const handleCloseModal = () => {
