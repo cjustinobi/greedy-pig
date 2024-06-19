@@ -64,6 +64,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [withdrawModal, setWithdrawModal] = useState<boolean>(false)
   const [gameEnded, setGameEnded] = useState<boolean>(false)
   const [paidOut, setPaidOut] = useState<boolean>(false)
+  const [fundClaimed, setFundClaimed] = useState<boolean>(false)
   const previousRollCount = useRef<string | null>(null)
 
   const checkBalance = async () => {
@@ -412,29 +413,34 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             dappAddress,
             rollups
           )
+          
           const res = await tx.wait(1)
-          console.log('transfer ', res)
+
+          if (res) {
+            withdraw()
+          }
 
       
         } catch (error) {
           console.log(error)
-          setDepositing(false)
+          setClaiming(false)
         }
   }
 
-  const claimm = async () => {
-
+  const withdraw = async () => {
     setClaiming(true)
 
     try {
       const jsonPayload = JSON.stringify({
         method: 'erc20_withdraw',
         gameId: game.id,
-        action: 'claim',
+        action: 'withdraw',
         args: {
           account: wallet?.accounts[0].address,
           erc20: erc20Token,
-          amount: Number(ethers.utils.parseUnits(game.bettingFund.toString(), 18))
+          amount: Number(
+            ethers.utils.parseUnits(game.bettingFund.toString(), 18)
+          )
         }
       })
 
@@ -443,6 +449,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
       if (res) {
         setClaiming(false)
+        setFundClaimed(true)
       }
       console.log('claim response', res)
     } catch (error) {
@@ -640,6 +647,7 @@ useEffect(() => {
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
       {game?.status === 'Ended' &&
+      fundClaimed === false &&
         game?.participants.some(
           (participant: any) =>
             participant.address == wallet?.accounts[0].address &&
@@ -653,7 +661,7 @@ useEffect(() => {
           </div>
         )}
       {game?.status === 'Ended' &&
-      game.paidOut === false &&
+      (paidOut === false || game.paidOut === false) &&
         game?.participants.some(
           (participant: any) =>
             participant.address == wallet?.accounts[0].address &&
