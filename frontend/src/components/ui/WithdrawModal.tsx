@@ -85,6 +85,7 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
           console.log('voucher receipt ', receipt)
 
           toast.success('Congratulation! Fund successfully withdrawn')
+          handleClose()
 
           newVoucherToExecute.msg = `${
             newVoucherToExecute.msg
@@ -161,33 +162,35 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
               <tr>{/* <th>Amount</th> <th>Withdraw</th> */}</tr>
             </thead>
             <tbody>
-              {playerVouchers.map((voucher, index) => (
-                <tr key={index}>
-                  <td className="pr-10">
-                    {voucher.input.payload.args?.amount
-                      ? utils
-                          .formatEther(
-                            voucher.input.payload.args.amount.toString()
-                          )
-                          .toString()
-                      : '0'}
-                  </td>
-                  <td>
-                    <Button
-                      disabled={voucher.executed || withdrawing}
-                      onClick={() =>
-                        withdraw(voucher.index, voucher.input.index)
-                      }
-                    >
-                      {voucher.executed
-                        ? 'Withdrawn'
-                        : withdrawing
-                        ? 'Withdrawing...'
-                        : 'Withdraw'}
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {playerVouchers
+                .filter((voucher) => !voucher.executed)
+                .map((voucher, index) => (
+                  <tr key={index}>
+                    <td className="pr-10">
+                      {voucher.input.payload.args?.amount
+                        ? utils
+                            .formatEther(
+                              voucher.input.payload.args.amount.toString()
+                            )
+                            .toString()
+                        : '0'}
+                    </td>
+                    <td>
+                      <Button
+                        disabled={voucher.executed || withdrawing}
+                        onClick={() =>
+                          withdraw(voucher.index, voucher.input.index)
+                        }
+                      >
+                        {voucher.executed
+                          ? 'Withdrawn'
+                          : withdrawing
+                          ? 'Withdrawing...'
+                          : 'Withdraw'}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         )}
