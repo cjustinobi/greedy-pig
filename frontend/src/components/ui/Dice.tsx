@@ -391,14 +391,14 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }
 
 
-  const transfer = async (action = '') => {
+  const claim = async () => {
 
         try {
           
           const jsonPayload = JSON.stringify({
             method: 'erc20_transfer',
             gameId: game.id,
-            action,
+            action: 'claim',
             args: {
               from: dappAddress,
               to: wallet?.accounts[0].address,
@@ -422,7 +422,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         }
   }
 
-  const claim = async () => {
+  const claimm = async () => {
 
     setClaiming(true)
 
@@ -444,7 +444,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       if (res) {
         setClaiming(false)
       }
-      console.log('claim ', res)
+      console.log('claim response', res)
     } catch (error) {
       console.log(error)
       setClaiming(false)
@@ -482,6 +482,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   const sendRelayAddress = async () => {
     if (rollups) {
+      setClaiming(true)
       try {
       toast.success('Set Dapp address')
        const tx = await rollups.relayContract.relayDAppAddress(dappAddress) 
@@ -489,11 +490,12 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         const res = await tx.wait(1)
         if (res) {
           toast.success('Transfering to winner')
-          transfer()
+          claim()
         }
        }
       } catch (e) {
         console.log(`${e}`)
+        setClaiming(false)
       }
     }
   }
@@ -645,8 +647,8 @@ useEffect(() => {
         ) &&
         game?.winner == wallet?.accounts[0].address && (
           <div className="flex justify-center mb-6">
-            <Button disabled={claiming} onClick={claim}>
-              {claiming ? 'Claiming ... ' : 'Claim'}
+            <Button disabled={claiming} onClick={sendRelayAddress}>
+              {claiming ? 'Claiming ... ' : 'Claim Fund'}
             </Button>
           </div>
         )}
@@ -718,7 +720,7 @@ useEffect(() => {
                   game?.revealPhase ||
                   game?.commitPhase
                 }
-                className={`mt-6 w-[200px] ${
+                className={`mt-6 w-[180px] ${
                   game?.commitPhase || game?.revealPhase || revealMove
                     ? 'hidden'
                     : ''

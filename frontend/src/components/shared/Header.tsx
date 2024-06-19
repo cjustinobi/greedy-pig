@@ -58,7 +58,7 @@ const Header = () => {
         </nav>
         <div className="-ml-8 hidden flex-col gap-2.5 sm:flex-row sm:justify-center lg:flex lg:justify-start">
           <div className="flex items-center gap-8">
-            <Socials />
+            {/* <Socials /> */}
             <ConnectButton />
           </div>
         </div>

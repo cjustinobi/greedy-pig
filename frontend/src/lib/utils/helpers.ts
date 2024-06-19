@@ -37,8 +37,7 @@ export const generateCommitment = async (address: string) => {
 
 export const hasDeposited = (bettingAmount: number, reports: any) => {
   let hasDeposited = false
-  debugger
-  // const hasDeposited = (reports && reports.erc20[0] && parseInt(utils.formatEther(reports.erc20[0][1]))) >= bettingAmount
+
   if (reports && reports.erc20[0]) {
     hasDeposited = parseInt(utils.formatEther(reports.erc20[0][1])) >= bettingAmount
   }
@@ -93,63 +92,3 @@ export const getPlayerVouchers = (address: string, vouchers: any) => {
         }
     });
 }
-
-// (2) [{…}, {…}]
-// 0
-// : 
-// cursor
-// : 
-// "MA=="
-// node
-// : 
-// index
-// : 
-// 0
-// input
-// : 
-// {index: 10, payload: '0x7b226d6574686f64223a2265726332305f77697468647261…439466630623539316532222c22616d6f756e74223a347d7d'}
-// payload
-// : 
-// "0xa9059cbb000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb922660000000000000000000000000000000000000000000000000000000000000004"
-// proof
-// : 
-// context
-// : 
-// "0x0000000000000000000000000000000000000000000000000000000000000007"
-// [[Prototype]]
-// : 
-// Object
-// [[Prototype]]
-// : 
-// Object
-// [[Prototype]]
-// : 
-// Object
-// 1
-// : 
-// cursor
-// : 
-// "MQ=="
-// node
-// : 
-// index
-// : 
-// 0
-// input
-// : 
-// {index: 11, payload: '0x7b226d6574686f64223a2265726332305f77697468647261…439466630623539316532222c22616d6f756e74223a347d7d'}
-// payload
-// : 
-// "0xa9059cbb000000000000000000000000f39fd6e51aad88f6f4ce6ab8827279cfffb922660000000000000000000000000000000000000000000000000000000000000004"
-// proof
-// : 
-// {context: '0x0000000000000000000000000000000000000000000000000000000000000008'}
-// [[Prototype]]
-// : 
-// Object
-// [[Prototype]]
-// : 
-// Object
-// length
-// : 
-// 2
