@@ -190,7 +190,7 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
         {!playerVouchers.length && (
           <div className="text-center">
             <p>All caught up</p>
-            <span>Nothing to claim!</span>
+            <span>Nothing to withdraw</span>
           </div>
         )}
         <CloseBtn handleClose={handleClose} />
