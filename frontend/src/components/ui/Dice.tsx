@@ -413,6 +413,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       const res = await tx.wait(1)
 
       if (res) {
+        paidOutHandler()
         setClaiming(false)
         setFundClaimed(true)
       }
@@ -451,6 +452,26 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
 
   }
+
+    const paidOutHandler = async () => {
+   
+
+      try {
+        const jsonPayload = JSON.stringify({
+          method: 'paidOut',
+          gameId: game?.id
+        })
+
+        const tx = await addInput(jsonPayload, dappAddress, rollups)
+        const res = await tx.wait(1)
+        if (res) {
+          setPaidOut(true)
+        }
+       
+      } catch (error) {
+        console.log(error)
+      }
+    }
 
   const sendRelayAddress = async () => {
     if (rollups) {
@@ -599,11 +620,7 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col justify-center">
-      <WithdrawModal
-        withdrawModal={withdrawModal}
-        onClose={handleCloseModal}
-        onPaidOut={() => setPaidOut(true)}
-      />
+      <WithdrawModal withdrawModal={withdrawModal} onClose={handleCloseModal} />
       {/* <button onClick={sendRelayAddress}>Set DappAddress</button>
       <button onClick={checkBalance}>Check balance</button>
       <button onClick={() => transfer()}>Transfer</button> */}
@@ -627,7 +644,7 @@ useEffect(() => {
         )}
 
       {game?.status === 'Ended' &&
-        (paidOut === false || game.paidOut === false) &&
+        (fundClaimed || paidOut || game.paidOut) &&
         game?.winner == wallet?.accounts[0].address && (
           <div className="flex justify-center mb-6">
             <Button disabled={withdrawing} onClick={withdrawModalHandler}>
@@ -635,7 +652,6 @@ useEffect(() => {
             </Button>
           </div>
         )}
-
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}

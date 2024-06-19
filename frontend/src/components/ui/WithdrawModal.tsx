@@ -12,7 +12,7 @@ import Button from '../shared/Button'
 interface IWithdrawModalProps {
   withdrawModal: boolean
   onClose: () => void
-  onPaidOut: () => void
+  // onPaidOut: () => void
 }
 
 interface IExecuteVoucher {
@@ -22,11 +22,7 @@ interface IExecuteVoucher {
 
 
 
-const ClaimModal: FC<IWithdrawModalProps> = ({
-  withdrawModal,
-  onClose,
-  onPaidOut
-}) => {
+const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
   const [playerVouchers, setPlayerVouchers] = useState<any[]>([])
   const [withdrawing, setWithdrawing] = useState(false)
 
@@ -34,26 +30,23 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
   const [{ wallet }] = useConnectWallet()
   const rollups = useRollups(dappAddress)
 
-  const paidOut = async (payload: any) => {
-    const payloadStr = utils.toUtf8String(payload)
-    const gameId = JSON.parse(payloadStr).gameId
+  // const paidOut = async (payload: any) => {
+  //   const payloadStr = utils.toUtf8String(payload)
+  //   const gameId = JSON.parse(payloadStr).gameId
 
-    try {
-      const jsonPayload = JSON.stringify({
-        method: 'paidOut',
-        gameId
-      })
+  //   try {
+  //     const jsonPayload = JSON.stringify({
+  //       method: 'paidOut',
+  //       gameId
+  //     })
 
-      const tx = await addInput(jsonPayload, dappAddress, rollups)
-      const res = await tx.wait(1)
+  //     const tx = await addInput(jsonPayload, dappAddress, rollups)
+  //     const res = await tx.wait(1)
 
-      if (res) {
-        onPaidOut()
-      }
-    } catch (error) {
-      console.log(error)
-    }
-  }
+  //   } catch (error) {
+  //     console.log(error)
+  //   }
+  // }
 
   const handleClose = () => {
     onClose()
@@ -87,8 +80,6 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
         newVoucherToExecute.msg = `voucher executed! (tx="${tx.hash}")`
         if (receipt.events) {
           console.log('voucher receipt ', receipt)
-
-          await paidOut(voucher.payload)
 
           newVoucherToExecute.msg = `${
             newVoucherToExecute.msg
@@ -168,9 +159,13 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
               {playerVouchers.map((voucher, index) => (
                 <tr key={index}>
                   <td className="pr-10">
-                    {utils
-                      .formatEther(voucher.input.payload.args?.amount.toString())
-                      .toString()}
+                    {voucher.input.payload.args?.amount
+                      ? utils
+                          .formatEther(
+                            voucher.input.payload.args.amount.toString()
+                          )
+                          .toString()
+                      : '0'}
                   </td>
                   <td>
                     <Button
@@ -179,7 +174,11 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
                         withdraw(voucher.index, voucher.input.index)
                       }
                     >
-                      {voucher.executed ? 'Withdrawn' : withdrawing ? 'Withdrawing...' : 'Withdraw'}
+                      {voucher.executed
+                        ? 'Withdrawn'
+                        : withdrawing
+                        ? 'Withdrawing...'
+                        : 'Withdraw'}
                     </Button>
                   </td>
                 </tr>
@@ -199,4 +198,4 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
   )
 }
 
-export default ClaimModal
+export default WithdrawModal
