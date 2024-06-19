@@ -181,7 +181,7 @@ async function handle_advance(data) {
       if (res.error) {
         return new Error_out(`Failed to roll dice: ${JSONPayload.data}, ${res.message}`)
       }
-      
+
       advance_req = await noticeHandler(games)
       return 'accept'
     
@@ -229,10 +229,10 @@ async function handle_advance(data) {
 
       try {
         const resultNotice = router.process(JSONPayload.method, data)
-        if (resultNotice) {
+        // if (resultNotice) {
           const winner = getWinner(JSONPayload.gameId)
           winner.fundClaimed = true
-        }
+        // }
 
 
       } catch (e) {

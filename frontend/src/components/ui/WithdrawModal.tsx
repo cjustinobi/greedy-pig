@@ -7,6 +7,7 @@ import { useConnectWallet } from '@web3-onboard/react'
 import { BigNumber } from 'ethers'
 import CloseBtn from '@/components/shared/CloseBtn'
 import { addInput } from '@/lib/cartesi'
+import Button from '../shared/Button'
 
 interface IWithdrawModalProps {
   withdrawModal: boolean
@@ -27,6 +28,7 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
   onPaidOut
 }) => {
   const [playerVouchers, setPlayerVouchers] = useState<any[]>([])
+  const [withdrawing, setWithdrawing] = useState(false)
 
   const voucherService = new VoucherService()
   const [{ wallet }] = useConnectWallet()
@@ -58,6 +60,7 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
   }
 
   const withdraw = async (index: number, inputIndex: number) => {
+    setWithdrawing(true)
     try {
       const voucherWithProof = await voucherService.getVoucherWithProof(
         index,
@@ -66,7 +69,9 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
       if (voucherWithProof) {
         await executeVoucher(voucherWithProof)
       }
-    } catch (error) {}
+    } catch (error) {
+      setWithdrawing(false)
+    }
   }
 
   const executeVoucher = async (voucher: any) => {
@@ -102,13 +107,16 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
               : prevVoucher
           )
         )
+        setWithdrawing(false)
       } catch (e) {
         newVoucherToExecute.msg = `COULD NOT EXECUTE VOUCHER: ${JSON.stringify(
           e
         )}`
         console.log(`COULD NOT EXECUTE VOUCHER: ${JSON.stringify(e)}`)
+        setWithdrawing(false)
       }
       console.log('newVoucherToExecute ', newVoucherToExecute)
+      setWithdrawing(false)
     }
   }
 
@@ -154,22 +162,25 @@ const ClaimModal: FC<IWithdrawModalProps> = ({
         {playerVouchers.length > 0 && (
           <table>
             <thead>
-              <tr>
-                <th>Amount</th> <th>Withdraw</th>
-              </tr>
+              <tr>{/* <th>Amount</th> <th>Withdraw</th> */}</tr>
             </thead>
             <tbody>
               {playerVouchers.map((voucher, index) => (
                 <tr key={index}>
-                  <td>{voucher.input.payload.args?.amount}</td>
+                  <td className="pr-10">
+                    {utils
+                      .formatEther(voucher.input.payload.args?.amount.toString())
+                      .toString()}
+                  </td>
                   <td>
-                    <button
+                    <Button
+                      disabled={voucher.executed || withdrawing}
                       onClick={() =>
                         withdraw(voucher.index, voucher.input.index)
                       }
                     >
-                      {voucher.executed ? 'Withdrawn' : 'Withdraw'}
-                    </button>
+                      {voucher.executed ? 'Withdrawn' : withdrawing ? 'Withdrawing...' : 'Withdraw'}
+                    </Button>
                   </td>
                 </tr>
               ))}

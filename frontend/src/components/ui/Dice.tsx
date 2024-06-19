@@ -636,7 +636,11 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col justify-center">
-      <WithdrawModal withdrawModal={withdrawModal} onClose={handleCloseModal} onPaidOut={() => setPaidOut(true)} />
+      <WithdrawModal
+        withdrawModal={withdrawModal}
+        onClose={handleCloseModal}
+        onPaidOut={() => setPaidOut(true)}
+      />
       {/* <button onClick={sendRelayAddress}>Set DappAddress</button>
       <button onClick={checkBalance}>Check balance</button>
       <button onClick={() => transfer()}>Transfer</button> */}
@@ -647,7 +651,7 @@ useEffect(() => {
         ) && <p className="text-center mb-2">Player joining ...</p>}
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
       {game?.status === 'Ended' &&
-      fundClaimed === false &&
+        fundClaimed === false &&
         game?.participants.some(
           (participant: any) =>
             participant.address == wallet?.accounts[0].address &&
@@ -661,7 +665,7 @@ useEffect(() => {
           </div>
         )}
       {game?.status === 'Ended' &&
-      (paidOut === false || game.paidOut === false) &&
+        (paidOut === false || game.paidOut === false) &&
         game?.participants.some(
           (participant: any) =>
             participant.address == wallet?.accounts[0].address &&
@@ -674,9 +678,22 @@ useEffect(() => {
             </Button>
           </div>
         )}
-      {/* <Button disabled={withdrawing} onClick={withdrawModalHandler}>
-        {withdrawing ? 'Withdrawing' : 'Withdraw'}
-      </Button> */}
+
+        {/* tmp */}
+        {game?.status === 'Ended' &&
+        (paidOut === false || game.paidOut === false) &&
+        game?.participants.some(
+          (participant: any) =>
+            participant.address == wallet?.accounts[0].address
+        ) &&
+        game?.winner == wallet?.accounts[0].address && (
+      <div className="flex justify-center mb-6">
+        <Button disabled={withdrawing} onClick={withdrawModalHandler}>
+          {withdrawing ? 'Withdrawing' : 'Withdraw'}
+        </Button>
+      </div>
+        )}
+        {/* tmp */}
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
