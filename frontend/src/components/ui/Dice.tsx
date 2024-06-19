@@ -428,7 +428,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }
 
   const withdraw = async () => {
-    setClaiming(true)
+    setWithdrawing(true)
 
     try {
       const jsonPayload = JSON.stringify({
@@ -448,13 +448,13 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       const res = await tx.wait(1)
 
       if (res) {
-        setClaiming(false)
+        setWithdrawing(false)
         setFundClaimed(true)
       }
       console.log('claim response', res)
     } catch (error) {
       console.log(error)
-      setClaiming(false)
+      setWithdrawing(false)
     }
   }
 
@@ -649,12 +649,22 @@ useEffect(() => {
           (participant: any) =>
             participant.address === wallet?.accounts[0].address
         ) && <p className="text-center mb-2">Player joining ...</p>}
+
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
 
+      {game?.status === 'Ended' &&
+        game.fundTransfered &&
+        (paidOut === false || game.paidOut === false) &&
+        game?.winner == wallet?.accounts[0].address && (
+          <div className="flex justify-center mb-6">
+            <Button disabled={withdrawing} onClick={withdraw}>
+              {withdrawing ? 'Claiming' : 'Claim'}
+            </Button>
+          </div>
+        )}
 
       {game?.status === 'Ended' &&
-      game.fundTransfered &&
-        (paidOut === false || game.paidOut === false) &&   
+        (paidOut === false || game.paidOut === false) &&
         game?.winner == wallet?.accounts[0].address && (
           <div className="flex justify-center mb-6">
             <Button disabled={withdrawing} onClick={withdrawModalHandler}>
@@ -663,7 +673,6 @@ useEffect(() => {
           </div>
         )}
 
-   
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
