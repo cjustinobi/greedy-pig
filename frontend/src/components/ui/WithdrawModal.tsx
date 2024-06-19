@@ -141,7 +141,7 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
     }
 
     fetchData()
-  }, [wallet?.accounts[0].address, rollups])
+  }, [])
 
   return (
     <div
