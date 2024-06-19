@@ -239,17 +239,34 @@ async function handle_advance(data) {
 
     } else if(JSONPayload.method === 'paidOut') {
       
-      try {
-        const game = getGame(JSONPayload.gameId)
-        game.paidOut = true
-      } catch (error) {
-        return new Error_out(`Failed to update game: ${JSONPayload}`)
-      }
+      const game = getGame(JSONPayload.gameId)
+      game.paidOut = true
 
+    
+     
       return await noticeHandler(games)
    
 
     } else {
+
+      console.log('router process payload ', data)
+
+      if (JSONPayload.action === 'claim') {
+        const game = getGame(JSONPayload.gameId)
+        // TODO: handle transfered amount from here
+
+        if (game.status === 'Ended' && game.winner.toLowerCase() === msg_sender.toLowerCase())
+        data.metadata.msg_sender = dappAddress
+
+      try {
+        const resultNotice = router.process(JSONPayload.method, data)
+ 
+
+      } catch (e) {
+        return new Error_out(`failed to process command ${payloadStr} ${e}`)
+      }
+
+      } else {
         try {
         return router.process(JSONPayload.method, data)
       } catch (e) {
