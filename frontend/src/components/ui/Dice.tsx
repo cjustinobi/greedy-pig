@@ -404,7 +404,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
               from: dappAddress,
               to: wallet?.accounts[0].address,
               erc20: erc20Token,
-              amount: Number(ethers.utils.parseUnits(game.bettingAmount.toString(), 18))
+              amount: Number(ethers.utils.parseUnits(game.bettingFund.toString(), 18))
             }
           })
 
@@ -413,7 +413,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
             dappAddress,
             rollups
           )
-          
+
           const res = await tx.wait(1)
 
           if (res) {
@@ -497,7 +497,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         const res = await tx.wait(1)
         if (res) {
           toast.success('Transfering to winner')
-          claim()
+          setTimeout(claim, 5000)
         }
        }
       } catch (e) {
