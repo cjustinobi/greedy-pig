@@ -34,6 +34,8 @@ You will need the Cartesi CLI installed on your machine. Follow [this guide](htt
 - Install the packages `npm install`
 - Start the frontend, `npm run dev` 
 - Follow the instructions on the command line. (You will need to create a new Convex project)
+- Run `cartesi address-book` and copy the ERC20 Test Token address and import in your
+metamask. You will need some tokens to play the game when in a *BET* mode game
 
 ### Deployment
 
@@ -43,14 +45,13 @@ You will need the Cartesi CLI installed on your machine. Follow [this guide](htt
 
 ### Quick steps on how to Create Greedy Pig Game
 
-- Ensure you have some Sepolia tokens in your wallet for signing transactions
-
 - Create Game
   - Enter game title
   - Enter winning score
   - Stake mode (default is `free`)
   - Game Apparatue (default is `dice`)
   - Mode (default is `score-based`)
+  - The game creator is automatically a participant
 
 ### How to play the game
 
@@ -69,5 +70,4 @@ You will need the Cartesi CLI installed on your machine. Follow [this guide](htt
 - Revamp the UI to have more game texture
 - Activate use of Roulette
 - Implement Turn-based mode
-- Stake for game
 - Explore Account Abstraction to improve game experience and adoption
