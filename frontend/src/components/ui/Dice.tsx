@@ -465,6 +465,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         const tx = await addInput(jsonPayload, dappAddress, rollups)
         const res = await tx.wait(1)
         if (res) {
+          toast('Sign transaction to get paid')
           setPaidOut(true)
         }
        

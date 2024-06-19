@@ -26,6 +26,7 @@ interface IExecuteVoucher {
 const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
   const [playerVouchers, setPlayerVouchers] = useState<any[]>([])
   const [withdrawing, setWithdrawing] = useState(false)
+  const [executed, setExecuted] = useState(false)
 
   const voucherService = new VoucherService()
   const [{ wallet }] = useConnectWallet()
@@ -62,6 +63,7 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
       )
       if (voucherWithProof) {
         await executeVoucher(voucherWithProof)
+        setExecuted(true)
       }
     } catch (error) {
       setWithdrawing(false)
@@ -153,7 +155,7 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
       } inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal`}
     >
       <div className="mx-auto mt-10 w-[28rem] text-xl text-blue-200 p-5 bg-gray-700 rounded-lg relative">
-        {playerVouchers.length > 0 && (
+        {!executed && playerVouchers.length > 0 && (
           <table>
             <thead>
               <tr>{/* <th>Amount</th> <th>Withdraw</th> */}</tr>
