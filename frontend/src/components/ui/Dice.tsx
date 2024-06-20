@@ -49,7 +49,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [deposited, setDeposited] = useState<boolean>(false)
   const [depositing, setDepositing] = useState<boolean>(false)
   const [joining, setJoining] = useState<boolean>(false)
-  const [withdrawing, setWithdrawing] = useState<boolean>(false)
   const [claiming, setClaiming] = useState<boolean>(false)
   const [pass, setPass] = useState<boolean>(false)
   const [withdrawModal, setWithdrawModal] = useState<boolean>(false)
@@ -58,8 +57,10 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   const [fundClaimed, setFundClaimed] = useState<boolean>(false)
   const previousRollCount = useRef<string | null>(null)
 
+  const playerAddress = wallet?.accounts[0]?.address.toLowerCase()
+
   const checkBalance = async () => {
-    const playerAddress = wallet?.accounts[0].address
+    // const playerAddress = wallet?.accounts[0].address
     const reports = await inspectCall(
       `balance/${playerAddress}`,
       connectedChain
@@ -80,7 +81,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     if (!wallet?.accounts[0].address) return toast.error('Connect account')
 
-      const playerAddress = wallet.accounts[0].address.toLowerCase()
+      // const playerAddress = wallet.accounts[0].address.toLowerCase()
 
       // check if player has deposited
 
@@ -156,7 +157,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         },
       })
 
-      if (game.activePlayer === wallet?.accounts[0].address) {
+      if (game.activePlayer === playerAddress) {
         const tx = await addInput(
           jsonPayload,
           dappAddress,
@@ -183,7 +184,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       return toast.error('Can\'t play game now')
     }
 
-    const playerAddress = wallet?.accounts[0].address
+    // const playerAddress = wallet?.accounts[0].address
 
     if (!playerAddress) return toast.error('Connect account')
     if (players.length < 2) return toast.error('Not enough players to start')
@@ -280,7 +281,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
 
   const commit = async () => {
-    const playerAddress = wallet?.accounts[0].address
+    // const playerAddress = wallet?.accounts[0].address
     if (!playerAddress) return toast.error('Connect account')
 
     // Ensure user has not commited before
@@ -392,7 +393,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         gameId: game.id,
         action: 'withdraw',
         args: {
-          account: wallet?.accounts[0].address,
+          account: playerAddress,
           erc20: erc20Token,
           amount: Number(
             ethers.utils.parseUnits(game.bettingFund.toString(), 18)
@@ -499,20 +500,20 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
   useEffect(() => {
     const checkDeposit = async () => {
-      if (wallet?.accounts[0].address && game?.gameSettings.bet) {
+      if (playerAddress && game?.gameSettings.bet) {
         const participant = game?.participants.find(
           (participant: any) =>
-            participant.address === wallet?.accounts[0].address
+            participant.address === playerAddress
         )
         const hasDeposited = participant?.deposited
         setDeposited(hasDeposited)
       }
     }
 
-    if (wallet?.accounts[0].address && game?.gameSettings.bet) {
+    if (playerAddress && game?.gameSettings.bet) {
       checkDeposit()
     }
-  }, [wallet?.accounts[0].address, game?.gameSettings.bet])
+  }, [playerAddress, game?.gameSettings.bet])
 
 
   useEffect(() => {
@@ -574,8 +575,7 @@ useEffect(() => {
       <WithdrawModal withdrawModal={withdrawModal} onClose={handleCloseModal} />
       {userJoining &&
         game?.participants.some(
-          (participant: any) =>
-            participant.address === wallet?.accounts[0].address
+          (participant: any) => participant.address === playerAddress
         ) && <p className="text-center mb-2">Player joining ...</p>}
 
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
@@ -583,7 +583,7 @@ useEffect(() => {
       {game?.status === 'Ended' &&
         game.fundTransfered &&
         game.paidOut === false &&
-        game?.winner == wallet?.accounts[0].address && (
+        game?.winner == playerAddress && (
           <div className="flex justify-center mb-6">
             <Button disabled={claiming} onClick={claim}>
               {claiming ? 'Claiming ...' : 'Claim'}
@@ -593,9 +593,9 @@ useEffect(() => {
 
       {game?.status === 'Ended' &&
         (fundClaimed || paidOut || game.paidOut) &&
-        game?.winner == wallet?.accounts[0].address && (
+        game?.winner == playerAddress && (
           <div className="flex justify-center mb-6">
-            <Button disabled={withdrawing} onClick={withdrawModalHandler}>
+            <Button onClick={withdrawModalHandler}>
               {'Withdraw'}
             </Button>
           </div>
@@ -634,7 +634,7 @@ useEffect(() => {
 
         {game &&
           game.status === 'In Progress' &&
-          game?.activePlayer === wallet?.accounts[0].address &&
+          game?.activePlayer === playerAddress &&
           !canRollDice && (
             <div className="flex justify-center">
               <Button
@@ -659,61 +659,60 @@ useEffect(() => {
             </div>
           )}
 
-        {game &&
-          game.status === 'New' &&
-          game.creator !== wallet?.accounts[0].address && (
-            <div className="flex justify-center">
-              <Button
-                onClick={joinGame}
-                disabled={
-                  joining || depositing ||
+        {game && game.status === 'New' && game.creator !== playerAddress && (
+          <div className="flex justify-center">
+            <Button
+              onClick={joinGame}
+              disabled={
+                joining ||
+                depositing ||
+                game?.participants.some(
+                  (participant: any) => participant.address === playerAddress
+                )
+              }
+              className="mb-10"
+              type="button"
+            >
+              {joining
+                ? 'Joining...'
+                : commiting
+                ? 'Committing...'
+                : game?.participants.some(
+                    (participant: any) => participant.address === playerAddress
+                  )
+                ? 'Joined'
+                : 'Join Game'}
+            </Button>
+          </div>
+        )}
+
+        {playerAddress && (
+          <div className="flex justify-center">
+            <Button
+              onClick={commit}
+              disabled={
+                committed ||
+                commiting ||
+                !wallet ||
+                !players.includes(playerAddress)
+              }
+              className={`w-[200px] ${
+                !game?.commitPhase || revealMove ? 'hidden' : ''
+              } `}
+            >
+              {commiting
+                ? 'Committing...'
+                : committed ||
                   game?.participants.some(
                     (participant: any) =>
-                      participant.address === wallet?.accounts[0].address
+                      participant.address === wallet?.accounts[0].address &&
+                      participant.commitment !== null
                   )
-                }
-                className="mb-10"
-                type="button"
-              >
-                {joining
-                  ? 'Joining...'
-                  : commiting
-                  ? 'Committing...'
-                  : game?.participants.some(
-                      (participant: any) =>
-                        participant.address === wallet?.accounts[0].address
-                    )
-                  ? 'Joined'
-                  : 'Join Game'}
-              </Button>
-            </div>
-          )}
-
-        <div className="flex justify-center">
-          <Button
-            onClick={commit}
-            disabled={
-              committed ||
-              commiting ||
-              !wallet ||
-              !players.includes(wallet.accounts[0].address)
-            }
-            className={`w-[200px] ${
-              !game?.commitPhase || revealMove ? 'hidden' : ''
-            } `}
-          >
-            {commiting
-              ? 'Committing...'
-              : committed ||
-                game?.participants.some(
-                  (participant: any) =>
-                    participant.address === wallet?.accounts[0].address &&
-                    participant.commitment !== null
-                )
-              ? 'Committed'
-              : 'Commit'}
-          </Button>
-        </div>
+                ? 'Committed'
+                : 'Commit'}
+            </Button>
+          </div>
+        )}
 
         <div className="flex justify-center">
           <Button
@@ -726,7 +725,7 @@ useEffect(() => {
               : revealed ||
                 game?.participants.some(
                   (participant: any) =>
-                    participant.address === wallet?.accounts[0].address &&
+                    participant.address === playerAddress &&
                     participant.move !== null
                 )
               ? 'Revealed'
