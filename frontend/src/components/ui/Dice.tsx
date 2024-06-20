@@ -1,13 +1,7 @@
 import { FC, useEffect, useRef, useState } from 'react'
-import Die1 from '@/assets/img/dice_1.png'
-import Die2 from '@/assets/img/dice_2.png'
-import Die3 from '@/assets/img/dice_3.png'
-import Die4 from '@/assets/img/dice_4.png'
-import Die5 from '@/assets/img/dice_5.png'
-import Die6 from '@/assets/img/dice_6.png'
 import Image from 'next/image'
 import useAudio from '@/hooks/useAudio'
-import { generateCommitment, erc20Token } from '@/lib/utils'
+import { generateCommitment, erc20Token, loadDiceImages } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
@@ -21,8 +15,7 @@ import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
 import WithdrawModal from '@/components/ui/WithdrawModal'
 
-
-const die = [Die1, Die2, Die3, Die4, Die5, Die6]
+const die = loadDiceImages()
 
 interface ApparatusProps {
   game: any
