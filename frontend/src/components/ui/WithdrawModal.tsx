@@ -55,7 +55,16 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
   }
 
   const withdraw = async (index: number, inputIndex: number) => {
+
+    const voucherExecuted = await rollups?.dappContract.wasVoucherExecuted(
+      BigNumber.from(inputIndex),
+      BigNumber.from(index)
+    )
+
+    if (voucherExecuted) return toast('Fund has been withrawn')
+
     setWithdrawing(true)
+
     try {
       const voucherWithProof = await voucherService.getVoucherWithProof(
         index,
@@ -63,7 +72,6 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
       )
       if (voucherWithProof) {
         await executeVoucher(voucherWithProof)
-        setExecuted(true)
       }
     } catch (error) {
       setWithdrawing(false)
@@ -80,74 +88,116 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
           voucher.proof
         )
         const receipt = await tx.wait()
-        newVoucherToExecute.msg = `voucher executed! (tx="${tx.hash}")`
+        // newVoucherToExecute.msg = `voucher executed! (tx="${tx.hash}")`
         if (receipt.events) {
           console.log('voucher receipt ', receipt)
 
           toast.success('Congratulation! Fund successfully withdrawn')
           handleClose()
 
-          newVoucherToExecute.msg = `${
-            newVoucherToExecute.msg
-          } - resulting events: ${JSON.stringify(receipt.events)}`
+          // newVoucherToExecute.msg = `${
+          //   newVoucherToExecute.msg
+          // } - resulting events: ${JSON.stringify(receipt.events)}`
         }
         // Check execution status after transaction
-        newVoucherToExecute.executed =
-          await rollups.dappContract.wasVoucherExecuted(
-            BigNumber.from(voucher.input.index),
-            BigNumber.from(voucher.index)
-          )
-        setPlayerVouchers((prevVouchers) =>
-          prevVouchers.map((prevVoucher) =>
-            prevVoucher.index === voucher.index
-              ? newVoucherToExecute
-              : prevVoucher
-          )
-        )
+        // newVoucherToExecute.executed =
+        //   await rollups.dappContract.wasVoucherExecuted(
+        //     BigNumber.from(voucher.input.index),
+        //     BigNumber.from(voucher.index)
+        //   )
+        // setPlayerVouchers((prevVouchers) =>
+        //   prevVouchers.map((prevVoucher) =>
+        //     prevVoucher.index === voucher.index
+        //       ? newVoucherToExecute
+        //       : prevVoucher
+        //   )
+        // )
         setWithdrawing(false)
       } catch (e) {
-        newVoucherToExecute.msg = `COULD NOT EXECUTE VOUCHER: ${JSON.stringify(
-          e
-        )}`
+        // newVoucherToExecute.msg = `COULD NOT EXECUTE VOUCHER: ${JSON.stringify(
+        //   e
+        // )}`
         console.log(`COULD NOT EXECUTE VOUCHER: ${JSON.stringify(e)}`)
         setWithdrawing(false)
+        handleClose()
+        toast.error('Fund not withrawn')
       }
-      console.log('newVoucherToExecute ', newVoucherToExecute)
+      // console.log('newVoucherToExecute ', newVoucherToExecute)
+      setExecuted(true)
       setWithdrawing(false)
     }
   }
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (wallet?.accounts[0].address) {
-        const vouchers = await voucherService.getVouchers()
-        if (vouchers.length) {
-          const playerVouchersData = getPlayerVouchers(
-            wallet?.accounts[0].address,
-            vouchers
-          )
-          // Check execution status for initial data
-          const updatedVouchers = await Promise.all(
-            playerVouchersData.map(async (voucher: any) => {
-              if (rollups) {
-                const isExecuted =
-                  await rollups.dappContract.wasVoucherExecuted(
-                    BigNumber.from(voucher.input.index),
-                    BigNumber.from(voucher.index)
-                  )
-                return { ...voucher, executed: isExecuted }
-              } else {
-                return voucher
-              }
-            })
-          )
-          setPlayerVouchers(updatedVouchers)
-        }
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (wallet?.accounts[0].address) {
+  //       const vouchers = await voucherService.getVouchers()
+  //       if (vouchers.length) {
+  //         const playerVouchersData = getPlayerVouchers(
+  //           wallet?.accounts[0].address,
+  //           vouchers
+  //         )
+  //         // Check execution status for initial data
+  //         const updatedVouchers = await Promise.all(
+  //           playerVouchersData.map(async (voucher: any) => {
+  //             if (rollups) {
+  //               const isExecuted =
+  //                 await rollups.dappContract.wasVoucherExecuted(
+  //                   BigNumber.from(voucher.input.index),
+  //                   BigNumber.from(voucher.index)
+  //                 )
+  //               return { ...voucher, executed: isExecuted }
+  //             } else {
+  //               return voucher
+  //             }
+  //           })
+  //         )
+  //         console.log('players vouchers ', updatedVouchers)
+  //         setPlayerVouchers(updatedVouchers)
+  //       }
+  //     }
+  //   }
+
+  //   fetchData()
+  // }, [wallet?.accounts[0].address])
+
+  const fetchData = async () => {
+    if (wallet?.accounts[0].address) {
+      const vouchers = await voucherService.getVouchers()
+      if (vouchers.length) {
+        const playerVouchersData = getPlayerVouchers(
+          wallet?.accounts[0].address,
+          vouchers
+        )
+        // Check execution status for initial data
+        const updatedVouchers = await Promise.all(
+          playerVouchersData.map(async (voucher: any) => {
+            if (rollups) {
+              const isExecuted = await rollups.dappContract.wasVoucherExecuted(
+                BigNumber.from(voucher.input.index),
+                BigNumber.from(voucher.index)
+              )
+              return { ...voucher, executed: isExecuted }
+            } else {
+              return voucher
+            }
+          })
+        )
+        console.log('players vouchers ', updatedVouchers)
+        setPlayerVouchers(updatedVouchers)
       }
     }
+  }
 
+  useEffect(() => {
     fetchData()
-  }, [])
+  }, [wallet?.accounts[0].address, rollups])
+
+  useEffect(() => {
+    if (withdrawModal) {
+      fetchData()
+    }
+  }, [withdrawModal])
 
   return (
     <div
@@ -155,6 +205,13 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
         withdrawModal ? '' : 'hidden'
       } inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal`}
     >
+      {playerVouchers.length &&
+        playerVouchers.every((voucher) => voucher.execcuted) && (
+          <div className="text-center">
+            <p>All caught up</p>
+            <span>Nothing to withdraw</span>
+          </div>
+        )}
       <div className="mx-auto mt-10 w-[28rem] text-xl text-blue-200 p-5 bg-gray-700 rounded-lg relative">
         {!executed && playerVouchers.length > 0 && (
           <table>
@@ -163,7 +220,7 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
             </thead>
             <tbody>
               {playerVouchers
-                .filter((voucher) => !voucher.executed)
+                .filter((voucher) => voucher.executed !== true)
                 .map((voucher, index) => (
                   <tr key={index}>
                     <td className="pr-10">
@@ -194,12 +251,13 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
             </tbody>
           </table>
         )}
-        {!playerVouchers.length && (
-          <div className="text-center">
-            <p>All caught up</p>
-            <span>Nothing to withdraw</span>
-          </div>
-        )}
+        {executed ||
+          (!playerVouchers.length && (
+            <div className="text-center">
+              <p>All caught up</p>
+              <span>Nothing to withdraw</span>
+            </div>
+          ))}
         <CloseBtn handleClose={handleClose} />
       </div>
     </div>

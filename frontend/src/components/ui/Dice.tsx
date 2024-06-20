@@ -421,6 +421,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       }
       console.log('claim response', res)
     } catch (error) {
+      toast('Something went wrong. Try again')
       console.log(error)
       setClaiming(false)
     }
@@ -474,26 +475,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
         console.log(error)
       }
     }
-
-  const sendRelayAddress = async () => {
-    if (rollups) {
-      setClaiming(true)
-      try {
-      toast.success('Set Dapp address')
-       const tx = await rollups.relayContract.relayDAppAddress(dappAddress) 
-       if (tx) {
-        const res = await tx.wait(1)
-        if (res) {
-          toast.success('Transfering to winner')
-          setTimeout(claim, 5000)
-        }
-       }
-      } catch (e) {
-        console.log(`${e}`)
-        setClaiming(false)
-      }
-    }
-  }
 
   const withdrawModalHandler = () => {
     setWithdrawModal(true)
@@ -657,7 +638,7 @@ useEffect(() => {
       <button
         className={`hover:scale-105 active:scale-100 duration-300 md:w-auto w-[200px]`}
         onClick={() => playGame('yes')}
-        disabled={isRolling || commiting}
+        disabled={isRolling || commiting || revealing || depositing}
       >
         {result !== null && (
           <Image

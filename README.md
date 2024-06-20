@@ -37,11 +37,11 @@ You will need the Cartesi CLI installed on your machine. Follow [this guide](htt
 - Run `cartesi address-book` and copy the ERC20 Test Token address and import in your
 metamask. You will need some tokens to play the game when in a *BET* mode game
 
-### Deployment
+<!-- ### Deployment
 
 - Deployed to Sepolia testnet
 - The dApp is Self-hosted using [fly.io](https://fly.io)
-- The Frontend is hosted on [greedypig.vercel.app](https://greedypig.vercel.app)
+- The Frontend is hosted on [greedypig.vercel.app](https://greedypig.vercel.app) -->
 
 ### Quick steps on how to Create Greedy Pig Game
 

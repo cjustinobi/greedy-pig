@@ -349,6 +349,7 @@ const CreateGameModal = () => {
           </Button>
           {hasUserDeposited === false && (
             <Button
+              disabled={depositing}
               className="w-[200px]"
               type="button"
               onClick={depositErc20Handler}
