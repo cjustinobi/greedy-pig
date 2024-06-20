@@ -6,7 +6,6 @@ const { Wallet, Error_out, Notice, Report, Output } = require('cartesi-wallet')
 
 const { 
   noticeHandler,
-  reportHandler,
   etherPortalAddress,
   erc20PortalAddress,
   dappAddressRelay,
@@ -22,8 +21,7 @@ const {
   addGame, 
   playGame,
   rollDice,
-  getGame,
-  getWinner
+  getGame
 } = require('./games')
 
 const wallet = new Wallet(new Map())
@@ -33,14 +31,12 @@ const rollup_server = process.env.ROLLUP_HTTP_SERVER_URL
 console.log('HTTP rollup_server url is ' + rollup_server)
 
 let rollup_address = ''
-let advance_req
 
-
-var handlers = {
+let handlers = {
   advance_state: handle_advance,
   inspect_state: handle_inspect,
 }
-var finish = { status: 'accept' }
+let finish = { status: 'accept' }
 
 const send_request = async (output) => {
   if (output instanceof Output) {
@@ -132,7 +128,7 @@ async function handle_advance(data) {
         if (res.error) {
           return new Error_out(`failed to add participant ${res.message}`)
         }
-        advance_req = await noticeHandler(games)
+        await noticeHandler(games)
         return transferNotice
       } catch (error) {
         return new Error_out(`failed to add participant ${error}`)
@@ -157,7 +153,7 @@ async function handle_advance(data) {
           return new Error_out(`failed to add participant ${res.message}`)
         }
   
-        advance_req = await noticeHandler(games)
+        await noticeHandler(games)
 
         return transferNotice
 
@@ -237,13 +233,15 @@ async function handle_advance(data) {
      
       return await noticeHandler(games)
 
-    } else if(JSONPayload.method === 'paidOut') {
-      
+    } else if(JSONPayload.method === 'erc20_withdraw') {
+ 
+      const voucherResult = router.process(JSONPayload.method, data)
       const game = getGame(JSONPayload.gameId)
       game.paidOut = true
 
-      return await noticeHandler(games)
-   
+      await noticeHandler(games)
+
+      return voucherResult
 
     } else {
 
@@ -295,20 +293,18 @@ async function handle_inspect(data) {
     } else {
       const rollup_req = await finish_req.json()
 
-      var typeq = rollup_req.request_type
-      var handler
+      let typeq = rollup_req.request_type
+      let handler
       if (typeq === 'inspect_state') {
         handler = handlers.inspect_state
       } else {
         handler = handlers.advance_state
       }
-      var output = await handler(rollup_req.data)
+      let output = await handler(rollup_req.data)
       finish.status = 'accept'
       if (output instanceof Error_out) {
         finish.status = 'reject'
       }
-
-      console.log('Games ', JSON.stringify(games))
   
       await send_request(output)
     }

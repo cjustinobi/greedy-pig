@@ -7,20 +7,18 @@ import Die5 from '@/assets/img/dice_5.png'
 import Die6 from '@/assets/img/dice_6.png'
 import Image from 'next/image'
 import useAudio from '@/hooks/useAudio'
-import { generateCommitment, erc20Token, getPlayerVouchers } from '@/lib/utils'
+import { generateCommitment, erc20Token } from '@/lib/utils'
 import toast from 'react-hot-toast'
 import { useSelector } from 'react-redux'
 import { selectParticipantAddresses } from '@/features/games/gamesSlice'
-import { dappAddress, dappRelayAddress, hasDeposited } from '@/lib/utils'
+import { dappAddress, hasDeposited } from '@/lib/utils'
 import { useConnectWallet, useSetChain, useWallets } from '@web3-onboard/react'
-import { addInput, sendEther, inspectCall, depositErc20 } from '@/lib/cartesi'
+import { addInput, inspectCall, depositErc20 } from '@/lib/cartesi'
 import { useRollups } from '@/hooks/useRollups'
 import Button from '../shared/Button'
 import { ethers } from 'ethers'
 import { api } from '@/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
-import { action } from '@/convex/_generated/server'
-import { VoucherService } from '@/lib/cartesi/vouchers'
 import WithdrawModal from '@/components/ui/WithdrawModal'
 
 
@@ -412,11 +410,10 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       const tx = await addInput(jsonPayload, dappAddress, rollups)
       const res = await tx.wait(1)
 
-      toast('Sign transaction to get paid')
-      setPaidOut(true)
-
+      
       if (res) {
-        paidOutHandler()
+        toast.success('Fund successfully claimed')
+        setPaidOut(true)
         setClaiming(false)
         setFundClaimed(true)
       }
@@ -456,22 +453,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
     }
 
   }
-
-    const paidOutHandler = async () => {
-   
-
-      try {
-        const jsonPayload = JSON.stringify({
-          method: 'paidOut',
-          gameId: game?.id
-        })
-
-        await addInput(jsonPayload, dappAddress, rollups)   
-       
-      } catch (error) {
-        console.log(error)
-      }
-    }
 
   const withdrawModalHandler = () => {
     setWithdrawModal(true)
@@ -585,9 +566,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
    useEffect(() => {
      if (game?.status === 'Ended' && !gameEnded) {
       setGameEnded(true)
-      // if (game.winner === wallet?.accounts[0].address){
-      //   sendRelayAddress()
-      // } 
      }
    }, [game?.status, game?.winner, gameEnded])
 
@@ -611,7 +589,7 @@ useEffect(() => {
 
       {game?.status === 'Ended' &&
         game.fundTransfered &&
-        (!fundClaimed || game.paidOut === false) &&
+        game.paidOut === false &&
         game?.winner == wallet?.accounts[0].address && (
           <div className="flex justify-center mb-6">
             <Button disabled={claiming} onClick={claim}>
@@ -695,7 +673,7 @@ useEffect(() => {
               <Button
                 onClick={joinGame}
                 disabled={
-                  joining ||
+                  joining || depositing ||
                   game?.participants.some(
                     (participant: any) =>
                       participant.address === wallet?.accounts[0].address
