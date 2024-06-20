@@ -128,39 +128,6 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
     }
   }
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (wallet?.accounts[0].address) {
-  //       const vouchers = await voucherService.getVouchers()
-  //       if (vouchers.length) {
-  //         const playerVouchersData = getPlayerVouchers(
-  //           wallet?.accounts[0].address,
-  //           vouchers
-  //         )
-  //         // Check execution status for initial data
-  //         const updatedVouchers = await Promise.all(
-  //           playerVouchersData.map(async (voucher: any) => {
-  //             if (rollups) {
-  //               const isExecuted =
-  //                 await rollups.dappContract.wasVoucherExecuted(
-  //                   BigNumber.from(voucher.input.index),
-  //                   BigNumber.from(voucher.index)
-  //                 )
-  //               return { ...voucher, executed: isExecuted }
-  //             } else {
-  //               return voucher
-  //             }
-  //           })
-  //         )
-  //         console.log('players vouchers ', updatedVouchers)
-  //         setPlayerVouchers(updatedVouchers)
-  //       }
-  //     }
-  //   }
-
-  //   fetchData()
-  // }, [wallet?.accounts[0].address])
-
   const fetchData = async () => {
     if (wallet?.accounts[0].address) {
       const vouchers = await voucherService.getVouchers()
@@ -205,14 +172,14 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
         withdrawModal ? '' : 'hidden'
       } inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal`}
     >
-      {playerVouchers.length &&
-        playerVouchers.every((voucher) => voucher.execcuted) && (
-          <div className="text-center">
-            <p>All caught up</p>
-            <span>Nothing to withdraw</span>
-          </div>
-        )}
       <div className="mx-auto mt-10 w-[28rem] text-xl text-blue-200 p-5 bg-gray-700 rounded-lg relative">
+        {playerVouchers.length &&
+          playerVouchers.every((voucher) => voucher.executed) && (
+            <div className="text-center">
+              <p>All caught up</p>
+              <span>Nothing to withdraw</span>
+            </div>
+          )}
         {!executed && playerVouchers.length > 0 && (
           <table>
             <thead>
