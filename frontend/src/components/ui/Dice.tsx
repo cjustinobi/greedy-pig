@@ -81,10 +81,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
     if (!wallet?.accounts[0].address) return toast.error('Connect account')
 
-      // const playerAddress = wallet.accounts[0].address.toLowerCase()
-
-      // check if player has deposited
-
       if (game?.gameSettings.bet) {
         const reports = await inspectCall(
           `balance/${playerAddress}`,
@@ -184,8 +180,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
       return toast.error('Can\'t play game now')
     }
 
-    // const playerAddress = wallet?.accounts[0].address
-
     if (!playerAddress) return toast.error('Connect account')
     if (players.length < 2) return toast.error('Not enough players to start')
 
@@ -281,7 +275,7 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
 
 
   const commit = async () => {
-    // const playerAddress = wallet?.accounts[0].address
+
     if (!playerAddress) return toast.error('Connect account')
 
     // Ensure user has not commited before
@@ -328,8 +322,6 @@ const Dice: FC<ApparatusProps> = ({ game }) => {
   }
 
   const reveal = async () => {
-
-    const playerAddress = wallet?.accounts[0].address
 
     if (playerAddress && !players.includes(playerAddress)) return toast.error('You are not a player')
 
