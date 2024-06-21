@@ -59,7 +59,8 @@ const CreateGameModal = () => {
     bettingAmount, // in ether
     bettingFund: 0, // total fund transfered by players
     fundTransfered: false,
-    paidOut: false
+    paidOut: false,
+    lockApparatus: false
   }
 
   const submitHandler = async (e: FormEvent<HTMLFormElement>) => {

@@ -5,7 +5,6 @@ import { useNotices } from '@/hooks/useNotices'
 import { useRollups } from '@/hooks/useRollups'
 import useAudio from '@/hooks/useAudio'
 import toast from 'react-hot-toast'
-import { addInput } from '@/lib/cartesi'
 
 interface LeaderBoardProps {
   game: any
@@ -18,18 +17,6 @@ const LeaderBoard: FC<LeaderBoardProps> = ({ game }) => {
   const [delayedGame, setDelayedGame] = useState<any>(null)
   const [gameOverTriggered, setGameOverTriggered] = useState<boolean>(false)
 
-    const transfer = async () => {
-      const jsonPayload = JSON.stringify({
-        method: 'transfer',
-        // from: (wallet?.accounts[0].address)?.toLowerCase(),
-        from: '0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65',
-        to: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-        ether: '0xFfdbe43d4c855BF7e0f105c400A50857f53AB044',
-        amount: 1000000000000000000,
-      })
-
-      await addInput(JSON.stringify(jsonPayload), dappAddress, rollups)
-    }
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

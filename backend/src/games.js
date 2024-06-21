@@ -113,6 +113,7 @@ const commit = (gameId, commitment, playerAddress) => {
 
   if (!game.commitPhase) {
     game.commitPhase = true
+    game.lockAppararus = true
   } 
 
   console.log(`committed for ${playerAddress}`)
@@ -172,6 +173,7 @@ const reveal = (gameId, move, nonce, playerAddress) => {
 const rollDice = async ({gameId, playerAddress}) => {
 
   const game = games.find(game => game.id === gameId)
+  game.lockAppararus = false
 
   const participant = game.participants.find(p => p.address === playerAddress)
 
