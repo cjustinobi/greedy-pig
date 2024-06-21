@@ -1,5 +1,10 @@
 import { utils } from 'ethers'
 
+export const serverUrl =
+  process.env.NODE_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_LOCAL_SERVER_URL
+    : process.env.NEXT_PUBLIC_SERVER_URL
+
 export const shortenAddress = (addr: string) => {
   return addr ? `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}` : ''
 }

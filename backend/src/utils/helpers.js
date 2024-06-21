@@ -37,25 +37,6 @@ const noticeHandler = async (data) => {
   });
 }
 
-const reportHandler = async (message) => {
-
-  const result = JSON.stringify({
-    error: String(message),
-  });
-
-  const hexresult = viem.stringToHex(result);
-
-  await fetch(rollupServer + '/report', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-
-    body: JSON.stringify({
-      payload: hexresult,
-    }),
-  });
-}
 
 const getParticipantsMove = game => {
   return game.participants.map(p => p.move !== null ? p.move : 0)
@@ -78,12 +59,16 @@ const resetMoveCommitment = game => {
   })
 }
 
+const transferAmountEqual = (amount, incomingAmount) => {
+  return Number(ethers.parseUnits(amount.toString(), 18)) === incomingAmount
+}
+
 
 module.exports = { 
   verifyCommitment, 
   noticeHandler, 
-  reportHandler, 
   getParticipantsMove, 
   generateRollOutcome, 
-  resetMoveCommitment 
+  resetMoveCommitment,
+  transferAmountEqual
 }

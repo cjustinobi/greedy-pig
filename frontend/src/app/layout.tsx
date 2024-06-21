@@ -9,6 +9,7 @@ import { Toaster } from 'react-hot-toast'
 import CreateGameModal from '@/components/ui/CreateGameModal'
 import configFile from '@/config/cartesi.json'
 import store from '@/store'
+import { serverUrl } from '@/lib/utils'
 
 import './globals.css'
 
@@ -36,11 +37,8 @@ init({
 })
 
 //Setup GraphQL Apollo client
-const serverUrl = process.env.NODE_ENV === 'development'
-  ? 'http://localhost:8080'
-  : process.env.NEXT_PUBLIC_SERVER_URL
-// const serverUrl = 'https://greedypig.fly.dev'
-// const serverUrl = 'http://127.0.0.1:8080'
+
+
 const URL_QUERY_GRAPHQL = `${serverUrl}/graphql`
 
 const client = new ApolloClient({

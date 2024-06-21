@@ -80,7 +80,7 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
 
   const executeVoucher = async (voucher: any) => {
     if (rollups && !!voucher.proof) {
-      const newVoucherToExecute = { ...voucher }
+
       try {
         const tx = await rollups.dappContract.executeVoucher(
           voucher.destination,
@@ -88,41 +88,24 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
           voucher.proof
         )
         const receipt = await tx.wait()
-        // newVoucherToExecute.msg = `voucher executed! (tx="${tx.hash}")`
+
         if (receipt.events) {
           console.log('voucher receipt ', receipt)
 
           toast.success('Congratulation! Fund successfully withdrawn')
           handleClose()
 
-          // newVoucherToExecute.msg = `${
-          //   newVoucherToExecute.msg
-          // } - resulting events: ${JSON.stringify(receipt.events)}`
         }
-        // Check execution status after transaction
-        // newVoucherToExecute.executed =
-        //   await rollups.dappContract.wasVoucherExecuted(
-        //     BigNumber.from(voucher.input.index),
-        //     BigNumber.from(voucher.index)
-        //   )
-        // setPlayerVouchers((prevVouchers) =>
-        //   prevVouchers.map((prevVoucher) =>
-        //     prevVoucher.index === voucher.index
-        //       ? newVoucherToExecute
-        //       : prevVoucher
-        //   )
-        // )
+    
         setWithdrawing(false)
       } catch (e) {
-        // newVoucherToExecute.msg = `COULD NOT EXECUTE VOUCHER: ${JSON.stringify(
-        //   e
-        // )}`
+   
         console.log(`COULD NOT EXECUTE VOUCHER: ${JSON.stringify(e)}`)
         setWithdrawing(false)
         handleClose()
         toast.error('Fund not withrawn')
       }
-      // console.log('newVoucherToExecute ', newVoucherToExecute)
+    
       setExecuted(true)
       setWithdrawing(false)
     }

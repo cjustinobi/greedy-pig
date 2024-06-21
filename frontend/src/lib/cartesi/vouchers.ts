@@ -1,11 +1,12 @@
 import { createClient, Client, cacheExchange, fetchExchange } from 'urql';
+import { serverUrl } from '../utils';
 
 export class VoucherService {
   private client: Client;
 
   constructor() {
     this.client = createClient({
-      url: 'http://localhost:8080/graphql',
+      url: `${serverUrl}/graphql`,
       exchanges: [fetchExchange]
     });
   }

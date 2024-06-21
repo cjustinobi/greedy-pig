@@ -1,10 +1,10 @@
 const { 
   verifyCommitment, 
   noticeHandler, 
-  reportHandler, 
   getParticipantsMove, 
   generateRollOutcome, 
-  resetMoveCommitment 
+  resetMoveCommitment,
+  transferAmountEqual
 } = require('./helpers')
 
 const  {
@@ -18,10 +18,10 @@ const  {
 module.exports = {
   verifyCommitment,
   noticeHandler,
-  reportHandler,
   getParticipantsMove,
   generateRollOutcome,
   resetMoveCommitment,
+  transferAmountEqual,
   etherPortalAddress,
   erc20PortalAddress,
   dappAddressRelay,

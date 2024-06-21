@@ -10,7 +10,8 @@ const {
   erc20PortalAddress,
   dappAddressRelay,
   dappAddress,
-  erc20
+  erc20,
+  transferAmountEqual
  } = require('./utils')
 
 const { 
@@ -116,7 +117,7 @@ async function handle_advance(data) {
 
       if (JSONPayload.data.gameSettings.bet) {
         if (JSONPayload.args.to.toLowerCase() !== dappAddress) return new Error_out(`${msg_sender}: You are transfering to the wrong address`)
-        // check that the amount is equal to the game amount
+        if (!transferAmountEqual(JSONPayload.data.bettingAmount, JSONPayload.args.amount)) return new Error_out(`Incorrect amount entered by ${msg_sender}`)
       }
 
       console.log('creating game...')
@@ -140,7 +141,9 @@ async function handle_advance(data) {
 
       if (game.gameSettings.bet) {
         if (JSONPayload.args.to.toLowerCase() !== dappAddress) return new Error_out(`${msg_sender}: You are transfering to the wrong address`)
+        if (!transferAmountEqual(game.bettingAmount, JSONPayload.args.amount)) return new Error_out(`Incorrect amount entered by ${msg_sender}`)
       }
+
 
       console.log('adding participant ...', JSONPayload.data)
 

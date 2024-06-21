@@ -327,7 +327,7 @@ useEffect(() => {
   ) {
     setTimeout(() => {
       setGameEnded(true)
-    }, 8000)
+    }, 5000)
   }
 }, [game?.status, game?.winner, gameEnded])
    
@@ -347,7 +347,7 @@ useEffect(() => {
 
       {userPlaying && <p className="text-center mb-2">Initiating game ...</p>}
 
-      {gameEnded && (
+      {gameEnded &&  !game.paidOut && (
         <div className="flex justify-center mb-6">
           <Button disabled={claiming} onClick={claim}>
             {claiming ? 'Claiming ...' : 'Claim'}
