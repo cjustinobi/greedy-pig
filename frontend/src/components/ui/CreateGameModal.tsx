@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectGameModal } from '@/features/modal/modalSlice'
 import Button from '../shared/Button'
@@ -9,11 +9,12 @@ import { useRollups } from '@/hooks/useRollups'
 import { dappAddress, erc20Token, hasDeposited } from '@/lib/utils'
 import { useConnectWallet, useSetChain, useWallets } from '@web3-onboard/react'
 import { useNotices } from '@/hooks/useNotices'
-import { BigNumber, ethers } from 'ethers'
+import { ethers } from 'ethers'
 import CloseBtn from '../shared/CloseBtn'
 
 const CreateGameModal = () => {
 
+  const formRef = useRef(null)
   const [{ connectedChain }] = useSetChain()
   const [connectedWallet] = useWallets()
   const [{ wallet }] = useConnectWallet()
@@ -134,9 +135,20 @@ const CreateGameModal = () => {
   }
 
   const reset = () => {
+     if (formRef.current) {
+       formRef.current?.reset()
+     }
     setGameName('')
+    setWinningScore(20)
+    setBettingAmount('0.02')
+    setBet(true)
     dispatch({ type: 'modal/toggleGameModal' })
   }
+
+  // const reset = () => {
+  //   setGameName('')
+  //   dispatch({ type: 'modal/toggleGameModal' })
+  // }
 
    const depositErc20Handler = async () => {
      if (!bet) return toast.error('Not a betting game')
@@ -199,6 +211,7 @@ const CreateGameModal = () => {
       } inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal`}
     >
       <form
+        ref={formRef}
         className="mx-auto mt-10 w-[38rem] p-5 bg-gray-700 rounded-lg relative"
         onSubmit={submitHandler}
       >
