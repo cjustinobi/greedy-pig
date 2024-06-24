@@ -7,6 +7,7 @@ module.exports = {
 
     // Or if using `src` directory:
     './src/**/*.{js,ts,jsx,tsx,mdx}',
+    "./node_modules/tw-elements/js/**/*.js"
   ],
   theme: {
     extend: {
@@ -25,5 +26,6 @@ module.exports = {
   plugins: [
     require('@tailwindcss/typography'),
     require('tw-elements/dist/plugin.cjs'),
+    require('daisyui')
   ],
 }

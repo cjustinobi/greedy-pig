@@ -10,7 +10,6 @@ import CreateGameModal from '@/components/ui/CreateGameModal'
 import configFile from '@/config/cartesi.json'
 import store from '@/store'
 import { serverUrl } from '@/lib/utils'
-import Drawer from '@/components/ui/Drawer'
 
 import './globals.css'
 
@@ -60,7 +59,6 @@ export default function RootLayout({
             {children}
             <CreateGameModal />
             <Toaster />
-            {/* <Drawer /> */}
           </ApolloProvider>
         </Provider>
       </body>
