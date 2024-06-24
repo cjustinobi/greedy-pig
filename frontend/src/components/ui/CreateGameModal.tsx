@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from 'react'
+import { FormEvent, useEffect, useRef, useState, ChangeEvent } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectGameModal } from '@/features/modal/modalSlice'
 import Button from '../shared/Button'
@@ -125,13 +125,12 @@ const CreateGameModal = () => {
     }
   }
 
-  const handleOptionChange = (value: boolean) => {
+  const betHandler = (value: boolean) => {
     setBet(value)
   }
 
   const handleBettingAmount = async (value: any) => {
     setBettingAmount(value)
-    
   }
 
   const reset = () => {
@@ -180,17 +179,20 @@ const CreateGameModal = () => {
      }
    }
 
-    const checkBalance = async () => {
-   
-      const reports = await inspectCall(
-        `balance/${creator}`,
-        connectedChain
-      )
-      console.log('balance for: ' + creator, reports)
-      const res = hasDeposited(bettingAmount, reports[0])
+  const checkBalance = async () => {
+  
+    const reports = await inspectCall(
+      `balance/${creator}`,
+      connectedChain
+    )
+    console.log('balance for: ' + creator, reports)
+    const res = hasDeposited(bettingAmount, reports[0])
 
-      return res
-    }
+    return res
+  }
+
+  const modeHandler = (e: string) => {}
+  const aparatusHandler = (e: string) => {}
 
   useEffect(() => {
     const init = async () => {
@@ -272,7 +274,7 @@ const CreateGameModal = () => {
               checked={bet}
               className="form-radio"
               name="accountType"
-              onChange={() => handleOptionChange(true)}
+              onChange={() => betHandler(true)}
             />
             <span className="ml-2">Yes</span>
           </label>
@@ -282,7 +284,7 @@ const CreateGameModal = () => {
               checked={!bet}
               className="form-radio"
               name="accountType"
-              onChange={() => handleOptionChange(false)}
+              onChange={() => betHandler(false)}
             />
             <span className="ml-2">No</span>
           </label>
@@ -314,6 +316,7 @@ const CreateGameModal = () => {
               checked
               name="apparatus"
               value="die"
+              onChange={(e) => aparatusHandler(e.target.value)}
             />
             <span className="ml-2">Die</span>
           </label>
@@ -324,6 +327,7 @@ const CreateGameModal = () => {
               disabled
               name="apparatus"
               value="roulette"
+              onChange={(e) => aparatusHandler(e.target.value)}
             />
             <span className="ml-2">Roulette</span>
           </label>
@@ -338,6 +342,7 @@ const CreateGameModal = () => {
               disabled
               name="mode"
               value="turn"
+              onChange={(e) => modeHandler(e.target.value)}
             />
             <span className="ml-2">Turn Based</span>
           </label>
@@ -348,6 +353,7 @@ const CreateGameModal = () => {
               checked
               name="mode"
               value="score"
+              onChange={(e) => modeHandler(e.target.value)}
             />
             <span className="ml-2">Score Based</span>
           </label>
