@@ -173,13 +173,13 @@ const WithdrawModal: FC<IWithdrawModalProps> = ({ withdrawModal, onClose }) => {
                 .filter((voucher) => voucher.executed !== true)
                 .map((voucher, index) => (
                   <tr key={index}>
-                    <td className="pr-10">
+                    <td className="pr-10 font-extrabold">
                       {voucher.input.payload.args?.amount
                         ? utils
                             .formatEther(
                               voucher.input.payload.args.amount.toString()
                             )
-                            .toString()
+                            .toString() + 'CTSI'
                         : '0'}
                     </td>
                     <td>

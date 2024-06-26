@@ -17,7 +17,8 @@ const HowToPlay = () => {
             <p className="mb-4 mt-2">
               Click the "Join Game" button and sign the transaction on the
               wallet pop-up. Wait for other players to join. A minimum of 2
-              players is required.
+              players is required. You need to deposit the staking amount if the
+              game is in staking mode before joining.
             </p>
           </div>
         </li>
@@ -84,8 +85,20 @@ const HowToPlay = () => {
           <div className="mb-6 ms-6 pb-6">
             <p className="mb-4 mt-2">
               Repeat steps 2-5 until there is a winner. The game ends when a
-              player achieves the target score or above the target score (in score-based mode) or when all
-              players have completed their turns (in turn-based mode).
+              player achieves the target score or above the target score (in
+              score-based mode) or when all players have completed their turns
+              (in turn-based mode).
+            </p>
+          </div>
+        </li>
+        <li>
+          <div className="flex-start flex items-center">
+            <div className="-ms-[9px] -mt-2 me-3 flex h-4 w-4 items-center justify-center rounded-full bg-primary dark:bg-primary-500"></div>
+            <h4 className="-mt-2 text-xl font-semibold">Game Over</h4>
+          </div>
+          <div className="mb-6 ms-6 pb-6">
+            <p className="mb-4 mt-2">
+              The winner can claim and withdraw the staked game prize if it was a staked game.
             </p>
           </div>
         </li>
